@@ -1,0 +1,54 @@
+name: "Воспоминание о Донецке · Memory of Donetsk"
+description: "Оставь воспоминание для карты памяти Donetsk 2011 · Leave a memory for the Donetsk 2011 memory map"
+title: "[Память] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что помнишь. Эта запись публичная. После проверки она появится на карте памяти сайта Donetsk 2011.
+        Пиши о людях, местах и жизни города. Не указывай чужие имена, адреса и телефоны, без оскорблений и политических споров.
+
+        Thank you for remembering. This entry is public. After review it will appear on the Donetsk 2011 memory map.
+        Write about people, places and city life. No other people's names, addresses or phone numbers, no insults or political arguments.
+  - type: input
+    id: place
+    attributes:
+      label: "Место · Place"
+      description: "Например: двор у школы, остановка, парк · e.g. a school yard, a tram stop, a park"
+    validations:
+      required: true
+  - type: input
+    id: lat
+    attributes:
+      label: "Широта · Latitude"
+      description: "Заполняется сайтом, если ты выбрал точку на карте · Filled in by the site if you picked a point"
+  - type: input
+    id: lon
+    attributes:
+      label: "Долгота · Longitude"
+  - type: input
+    id: year
+    attributes:
+      label: "Год или годы · Year(s)"
+      placeholder: "2003, 1998–2009…"
+  - type: textarea
+    id: memory
+    attributes:
+      label: "Воспоминание · Memory"
+      description: "Пара строк или больше · A few lines or more"
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: "Как подписать (необязательно) · Signature (optional)"
+      placeholder: "Имя, инициалы или пусто · A name, initials or leave empty"
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Согласие · Consent"
+      options:
+        - label: "Я согласен, что эта запись может появиться на сайте Donetsk 2011 · I agree that this entry may appear on the Donetsk 2011 website"
+          required: true
+        - label: "В тексте нет чужих личных данных · The text contains no other people's personal data"
+          required: true
