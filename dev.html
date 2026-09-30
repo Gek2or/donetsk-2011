@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body data-pt=""><title>Donetsk 2011</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body data-pt="n4"><title>Donetsk 2011</title>
 <meta name="description" content="Реконструкция Донецка 2011 года по источникам: Unreal Engine 5, Blender, OpenStreetMap, панорамы Street View октября 2011.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -594,97 +594,183 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-bet
 <nav aria-label="Разделы" class="nav" data-ta="aria-label:a1">
 <div class="wrap">
 <a class="brand" href="index.html">DONETSK<b>/</b>2011</a>
-<ul><li><a class="l on" data-t="n1" href="index.html" aria-current="page">Главная</a></li><li><a class="l" data-t="n2" href="city.html">Город</a></li><li><a class="l" data-t="n3" href="model.html">Реконструкция</a></li><li><a class="l" data-t="n4" href="dev.html">Разработка</a></li></ul>
+<ul><li><a class="l" data-t="n1" href="index.html">Главная</a></li><li><a class="l" data-t="n2" href="city.html">Город</a></li><li><a class="l" data-t="n3" href="model.html">Реконструкция</a></li><li><a class="l on" data-t="n4" href="dev.html" aria-current="page">Разработка</a></li></ul>
 <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
 <button aria-label="Сменить тему" class="theme" data-ta="aria-label:a10" id="themeBtn" type="button">◐</button>
 </div>
 </nav>
-<header class="hero" id="top">
-<div class="hero-map"><img alt="Векторная карта центральной части Донецка, 4,37 × 2,84 км, построенная из 8 508 элементов OpenStreetMap" data-ta="alt:a11" src="maps/osm_city.svg"/></div>
-<div class="grid-ticks"></div>
-
+<header class="phead" id="top">
 <div class="wrap">
-<div class="eyebrow" data-t="t13">Исторический open-world · Unreal Engine 5.8</div>
-<h1><span>DONETSK</span><span class="yr">2011</span></h1>
-<p class="lede" data-t="t14">Я не был в Донецке с 2012 года. Поэтому я строю его заново таким, каким он был в октябре 2011-го. Каждая улица, дом и забор восстанавливаются по источникам: OpenStreetMap, радарный рельеф SRTM и панорамы Google Street View того года. Начинаю с Ворошиловского района, где прошло моё детство, и строю весь город.</p>
-<div class="coords mono">
-<span data-t="t15">Точка отсчёта <b>47.99275° N · 37.81837° E</b></span>
-<span data-t="t16">Высота <b>143,2 м</b> EGM96</span>
-<span data-t="t17">Кадр карты <b>4,37 × 2,84 км</b></span>
-<span data-t="t18">Эталон <b>10.2011</b></span>
-</div>
-<div class="live mono"><i></i><span data-t="s24">Сейчас в Донецке</span> <b id="clock">—</b></div>
-<div class="cta">
-<a class="btn primary" data-t="t19" href="#story">Моя история ↓</a>
-<a class="btn ghost" data-t="t20" href="model.html#q3d">Облететь квартал в 3D →</a>
-</div>
+<div class="eyebrow">DONETSK 2011</div>
+<h1 data-t="pd1">Разработка</h1>
+<p class="lede" data-t="pd2">Правила, журнал и звук без ИИ, метод доказательств, движок, план до целого города и все источники.</p>
+<nav class="chips" aria-label="Разработка"><a href="#dev" data-t="d27">Разработка</a><a href="#method" data-t="t7">Метод</a><a href="#build" data-t="t8">Движок</a><a href="#roadmap" data-t="t9">План</a><a href="#sources" data-t="t178">Источники</a></nav>
 </div>
 </header>
-<div class="stats wrap" style="padding-inline:0;max-width:none">
-<div class="stat"><b class="num">8 805</b><span data-t="t21">объектов в эталонной карте города</span></div>
-<div class="stat"><b class="num">1 551</b><span data-t="t22">зданий с OSM-ID и тегами</span></div>
-<div class="stat"><b class="num">1 654</b><span data-t="t23">дорожных осей и 420 рельсовых</span></div>
-<div class="stat"><b class="num">419</b><span data-t="t24">элементов фасадов по панорамам 2011</span></div>
-<div class="stat"><b class="num">189</b><span data-t="t25">объёмов в квартале Unreal 280 × 660 м</span></div>
-<div class="stat"><b class="num">412</b><span data-t="t26">метров улицы сверено с шестью панорамами 2011</span></div>
-</div>
-<div class="ticker" aria-hidden="true"><div class="tk" id="tk"></div></div>
 <main>
-<section id="story" class="story">
-  <div class="story-bg" aria-hidden="true"><img src="maps/osm_city.svg" alt=""></div><div class="story-pano" aria-hidden="true" style="background-image:url(https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Panorama25.jpg/2560px-Panorama25.jpg)"></div>
-  <div class="wrap story-grid">
-    <div class="story-text">
-      <div class="code mono"><b>00</b><span data-t="s2">Почему этот проект</span></div>
-      <h2 data-t="s3">Город, в который я не могу вернуться</h2>
-      <p data-t="s4">Я родился в Донецке в 1995 году. Всё детство прошло в Ворошиловском районе: дворы, улицы, дорога от дома до школы. Это моя обитель, место, которое я знаю не по картам, а по памяти.</p>
-      <p data-t="s5">В 2012 году я уехал. В 2014-м в город пришла война, и дорога назад закрылась. С тех пор я там не был.</p>
-      <p data-t="s6">Donetsk 2011 для меня единственный способ вернуться: восстановить город таким, каким он был, по фотографиям, картам и панорамам, ничего не выдумывая.</p>
-      <p class="story-accent" data-t="s7">Я начинаю со своего района, но строю весь Донецк. Этот город дорог не только мне. Таких, как я, тысячи.</p>
-      <p class="sign mono" data-t="s8">Станислав, автор проекта</p>
-    </div>
-    <aside class="story-side">
-      <div class="away"><b class="num" id="awayYears">14</b><span data-t="s9">лет я не был дома</span></div>
-      <ol class="tline">
-        <li><span class="y">1995</span><span data-t="s10">Родился в Донецке</span></li>
-        <li><span class="y">1995–2012</span><span data-t="s11">Детство и юность в Ворошиловском районе</span></li>
-        <li class="hl"><span class="y">10.2011</span><span data-t="s12">По Заречной проезжает машина Google Street View. Эти кадры станут эталоном проекта</span></li>
-        <li><span class="y">2012</span><span data-t="s13">Уехал из Донецка</span></li>
-        <li class="war"><span class="y">2014</span><span data-t="s14">Война. Дорога домой закрыта</span></li>
-        <li class="now"><span class="y">2026</span><span data-t="s15">Город возвращается в Unreal Engine 5</span></li>
-      </ol>
-    </aside>
-  </div>
-</section>
-<section id="why" class="why">
+<section id="dev" class="dev">
   <div class="wrap">
     <div class="head">
-      <div><div class="code"><b>01</b><span data-t="w1">Узнать больше о моём городе</span></div><h2 data-t="w2">Город, недосягаемый для миллионов</h2></div>
-      <div class="why-text">
-        <p class="lede" data-t="w3">С 7 апреля 2014 года Донецк не контролируется Украиной. 30 сентября 2022 года Россия объявила его своей территорией. Мировое сообщество эту аннексию не признаёт.</p>
-        <p class="lede" data-t="w4">Война на Донбассе сделала переселенцами миллионы людей. Для многих из них, как и для меня, дорога домой закрыта. Город существует, но попасть в него физически нельзя.</p>
-      </div>
+      <div><div class="code"><b>01</b><span data-t="d1">Разработка</span></div><h2 data-t="d2">Как рождается город</h2></div>
+      <p class="lede" data-t="d3">Здесь я рассказываю, как идёт работа: по каким правилам, что уже сделано и что впереди. Этот раздел обновляется вместе с проектом.</p>
     </div>
-    <div class="why-stats">
-      <div><b class="num" data-t="w17">985 000</b><span data-t="w5">человек жили в Донецке до войны</span><small class="mono" data-t="w13">2009 · Wikipedia: Donetsk</small></div>
-      <div><b class="num" data-nocount data-t="w16">1,6 млн</b><span data-t="w6">вынужденных переселенцев из-за войны на Донбассе</span><small class="mono" data-t="w14">март 2016 · ООН (OHCHR)</small></div>
-      <div><b class="num" id="lostYears">12</b><span data-t="w7">лет город вне контроля Украины</span><small class="mono" data-t="w15">с 7 апреля 2014 · Wikipedia: Donetsk</small></div>
+    <blockquote class="manifesto">
+      <p data-t="d4">Этот проект не способ убить время. По сути, это недостающая часть меня.</p>
+      <p data-t="d5">Я уверен, что очень многие люди до сих пор считают этот город своим и помнят его так же, как я. Он часть их. Часть, которая существует, но физически недосягаема.</p>
+      <cite class="mono" data-t="d6">Станислав</cite>
+    </blockquote>
+    <div class="dev-grid">
+      <article class="sound">
+        <canvas id="wave" aria-hidden="true"></canvas>
+        <span class="eyebrow" data-t="d7">Звук и музыка</span>
+        <h3 data-t="d8">Только мои чувства. Без ИИ.</h3>
+        <p data-t="d9">Звуковой дизайн и музыку для Donetsk 2011 я создаю сам и опираюсь только на свои чувства. Никакого искусственного интеллекта: ни генерации музыки, ни сгенерированных звуков.</p>
+        <p data-t="d10">Только оригинальные эксперименты. Каждый звук и каждая мелодия должны быть прожиты, а не сгенерированы.</p>
+        <ul class="tags"><li data-t="d11">Звуковой дизайн: сам</li><li data-t="d12">Музыка: сам</li><li data-t="d13">ИИ-генерация: нет</li></ul>
+      </article>
+      <article class="rules">
+        <span class="eyebrow" data-t="d14">Правила разработки</span>
+        <ol>
+          <li data-t="d15">Ничего не выдумывать. У каждой детали есть источник и класс достоверности от A до F или X.</li>
+          <li data-t="d16">Реальная геометрия важнее удобства левел-дизайна.</li>
+          <li data-t="d17">Снимки Google и Яндекса служат только справкой и не попадают в игру.</li>
+          <li data-t="d18">Звук и музыка создаются вручную, без ИИ.</li>
+          <li data-t="d19">Город растёт кольцами: Заречная, Ворошиловский район, соседние районы, весь Донецк. Сделанное не переделывается.</li>
+          <li data-t="d31">Неизвестное остаётся помеченным. Оценка высоты не выдаётся за факт, а номер дома или вывеска появляются только с источником класса C и выше.</li>
+        </ol>
+      </article>
     </div>
-    <figure class="player">
-      <div class="yt"><button type="button" class="yt-poster" id="ytPoster" aria-label="Play: Donetsk Ukraine - Before The War Started on a Historic City">
-        <span class="yt-bg" style="background-image:url(https://upload.wikimedia.org/wikipedia/commons/3/36/%D0%A1%D0%BF%D0%B0%D1%81%D0%BE-%D0%9F%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%BA%D0%B0%D1%84%D0%B5%D0%B4%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_%28%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA%29._%D0%90%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0._01.jpg)"></span>
-        <span class="yt-meta"><span class="mono yt-k" data-t="w18">Документальный фильм · 2012 · EN</span><span class="yt-t">Donetsk, Ukraine</span><span class="yt-s" data-t="w19">Город до войны</span></span>
-        <span class="yt-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>
-      </button></div>
-      <figcaption><span data-t="w8">Документальный фильм на английском, снят в 2012 году: Донецк, каким он был до войны.</span> <a class="mono" style="color:#8a979f" href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BF%D0%B0%D1%81%D0%BE-%D0%9F%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%BA%D0%B0%D1%84%D0%B5%D0%B4%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_(%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA)._%D0%90%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0._01.jpg" target="_blank" rel="noopener"><span data-t="w20">Обложка</span>: © MilenaV601 · CC BY-SA 4.0</a> <a class="mono" href="https://www.youtube.com/watch?v=3lj1tFT3wGw" target="_blank" rel="noopener">Davito Daveeni · YouTube ↗</a></figcaption>
-    </figure>
-    <div class="thanks"><p data-t="w11">Спасибо Davito Daveeni за этот фильм. Он сохранил Донецк 2012 года, большой, живой и плотно населённый город, таким, каким его помнят сотни тысяч людей.</p><a class="btn ghost" href="https://www.youtube.com/@DavitoDaveeni" target="_blank" rel="noopener"><span data-t="w12">YouTube-канал Davito Daveeni</span> ↗</a></div>
-    <p class="mono why-src"><span data-t="w9">Источники:</span> <a href="https://en.wikipedia.org/wiki/Donetsk" target="_blank" rel="noopener">Wikipedia: Donetsk</a> · <a href="https://en.wikipedia.org/wiki/Humanitarian_situation_during_the_war_in_Donbas" target="_blank" rel="noopener">Wikipedia: Humanitarian impact of the war in Donbas</a></p>
+<div class="shelf">
+<div><span class="eyebrow" data-t="g30">Звуковой дневник</span><h3 data-t="g31">Полка пока пустая</h3><p data-t="g32">Сюда лягут мои первые звуковые наброски для Donetsk 2011. У каждой записи будет дата и пара слов о том, что я чувствовал, когда её делал. Без ИИ.</p></div>
+<ol class="slots"><li><span class="mono">01</span><i></i><em data-t="g33">скоро</em></li><li><span class="mono">02</span><i></i><em data-t="g33">скоро</em></li><li><span class="mono">03</span><i></i><em data-t="g33">скоро</em></li></ol>
+</div>
+    <div class="devlog">
+      <span class="eyebrow" style="color:var(--muted)" data-t="d20">Журнал разработки</span>
+      <ol>
+        <li><time class="mono">13.09.2026</time><span data-t="d21">Снимок OpenStreetMap: 8 508 элементов, эталонная карта центра 4,37 × 2,84 км.</span></li>
+        <li><time class="mono">14.09.2026</time><span data-t="d22">Точка отсчёта подтверждена: Зарічна, 33, 47.9927461 N, 37.8183736 E.</span></li>
+        <li><time class="mono">21.09.2026</time><span data-t="d23">Панорамы Street View октября 2011 пройдены по Заречной в обе стороны. Аудит 126 контуров прошёл без пересечений.</span></li>
+        <li><time class="mono">22.09.2026</time><span data-t="d24">Unity-прототип: 6 маршрутов на 1 200 м, 1 002 замера земли, тестовые сборки Windows и Android.</span></li>
+        <li><time class="mono">23.09.2026</time><span data-t="d25">Переход на Unreal Engine 5.8.3: сборка Development Editor прошла, игра запустилась на DX11. Решение DEC-0001: начинаю First Playable, исследование идёт параллельно.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d28">Первый Windows-плеер с меню паузы, сохранением и загрузкой. Этюд фасада 54 м у дома 33 и восемь кадров прямо из Unreal.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d26">Запущен сайт проекта на четырёх языках.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d29">Рабочий квартал Заречной и Донецкой 280 × 660 м: 189 объёмов, рельеф SRTM и непрерывный коридор 412 м по шести панорамам октября 2011. Пройдены 18 проверок поверхностей, маршруты ≈ 564 м вдоль каждой улицы и 38 GIS-тестов.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d30">Сверка OSM 2012 года с сегодняшней картой: 91 кандидат, 18 проверено. Ни один не попал в канон 2011 года без датированных снимков.</span></li>
+        <li class="now"><time class="mono">26.09.2026</time><span data-t="d32">На сайте появились 3D-квартал с режимом доказательств, прогулка по Заречной, игра «Угадай место» и полка звукового дневника.</span></li>
+      </ol>
+    </div>
   </div>
 </section>
-<section id="more" class="more">
+<section id="method">
 <div class="wrap">
-<div class="head"><div><div class="code"><b>02</b><span data-t="c0">Дальше</span></div><h2 data-t="c1">Что ещё на сайте</h2></div></div>
-<div class="doors"><a class="door" href="city.html"><span class="door-img"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Panorama25.jpg/1280px-Panorama25.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono">© Kirill Fandeev · CC BY-SA 3.0</small></span><span class="door-body"><b data-t="n2">Город</b><span data-t="c2">Фотоархив Донецка до 2014 года, игра «Угадай место» и карта памяти, куда можно добавить своё воспоминание.</span><i class="mono">→</i></span></a><a class="door" href="model.html"><span class="door-img"><img src="img/ue/southern_corridor.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono">Unreal Engine 5.8</small></span><span class="door-body"><b data-t="n3">Реконструкция</b><span data-t="c3">3D-квартал в браузере, прогулка по Заречной, панорамы октября 2011 года и кадры из Unreal Engine 5.8.</span><i class="mono">→</i></span></a><a class="door" href="dev.html"><span class="door-img"><img src="img/ue/quarter_top.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono">Unreal Engine 5.8</small></span><span class="door-body"><b data-t="n4">Разработка</b><span data-t="c4">Журнал разработки, звук без ИИ, метод доказательств, движок и план до целого города.</span><i class="mono">→</i></span></a></div>
+<div class="head">
+<div><div class="code"><b>02</b><span data-t="t82">Метод</span></div><h2 data-t="t83">Ничего не выдумано</h2></div>
+<p class="lede" data-t="t84">У каждой детали есть класс доказательности. Если окно не видно на панораме, его нет в модели. Если размер оценён на глаз, это записано рядом с ним. Так реконструкция остаётся честной при росте до масштаба города.</p>
+</div>
+<div class="classes">
+<div class="cls"><div class="sw" style="background:var(--moss)"></div><h3 data-t="t85">Наблюдено в 2011</h3><p data-t="t86">Видно на панораме октября 2011: материал, цвет, форма, число окон.</p><span class="ex" data-t="t87">90 опорных объектов · 419 элементов фасадов</span></div>
+<div class="cls"><div class="sw" style="background:var(--steel)"></div><h3 data-t="t88">Текущий контур</h3><p data-t="t89">Пятна зданий и оси улиц из OpenStreetMap. Это опора для геометрии, а не доказательство состояния 2011 года.</p><span class="ex" data-t="t90">126 контуров · снимок 22.09.2026</span></div>
+<div class="cls"><div class="sw" style="background:var(--amber)"></div><h3 data-t="t91">Авторская оценка</h3><p data-t="t92">Высоты, размеры окон, положения деревьев. Помечены в данных и заменяются, как только найден источник.</p><span class="ex" data-t="t93">71 дерево · 847 столбиков · 106 крыш</span></div>
+<div class="cls"><div class="sw" style="background:repeating-linear-gradient(90deg,var(--muted) 0 6px,transparent 6px 10px)"></div><h3 data-t="t94">Не восстанавливается</h3><p data-t="t95">Скрытые фасады, интерьеры, ремонт асфальта, чьи позиции нельзя установить по кадру.</p><span class="ex" data-t="t96">скрытые окна и двери не придумываются</span></div>
+</div>
+<div aria-label="Шкала достоверности источников" class="grades" data-ta="aria-label:a97">
+<div class="gr-head"><span class="eyebrow" data-t="t98" style="color:var(--muted)">Шкала достоверности в реестре источников</span></div>
+<div class="gr-bar">
+<div class="g" style="--c:var(--moss)"><b>A</b><span data-t="t99">подтверждено для 2011</span></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 70%,var(--amber))"><b>B</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 40%,var(--amber))"><b>C</b></div>
+<div class="g" style="--c:var(--amber)"><b>D</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--amber) 60%,var(--steel))"><b>E</b></div>
+<div class="g" style="--c:var(--steel)"><b>F</b><span data-t="t100">только современные данные</span></div>
+<div class="g x" style="--c:var(--muted)"><b>X</b><span data-t="t101">закрытые источники</span></div>
+</div>
+<p class="mono" data-t="t102" style="color:var(--muted)">Google и Яндекс используются только как визуальная справка. Их снимки не попадают в игру.</p>
+</div>
+<div class="pipeline">
+<div><b data-t="t103">Источник</b><span>OSM API, SRTM3, Street View 10.2011</span></div>
+<div><b data-t="t104">Реестр</b><span data-t="t105">JSON с датой, хэшем и пределами</span></div>
+<div><b>GIS</b><span data-t="t106">ENU-метры от точки Зарічна, 33</span></div>
+<div><b>Graybox</b><span data-t="t107">Blender, скрипты сборки</span></div>
+<div><b data-t="t108">Проверка</b><span data-t="t109">аудит контуров, земля, коллизии</span></div>
+<div><b data-t="t110">Арт</b><span data-t="t111">материалы и детали по наблюдениям</span></div>
+<div><b data-t="t112">Движок</b><span>Unreal Engine 5.8</span></div>
+</div>
+<figure class="srccmp">
+<img alt="Сравнение планов OSM: сегодня и июль 2011" data-ta="alt:m3" loading="lazy" src="img/ue/source_plan_comparison.jpg"/>
+<figcaption><span class="eyebrow" data-t="m1">Конфликт C-04 открыт</span><p data-t="m2">Белые линии: сегодняшняя карта OSM. Оранжевые: версии той же базы, действовавшие в июле 2011 года. Расхождение доходит до 3,23 м на Заречной и 7,92 м на Донецкой. Это не доказывает, что дороги сдвинулись: могла измениться точность карты. Обе версии сохранены, пока спор не решит датированный источник.</p></figcaption>
+</figure>
+</div>
+</section>
+<section id="build">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>03</b><span data-t="t113">Движок</span></div><h2 data-t="t114">От прототипа к Unreal Engine 5.8</h2></div>
+<p class="lede" data-t="t115">Сначала Заречную собрали в быстром Unity-прототипе. Теперь проект живёт в Unreal Engine 5.8.3 на C++, а модели остаются редактируемыми в Blender. Координаты, реестр источников и сборочные скрипты перешли без изменений. Вся ранняя история Unity и Blender сохранена в архивной ветке.</p>
+</div>
+<div class="engines">
+<div class="eng now">
+<div class="eng-top"><span class="status wip" data-t="t116">текущий движок</span><span class="mono">2026 →</span></div>
+<h3>Unreal Engine 5.8</h3>
+<p data-t="t117">Основная платформа Donetsk 2011. При открытии проекта стартует играбельный квартал L_ZarechnaQuarter, по нему уже можно ходить. Системы города (жители, трафик, машины, интерьеры) обкатываются отдельно, в синтетическом тестовом районе, и не попадают в реконструкцию, пока для них нет источников.</p>
+<table>
+<tr><th data-t="t118">Версия</th><td class="mono">UE 5.8.3 · C++ · DX11</td></tr>
+<tr><th data-t="t119">Стартовая карта</th><td class="mono">L_ZarechnaQuarter</td></tr>
+<tr><th data-t="t120">Рабочий кадр</th><td data-t="t121">280 × 660 м, 189 объёмов, коридор 412 м</td></tr>
+<tr><th data-t="t122">Проверки</th><td data-t="t123">18 поверхностей, маршруты ≈ 564 м, 38 GIS-тестов</td></tr>
+<tr><th data-t="t124">Сборка</th><td data-t="t125">Windows-плеер: пауза, сохранение, загрузка</td></tr>
+</table>
+</div>
+<div class="eng past">
+<div class="eng-top"><span class="status done" data-t="t126">прототип завершён</span><span class="mono">09.2026</span></div>
+<h3 data-t="t127">Unity-прототип Заречной</h3>
+<p data-t="t128">Проверка метода на реальном квартале. Данные, модели Blender и выводы переносятся в Unreal.</p>
+<table>
+<tr><th data-t="t129">Сцена</th><td data-t="t130">квартал 400 м, коридор 210 м, 19 участков</td></tr>
+<tr><th data-t="t131">Геометрия</th><td data-t="t132">234 415 / 46 930 треугольников (LOD0 / LOD1)</td></tr>
+<tr><th data-t="t133">Коллизии</th><td data-t="t134">198 коллайдеров · 11 502 треугольника</td></tr>
+<tr><th data-t="t135">Материалы</th><td data-t="t136">20 семейств поверхностей, 10 ассетов ambientCG CC0</td></tr>
+</table>
+<ul class="checks">
+<li><span class="status done" data-t="t137">пройдено</span><span data-t="t138">6 маршрутов контроллера, 1 200 м, 1 002 замера земли</span></li>
+<li><span class="status done" data-t="t139">пройдено</span><span data-t="t140">Аудит 126 контуров: нет пересечений и вылетов крыш</span></li>
+<li><span class="status done" data-t="t141">пройдено</span><span data-t="t142">Blender/FBX: метрика, UV, земля в 61 точке, коллизия фасадов</span></li>
+<li><span class="status done" data-t="t143">пройдено</span><span data-t="t144">Тестовые сборки Windows и Android</span></li>
+</ul>
+</div>
+</div>
+<div class="carry sys">
+<span class="eyebrow" data-t="b1" style="color:var(--muted)">Системы в коде · Source/Donetsk2011</span>
+<div class="carry-row mono"><span>Core</span><span>WorldState / Save</span><span>GIS</span><span>Player</span><span>Vehicles</span><span>Traffic</span><span>Population</span><span>Interaction</span><span>Interior</span><span>Memory</span><span>Narrative</span><span>Environment</span><span>Audio</span><span>UI</span></div>
+<p data-t="b2" style="color:var(--ink-2);font-size:14px">Данные игры лежат в JSON: миссии, диалоги, эхо памяти, жители, машины, интерьеры, магазины и вещи. Решения по архитектуре записаны в ADR-0001…0006: мир из базы данных, простая аркадная машина до Chaos, акторы до Mass, интерьеры в реальном месте.</p>
+</div>
+</div>
+</section>
+<section id="roadmap">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>04</b><span data-t="t153">План</span></div><h2 data-t="t154">Дорога к целому городу</h2></div>
+<p class="lede" data-t="t155">Сейчас идёт короткий цельный маршрут внутри квартала с одним бытовым действием. Потом вертикальный срез: играбельная мини-версия финальной игры. Дальше та же технология расходится по району и городу.</p>
+</div>
+<blockquote class="north"><span class="eyebrow" data-t="r1">Главная цель</span><p data-t="r2">«Это не город по мотивам Донецка. Это Донецк».</p><small data-t="r3">Через 20–30 минут игры человек должен почувствовать две вещи сразу: «я в настоящем Донецке» и «это живой открытый мир, а не музей».</small></blockquote>
+<div class="road-map" id="roadmapEl"></div>
+<div class="layers">
+<div><span class="eyebrow" data-t="t172">Слой 1</span><h3 data-t="t173">Живой Донецк 2011</h3><p data-t="t174" style="color:var(--ink-2)">Системный открытый мир: трафик, транспорт, распорядок жителей, экономика, реакция города и миссии. Бой не в центре игры. Реальная геометрия важнее удобства левел-дизайна.</p></div>
+<div><span class="eyebrow" data-t="t175">Слой 2</span><h3 data-t="t176">Слой памяти</h3><p data-t="t177" style="color:var(--ink-2)">«Эхо памяти»: вспышки прошлых лет в реальных местах Заречной. Город, увиденный глазами того, кто здесь вырос.</p></div>
+</div>
+<div class="pillars"><span class="eyebrow" data-t="p0" style="color:var(--muted)">Пять опор игры</span><ol><li><b data-t="p1">Жить в настоящем городе</b><span data-t="p2">Ходить, ездить на трамвае и маршрутке, покупать хлеб, сидеть на лавочке.</span></li><li><b data-t="p3">Город живёт без тебя</b><span data-t="p4">У жителей есть дом, работа и распорядок. Дворы живут своим ритмом по времени суток и погоде.</span></li><li><b data-t="p5">Свобода с последствиями</b><span data-t="p6">Мир замечает поступки через свидетелей, репутацию и милицию и отвечает соразмерно.</span></li><li><b data-t="p7">Память как открытие</b><span data-t="p8">Реальные места открывают воспоминания. Исследуя город, находишь личную историю.</span></li><li><b data-t="p9">Маленькие человеческие ставки</b><span data-t="p10">Семья, друзья, соседи, работа и район. Никаких криминальных империй.</span></li></ol></div>
+</div>
+</section>
+<section id="sources" style="border-bottom:0">
+<div class="wrap">
+<div class="head"><div><div class="code"><b>05</b><span data-t="t178">Источники</span></div><h2 data-t="t179">Реестр источников</h2></div></div>
+<div class="srcs" id="srcs">
+<p data-t="t180"><b>OpenStreetMap.</b> Контуры зданий, дороги, рельсы, вода. © участники OpenStreetMap, ODbL 1.0. Снимок карты 13.09.2026, квартала 22.09.2026. <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">openstreetmap.org/copyright</a></p>
+<p data-t="t181"><b>SRTM3 v2.1, лист N47E037.</b> Съёмка 11–22.02.2000, EGM96, зеркало Kurviger архива USGS. SHA-256 3c78466e…6d58. <a href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-non" rel="noopener" target="_blank">USGS EROS</a></p>
+<p data-t="t182"><b>Google Street View, октябрь 2011.</b> 8 панорам Заречной, только визуальные наблюдения. Изображения Google не хранятся и не распространяются.</p>
+<p data-t="t183"><b>Королевская башня.</b> Краеведческая статья от 16.08.2012 подтверждает завершение до 2011 года. <a href="https://donjetsk.com/homes/1414-korolevskaya-bashnya.html" rel="noopener" target="_blank">donjetsk.com</a></p>
+<p data-t="t184"><b>ambientCG.</b> 10 CC0-материалов для 16 привязок поверхностей. <a href="https://docs.ambientcg.com/license/" rel="noopener" target="_blank">Лицензия</a></p>
+<p data-t="t185"><b>Wikimedia Commons.</b> Исторические планы Юзовки, Сталино и Донецка; авторы и лицензии указаны у каждой карты в атласе.</p>
+</div>
 </div>
 </section>
 </main>
