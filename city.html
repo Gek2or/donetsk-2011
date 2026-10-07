@@ -1,7 +1,7 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The city · Donetsk 2011</title><meta name="description" content="Donetsk before 2014 in 22 photographs, a “Guess the place” game and a memory map where anyone can leave a memory."><link rel="canonical" href="https://gek2or.github.io/donetsk-2011/city.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Donetsk 2011"><meta property="og:title" content="The city · Donetsk 2011"><meta property="og:description" content="Donetsk before 2014 in 22 photographs, a “Guess the place” game and a memory map where anyone can leave a memory."><meta property="og:url" content="https://gek2or.github.io/donetsk-2011/city.html"><meta property="og:image" content="https://gek2or.github.io/donetsk-2011/assets/og/city.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_US"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="uk_UA"><meta property="og:locale:alternate" content="fi_FI"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#10171d"><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700;900&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=6ec0d068"></head><body data-pt="n2">
+<link rel="stylesheet" href="assets/site.css?v=af4500da"></head><body data-pt="n2">
 
 <div class="progress" id="progress" aria-hidden="true"></div>
 <nav aria-label="Разделы" class="nav" data-ta="aria-label:a1">
@@ -72,8 +72,11 @@
 <p class="mono mm-coord" data-t="mm5">Нажми на карту, чтобы выбрать место</p>
 <label><span data-t="mm7">Место, например «двор у школы»</span><input id="mmPlace" type="text" maxlength="120"/></label>
 <label><span data-t="mm8">Год или годы</span><input id="mmYear" type="text" maxlength="40" placeholder="2003"/></label>
-<div class="mm-acts"><a class="btn primary off" id="mmGo" target="_blank" rel="noopener" data-t="mm9">Написать на GitHub ↗</a><button type="button" class="btn ghost" id="mmCancel" data-t="mm6">Отмена</button></div>
-<p class="mm-note" data-t="mm10">Нужен аккаунт GitHub. Заявка сразу видна в разделе Issues репозитория, а на карту попадает после проверки.</p>
+<label><span data-t="mm21">Воспоминание</span><textarea id="mmText" rows="4" maxlength="1500"></textarea></label>
+<label><span data-t="mm22">Как подписать (необязательно)</span><input id="mmName" type="text" maxlength="60"/></label>
+<label class="mm-ok"><input id="mmOk" type="checkbox"/><span data-t="mm24">Согласен(на), что запись может появиться на сайте, и в ней нет чужих личных данных</span></label>
+<div class="mm-acts"><a class="btn primary off" id="mmMail" data-t="mm23">Отправить письмом ✉</a><a class="btn ghost off" id="mmGo" target="_blank" rel="noopener" data-t="mm9">Через GitHub ↗</a><button type="button" class="btn ghost" id="mmCancel" data-t="mm6">Отмена</button></div>
+<p class="mm-note" data-t="mm10">Аккаунт не нужен: кнопка «Отправить письмом» откроет почту с уже заполненным письмом. Если есть GitHub, можно оставить заявку там, она сразу видна публично. На карту всё попадает после проверки.</p>
 </div>
 <p class="mm-rules" data-t="mm11">О людях, местах и жизни города. Без чужих имён, адресов и телефонов, без оскорблений и политических споров.</p>
 <p class="eyebrow mm-count" style="color:var(--muted)"></p>
@@ -81,7 +84,7 @@
 </div>
 </div>
 <p class="mono mm-src" data-t="mm19">Карта: эталонная карта проекта 4,37 × 2,84 км из 8 508 элементов © OpenStreetMap (ODbL), в метрах от точки у дома 33. Воспоминания за пределами кадра видны в списке.</p>
-<div hidden id="mmstr"><span data-t="mm12">Одобренных воспоминаний пока нет. Стань первым.</span><span data-t="mm13">Воспоминаний на карте: {n}</span><span data-t="mm14">Дом 33 · здесь начинается проект</span><span data-t="mm20">Выбрано: {lat}, {lon}</span></div>
+<div hidden id="mmstr"><span data-t="mm12">Одобренных воспоминаний пока нет. Стань первым.</span><span data-t="mm13">Воспоминаний на карте: {n}</span><span data-t="mm14">Дом 33 · здесь начинается проект</span><span data-t="mm20">Выбрано: {lat}, {lon}</span><span data-t="mm25">Место</span><span data-t="mm26">Год</span><span data-t="mm27">Координаты</span><span data-t="mm28">Воспоминание</span><span data-t="mm29">Подпись</span><span data-t="mm30">Я согласен(на), что запись может появиться на сайте Donetsk 2011, и в ней нет чужих личных данных.</span><span data-t="mm31">Выбери точку на карте и отметь согласие</span><span data-t="gr1">Знаешь это место? Добавь воспоминание на карту →</span></div>
 </div>
 </section>
 </main>
@@ -90,7 +93,7 @@
 
 
 
-<script src="assets/data.js?v=bff1dfbd"></script>
-<script src="assets/app.js?v=3675c598"></script>
+<script src="assets/data.js?v=9fe5e2cb"></script>
+<script src="assets/app.js?v=ff3ed9f3"></script>
 
 </body></html>

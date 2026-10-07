@@ -201,8 +201,9 @@ function render(){if(!box)return;
   const id=st.ids[st.i],ph=P[id];const ok=CAT[id];
   box.innerHTML=`<figure class="gs-ph"><img src="${ph[0]}" alt="" referrerpolicy="no-referrer"><figcaption class="mono">© ${esc(ph[2])} · ${esc(ph[3])}${st.ans?` · <a href="${ph[1]}" target="_blank" rel="noopener">Commons ↗</a>`:''}</figcaption></figure>
   <div class="gs-side"><span class="eyebrow">${T('g16').replace('{i}',st.i+1).replace('{n}',st.ids.length)}</span><div class="gs-opts">${st.opts.map(o=>`<button type="button" data-o="${o}" class="${st.ans?(o===ok?'ok':(o===st.ans?'bad':'')):''}" ${st.ans?'disabled':''}>${T(o)}</button>`).join('')}</div>
-  <p class="gs-fb" aria-live="polite">${st.ans?(st.ans===ok?T('g6'):T('g7').replace('{x}',T(ok))):''}</p>${st.ans&&window.__PHCAP?`<p class="gs-cap">${esc(window.__PHCAP[id])}</p>`:''}${st.ans?`<button type="button" class="btn ghost" id="gsNext">${T('g8')}</button>`:''}<div class="gs-dots">${st.ids.map((_,j)=>`<i class="${j<st.i?'d':(j===st.i?'c':'')}"></i>`).join('')}</div></div>`;
+  <p class="gs-fb" aria-live="polite">${st.ans?(st.ans===ok?T('g6'):T('g7').replace('{x}',T(ok))):''}</p>${st.ans&&window.__mm?`<a class="gs-mem" href="#memory" id="gsMem">${esc(T('gr1'))}</a>`:''}${st.ans&&window.__PHCAP?`<p class="gs-cap">${esc(window.__PHCAP[id])}</p>`:''}${st.ans?`<button type="button" class="btn ghost" id="gsNext">${T('g8')}</button>`:''}<div class="gs-dots">${st.ids.map((_,j)=>`<i class="${j<st.i?'d':(j===st.i?'c':'')}"></i>`).join('')}</div></div>`;
   box.querySelectorAll('.gs-opts button').forEach(b=>b.onclick=()=>{if(st.ans)return;st.ans=b.dataset.o;if(st.ans===ok)st.score++;render();const nx=box.querySelector('#gsNext');if(nx)nx.focus()});
+  const gm=box.querySelector('#gsMem');if(gm)gm.onclick=e=>{e.preventDefault();window.__mm.add(T(ok))};
   const nx=box.querySelector('#gsNext');if(nx)nx.onclick=()=>{st.i++;st.i<st.ids.length?round():render()}}
 /* ---------- what's new ---------- */
 const KEY='d11-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
@@ -284,6 +285,29 @@ all();
   const done=()=>{const S=window.__d11S||{};const old=b.innerHTML;b.classList.add('ok');b.textContent=S.pr7||'✓';setTimeout(()=>{b.classList.remove('ok');b.innerHTML=S.pr6||old},1600)};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,done);else{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy')}catch(e){}done()}}))})();
 
+(function(){const m=document.getElementById('prMail');if(!m)return;const e=m.dataset.u+'@'+m.dataset.d;m.href='mailto:'+e+'?subject=Donetsk%202011';m.textContent=e;})();
+
+/* ---------- v3.4: before/after slider ---------- */
+(function(){
+function wire(root){(root||document).querySelectorAll('.cmp:not([data-w])').forEach(f=>{f.dataset.w='1';const box=f.querySelector('.cmp-box'),r=f.querySelector('.cmp-r');if(!box||!r)return;
+  const set=v=>{v=Math.max(0,Math.min(100,v));f.style.setProperty('--p',v+'%');r.value=String(Math.round(v))};
+  let drag=false;const mv=e=>{if(!drag)return;const b=box.getBoundingClientRect();set((e.clientX-b.left)/b.width*100)};
+  box.addEventListener('pointerdown',e=>{if(e.button)return;drag=true;try{box.setPointerCapture(e.pointerId)}catch(_){}mv(e)});
+  box.addEventListener('pointermove',mv);
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>box.addEventListener(t,()=>{drag=false}));
+  r.addEventListener('input',()=>set(+r.value));
+  box.addEventListener('click',()=>r.focus({preventScroll:true}))})}
+window.__cmp=wire;wire();
+const ba=document.getElementById('ba');
+if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySelector('.cmp-b');
+  ba.querySelectorAll('.ba-tabs button').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.k;a.src='img/ue2/'+k+'.jpg';b.src='img/ue/'+k+'.jpg';f.style.setProperty('--p','50%');f.querySelector('.cmp-r').value='50';ba.querySelectorAll('.ba-tabs button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)))}))}
+})();
+/* ---------- v3.4: hero video preview ---------- */
+(function(){const v=document.querySelector('.hero-vid video');if(!v)return;
+  const rm=matchMedia('(prefers-reduced-motion:reduce)').matches,sd=navigator.connection&&navigator.connection.saveData;if(rm||sd||!('IntersectionObserver' in window))return;
+  let loaded=false;
+  new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){if(!loaded){v.querySelectorAll('source').forEach(x=>{x.src=x.dataset.src});v.load();loaded=true}const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{})}else v.pause()}),{threshold:.2}).observe(v)})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';
@@ -314,11 +338,23 @@ function renderList(){count.textContent=items.length?T('mm13').replace('{n}',ite
   list.innerHTML=items.map((m,i)=>`<li class="${active===i?'act':''}"><button type="button" data-i="${i}"><span class="mono">${esc(m.year||'')}</span><b>${esc(m.place)}</b><em>${esc((m.text||'').slice(0,140))}${(m.text||'').length>140?'…':''}</em></button></li>`).join('');
   list.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,m=items[i];active=i;showCard(m);if(m.lat!=null){const [x,y]=toXY(m.lat,m.lon);center(x,y,Math.max(z,3))}renderPins();renderList();box.scrollIntoView({block:'center',behavior:'smooth'})})}
 /* add flow */
-const url=()=>{const [lat,lon]=draft?toLL(draft[0],draft[1]):[null,null];const place=panel.querySelector('#mmPlace').value.trim(),year=panel.querySelector('#mmYear').value.trim();const q=new URLSearchParams({template:'memory.yml',title:'[Память] '+(place||'')});if(place)q.set('place',place);if(lat!=null){q.set('lat',lat.toFixed(6));q.set('lon',lon.toFixed(6))}if(year)q.set('year',year);return `${REPO}/issues/new?${q}`};
-function renderPanel(){const [lat,lon]=draft?toLL(draft[0],draft[1]):[0,0];panel.querySelector('.mm-coord').textContent=draft?T('mm20').replace('{lat}',lat.toFixed(5)).replace('{lon}',lon.toFixed(5)):T('mm5');const a=panel.querySelector('#mmGo');a.href=url();a.classList.toggle('off',!draft)}
-sec.querySelector('#mmAdd').addEventListener('click',()=>{adding=true;box.classList.add('adding');panel.hidden=false;renderPanel()});
+const val=id=>{const e=panel.querySelector(id);return e?e.value.trim():''};
+const url=()=>{const [lat,lon]=draft?toLL(draft[0],draft[1]):[null,null];const place=val('#mmPlace'),year=val('#mmYear'),text=val('#mmText'),name=val('#mmName');const q=new URLSearchParams({template:'memory.yml',title:'[Память] '+(place||'')});if(place)q.set('place',place);if(lat!=null){q.set('lat',lat.toFixed(6));q.set('lon',lon.toFixed(6))}if(year)q.set('year',year);if(text)q.set('memory',text.slice(0,1200));if(name)q.set('name',name);return `${REPO}/issues/new?${q}`};
+const MAILU='stanislavkosytskyy',MAILD='gmail.com';
+const mail=()=>{const [lat,lon]=draft?toLL(draft[0],draft[1]):[null,null];const place=val('#mmPlace'),year=val('#mmYear'),text=val('#mmText'),name=val('#mmName');
+  const body=[`${T('mm25')}: ${place}`,`${T('mm26')}: ${year}`,`${T('mm27')}: ${lat!=null?lat.toFixed(6)+', '+lon.toFixed(6):''}`,'',`${T('mm28')}:`,text||'','',`${T('mm29')}: ${name}`,'','— '+T('mm30')].join('\n');
+  return 'mailto:'+MAILU+'@'+MAILD+'?subject='+encodeURIComponent('[Память] '+(place||'Donetsk 2011'))+'&body='+encodeURIComponent(body)};
+function renderPanel(){const [lat,lon]=draft?toLL(draft[0],draft[1]):[0,0];panel.querySelector('.mm-coord').textContent=draft?T('mm20').replace('{lat}',lat.toFixed(5)).replace('{lon}',lon.toFixed(5)):T('mm5');
+  const ok=!!draft,cons=panel.querySelector('#mmOk').checked;
+  const a=panel.querySelector('#mmGo');a.href=url();a.classList.toggle('off',!ok);
+  const ml=panel.querySelector('#mmMail');ml.href=mail();ml.classList.toggle('off',!(ok&&cons));ml.title=(ok&&cons)?'':T('mm31');ml.setAttribute('aria-disabled',String(!(ok&&cons)))}
+function startAdd(place){adding=true;box.classList.add('adding');panel.hidden=false;if(place!=null){const pl=panel.querySelector('#mmPlace');pl.value=place}renderPanel()}
+window.__mm={add:place=>{startAdd(place);if(box.classList.contains('lock')){box.classList.remove('lock');act.hidden=true;done.hidden=false}sec.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});setTimeout(()=>{const t=panel.querySelector('#mmText');if(t)t.focus({preventScroll:true})},500)}};
+sec.querySelector('#mmAdd').addEventListener('click',()=>startAdd());
 sec.querySelector('#mmCancel').addEventListener('click',()=>{adding=false;draft=null;box.classList.remove('adding');panel.hidden=true;renderPins()});
-panel.querySelectorAll('input').forEach(i=>i.addEventListener('input',renderPanel));
+panel.querySelectorAll('input,textarea').forEach(i=>{i.addEventListener('input',renderPanel);i.addEventListener('change',renderPanel)});
+panel.querySelector('#mmMail').addEventListener('click',e=>{if(e.currentTarget.classList.contains('off')){e.preventDefault();const c=panel.querySelector('.mm-coord');if(!draft){c.classList.remove('blink');void c.offsetWidth;c.classList.add('blink')}else panel.querySelector('#mmOk').focus()}});
+panel.querySelector('#mmGo').addEventListener('click',e=>{if(e.currentTarget.classList.contains('off'))e.preventDefault()});
 /* input */
 const pts=new Map();let moved=0,lastDist=0;
 box.addEventListener('pointerdown',e=>{if(box.classList.contains('lock')||e.target.closest('button'))return;box.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(pts.size===2){const [a,b]=[...pts.values()];lastDist=Math.hypot(a[0]-b[0],a[1]-b[1])}});
@@ -343,13 +379,14 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-07-v34',d:'2026-10-07',ty:'site',v:'v3.4',img:'assets/hero/quarter.jpg',lab:'rn1',cta:['dev.html#ba','uc8']},
  {id:'2026-10-01-press',d:'2026-10-01',ty:'site',v:'v3.3',img:'assets/og/press.jpg',lab:'n6',cta:['press.html','pr2']},
  {id:'2026-09-30-feed',d:'2026-09-30',ty:'site',v:'v3.1'},
  {id:'2026-09-30-north',d:'2026-09-30',ty:'game',v:'AP-01',img:'img/ue2/z33_2011_gate_match.jpg',lab:'t57',cta:['dev.html#frames','uc6']},
  {id:'2026-09-30-v3',d:'2026-09-30',ty:'site',v:'v3.0',img:'img/render/overview.jpg',lab:'rn1',cta:['model.html#q3d','uc1']},
  {id:'2026-09-30-mobile',d:'2026-09-30',ty:'site',v:'v2.1'},
  {id:'2026-09-30-pages',d:'2026-09-30',ty:'site',v:'v2.0',cta:['index.html','uc2']},
- {id:'2026-09-29-planting',d:'2026-09-29',ty:'game',v:'AP-01'},
+ {id:'2026-09-29-planting',d:'2026-09-29',ty:'game',v:'AP-01',cmp:'southern_corridor',cta:['dev.html#ba','uc8']},
  {id:'2026-09-28-north',d:'2026-09-28',ty:'game',v:'AP-01',img:'img/ue2/northern_terrace.jpg',lab:'t57',cta:['dev.html#frames','uc6']},
  {id:'2026-09-28-memory',d:'2026-09-28',ty:'site',v:'v1.4',cta:['city.html#memory','uc3']},
  {id:'2026-09-26-interactive',d:'2026-09-26',ty:'site',v:'v1.3',img:'img/render/corridor.jpg',lab:'rn1',cta:['model.html#walk','uc4']},
@@ -364,7 +401,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v3.3',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V='v3.4',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
@@ -401,7 +438,7 @@ function controls(){const f=document.getElementById('updF');if(!f)return;
   const all=document.getElementById('updAll');if(all){const vis=shown();const every=vis.length&&vis.every(e=>open.has(e.id)||!hasBody(e));all.textContent=T(every?'u11':'u10');all.onclick=()=>{if(every)vis.forEach(e=>open.delete(e.id));else vis.forEach(e=>open.add(e.id));draw();controls()}}
   const v=document.getElementById('updVisit');if(v)v.textContent=firstVisit?T('u21'):(nNew?T('u19').replace('{n}',nNew):T('u20'))}
 const shown=()=>E.filter(e=>(filt==='all'||e.ty===filt)&&(!onlyNew||isNew(e)));
-const hasBody=e=>{const t=txt(e);return !!(e.img||e.cta||(t.n&&t.n.length)||(t.i&&t.i.length)||(t.f&&t.f.length))};
+const hasBody=e=>{const t=txt(e);return !!(e.img||e.cmp||e.cta||(t.n&&t.n.length)||(t.i&&t.i.length)||(t.f&&t.f.length))};
 function lists(t){return [['n','u12','n'],['i','u13','i'],['f','u14','f']].filter(([k])=>t[k]&&t[k].length).map(([k,h,c])=>`<div class="ul-grp ${c}"><h4 class="mono">${esc(T(h))}</h4><ul>${t[k].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
 function draw(){if(!list)return;const vis=shown();let html='',m='';
   if(!vis.length)html=`<li class="upd-empty">${esc(T('u28'))}</li>`;
@@ -413,10 +450,10 @@ function draw(){if(!list)return;const vis=shown();let html='',m='';
 <header class="upd-h"><time class="upd-date" datetime="${e.d}">${fmtD(e.d)}</time><span class="upd-v mono">${esc(T(TY[e.ty]))} · ${esc(e.v)}</span>${nw?`<span class="upd-new mono">${esc(T('u34'))}</span>`:''}
 <span class="upd-act"><button type="button" class="upd-share" data-id="${e.id}" aria-label="${esc(T('u18'))}" title="${esc(T('u18'))}">#</button>${body?`<button type="button" class="upd-tog" data-id="${e.id}" aria-expanded="${op}" aria-controls="ub-${e.id}"><span>${esc(T(op?'u16':'u15'))}</span><i aria-hidden="true"></i></button>`:''}</span></header>
 <h3>${esc(t.t)}</h3>${t.s?`<p class="upd-s">${esc(t.s)}</p>`:''}
-${body?`<div class="upd-body${e.img?' has-img':''}" id="ub-${e.id}"${op?'':' hidden'}>${e.img?`<figure class="upd-img"><img src="${e.img}" alt="" loading="lazy"><figcaption class="mono">${esc(T(e.lab||'rn1'))}</figcaption></figure>`:''}${lists(t)}${e.cta?`<a class="upd-cta" href="${e.cta[0]}">${esc(T(e.cta[1]))}</a>`:''}</div>`:''}
+${body?`<div class="upd-body${e.img?' has-img':''}" id="ub-${e.id}"${op?'':' hidden'}>${e.cmp?`<figure class="cmp upd-cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/${e.cmp}.jpg" alt="" loading="lazy"><img class="cmp-b" src="img/ue/${e.cmp}.jpg" alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono">${esc(T('cm1'))}</span><span class="cmp-l r mono">${esc(T('cm2'))}</span><input class="cmp-r" type="range" min="0" max="100" value="50" aria-label="${esc(T('cm3'))}"></div><figcaption class="mono">${esc(T('cm4'))}</figcaption></figure>`:''}${e.img?`<figure class="upd-img"><img src="${e.img}" alt="" loading="lazy"><figcaption class="mono">${esc(T(e.lab||'rn1'))}</figcaption></figure>`:''}${lists(t)}${e.cta?`<a class="upd-cta" href="${e.cta[0]}">${esc(T(e.cta[1]))}</a>`:''}</div>`:''}
 ${react(e)}
 </div></li>`});
-  list.innerHTML=html;wireReact();
+  list.innerHTML=html;wireReact();if(window.__cmp)window.__cmp(list);
   list.querySelectorAll('.upd-tog').forEach(b=>b.onclick=()=>{const id=b.dataset.id;if(open.has(id))open.delete(id);else open.add(id);const li=b.closest('.upd-e'),o=open.has(id);li.classList.toggle('open',o);b.setAttribute('aria-expanded',o);b.querySelector('span').textContent=T(o?'u16':'u15');li.querySelector('.upd-body').hidden=!o;controls()});
   list.querySelectorAll('.upd-share').forEach(b=>b.onclick=()=>{const url=location.href.split('#')[0]+'#u-'+b.dataset.id;const done=()=>toast(T('u17'));if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,()=>{history.replaceState(null,'','#u-'+b.dataset.id);done()});else{history.replaceState(null,'','#u-'+b.dataset.id);done()}})}
 let tt=0;function toast(s){let el=document.getElementById('updToast');if(!el){el=document.createElement('div');el.id='updToast';el.className='upd-toast mono';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=s;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),1800)}
