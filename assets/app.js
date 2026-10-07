@@ -186,7 +186,7 @@ addEventListener('scroll',()=>{const h=document.documentElement;$('#progress').s
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* ---------- guess the place ---------- */
-const box=document.getElementById('guess');
+const box=null;/* v3.5: replaced by quiz.js */
 const P=window.__PHOTOS||[];
 const CAT={1:'g10',2:'g10',3:'g11',4:'g11',20:'g11',5:'g12',19:'g12',18:'g12',6:'g13',7:'g13',8:'g14',17:'g14',14:'g40',15:'g41'};
 const CATS=['g10','g11','g12','g13','g14','g40','g41'];
@@ -379,6 +379,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-08-quiz',d:'2026-10-07',ty:'site',v:'v3.5',img:'img/render/plan_top.jpg',lab:'qz0',cta:['city.html#guessing','uc9']},
  {id:'2026-10-07-v34',d:'2026-10-07',ty:'site',v:'v3.4',img:'assets/hero/quarter.jpg',lab:'rn1',cta:['dev.html#ba','uc8']},
  {id:'2026-10-01-press',d:'2026-10-01',ty:'site',v:'v3.3',img:'assets/og/press.jpg',lab:'n6',cta:['press.html','pr2']},
  {id:'2026-09-30-feed',d:'2026-09-30',ty:'site',v:'v3.1'},
@@ -401,7 +402,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v3.4',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V='v3.5',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
@@ -497,4 +498,133 @@ addEventListener('d11data',all);
 all();deep();
 /* remember the newest entry: badges reset once the feed has been seen, first visits set a baseline */
 try{if(firstVisit||list)localStorage.setItem(KEY,LATEST)}catch(e){}
+})();
+
+;(()=>{
+/* ---------- v3.5: Donetsk quiz — place, map, year, photo of the day ---------- */
+const box=document.getElementById('guess'),tabs=document.getElementById('qzTabs');
+if(!box||!window.__QZ)return;
+let S=window.__d11S||{};const T=k=>S[k]||'';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const QZ=window.__QZ,LM=QZ.L;
+const P=QZ.P.map(a=>({id:a[0],k:a[1],src:a[2],pg:a[3],au:a[4],li:a[5],d:a[6],lat:a[7],lon:a[8]}));
+const KEYS=Object.keys(LM);
+const NAME={sherb:'g10',arena:'g11',pushkin:'g12',opera:'g14',artema:'g41'};
+const nm=k=>T(NAME[k]||('lm_'+k));
+const yr=p=>+p.d.slice(0,4);
+const lang=()=>(document.documentElement.lang||'ru').slice(0,2);
+const shuf=(a,r=Math.random)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const fmtN=(n,dg=0)=>{try{return n.toLocaleString(lang()==='uk'?'uk-UA':lang(),{maximumFractionDigits:dg,minimumFractionDigits:dg})}catch(e){return n.toFixed(dg)}};
+const fmtD=d=>{const p=d.split('-');if(p.length<3)return d;try{return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])).toLocaleDateString(lang()==='uk'?'uk-UA':lang(),{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})}catch(e){return d}};
+const dist=(a,b,c,d)=>{const R=6371,r=Math.PI/180,x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
+const fmtKm=km=>km<1?T('qz27').replace('{n}',fmtN(Math.round(km*1000/10)*10)):T('qz28').replace('{n}',fmtN(km,km<10?1:0));
+const pts=km=>Math.round(1000*Math.exp(-km/2));
+const sq=km=>km<=.3?5:km<=.75?4:km<=1.5?3:km<=3?2:km<=6?1:0;
+/* ---------- shared counters (same service as the update batteries) ---------- */
+const AB='https://abacus.jasoncameron.dev',NS='donetsk2011-gek2or';
+const hit=k=>fetch(`${AB}/hit/${NS}/${k}`).then(r=>r.ok?r.json():null).then(j=>j?j.value:null).catch(()=>null);
+const get=k=>fetch(`${AB}/get/${NS}/${k}`).then(r=>r.status===404?{value:0}:(r.ok?r.json():null)).then(j=>j?(j.value||0):null).catch(()=>null);
+async function count(base,ok){const [n,o]=await Promise.all([hit(base+'-n'),ok?hit(base+'-ok'):get(base+'-ok')]);return n==null||o==null?null:{n,o}}
+function statLine(el,s,key){if(!el)return;if(!s){el.textContent='';return}el.textContent=s.n<10?T('qz19').replace('{n}',s.n):T(key||'qz18').replace('{p}',Math.round(100*s.o/s.n)).replace('{n}',fmtN(s.n))}
+/* ---------- photo block ---------- */
+const photo=(p,reveal)=>`<figure class="gs-ph qz-ph"><img src="${esc(p.src)}" alt="" referrerpolicy="no-referrer" decoding="async"><figcaption class="mono">© ${esc(p.au)} · ${esc(p.li)}${reveal?` · <a href="${esc(p.pg)}" target="_blank" rel="noopener">Commons ↗</a>`:''}</figcaption></figure>`;
+const dots=(i,n)=>`<div class="gs-dots">${Array.from({length:n},(_,j)=>`<i class="${j<i?'d':(j===i?'c':'')}"></i>`).join('')}</div>`;
+/* ---------- city map with pan / zoom / pin ---------- */
+const MW=3277,MH=2557,W0=37.58,N0=48.13,KX=111320*Math.cos(48*Math.PI/180)/10,KY=111180/10;
+const toXY=(lat,lon)=>[(lon-W0)*KX,(N0-lat)*KY],toLL=(x,y)=>[N0-y/KY,W0+x/KX];
+function mapView(host,onPick){
+  host.innerHTML=`<div class="qz-map"><div class="qz-mi"><img src="maps/city_wide.svg" alt="" draggable="false" width="${MW}" height="${MH}"><div class="qz-pins"></div></div><div class="qz-zoom"><button type="button" data-z="1.5" aria-label="${esc(T('qz31'))}">+</button><button type="button" data-z="0.6667" aria-label="${esc(T('qz32'))}">−</button></div><p class="qz-osm mono">${esc(T('qz33'))}</p></div>`;
+  const box=host.querySelector('.qz-map'),inner=box.querySelector('.qz-mi'),pins=box.querySelector('.qz-pins');
+  let s=1,tx=0,ty=0,lock=false,guess=null,ans=null;
+  const minS=()=>Math.max(box.clientWidth/MW,box.clientHeight/MH);
+  const clamp=()=>{const w=box.clientWidth,h=box.clientHeight;s=Math.max(minS(),Math.min(3,s));tx=Math.min(0,Math.max(w-MW*s,tx));ty=Math.min(0,Math.max(h-MH*s,ty))};
+  const apply=()=>{clamp();inner.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;inner.style.setProperty('--iz',1/s)};
+  const center=(x,y,z)=>{if(z)s=z;tx=box.clientWidth/2-x*s;ty=box.clientHeight/2-y*s;apply()};
+  const zoomAt=(f,cx,cy)=>{const s0=s;s=Math.max(minS(),Math.min(3,s*f));tx=cx-(cx-tx)*s/s0;ty=cy-(cy-ty)*s/s0;apply()};
+  const draw=()=>{let h='';if(ans){const [ax,ay]=toXY(ans[0],ans[1]);if(guess){const [gx,gy]=guess;const L=Math.hypot(ax-gx,ay-gy),A=Math.atan2(ay-gy,ax-gx);h+=`<i class="qz-line" style="left:${gx}px;top:${gy}px;width:${L}px;transform:rotate(${A}rad)"></i>`}h+=`<span class="qz-pin ans" style="left:${ax}px;top:${ay}px" title="${esc(T('qz29'))}"><i></i></span>`}if(guess)h+=`<span class="qz-pin me" style="left:${guess[0]}px;top:${guess[1]}px" title="${esc(T('qz30'))}"><i></i></span>`;pins.innerHTML=h};
+  const pt=new Map();let moved=0,last=0;
+  box.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;box.setPointerCapture(e.pointerId);pt.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(pt.size===2){const [a,b]=[...pt.values()];last=Math.hypot(a[0]-b[0],a[1]-b[1])}});
+  box.addEventListener('pointermove',e=>{if(!pt.has(e.pointerId))return;const p=pt.get(e.pointerId),dx=e.clientX-p[0],dy=e.clientY-p[1];pt.set(e.pointerId,[e.clientX,e.clientY]);moved+=Math.abs(dx)+Math.abs(dy);
+    if(pt.size===2){const [a,b]=[...pt.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),r=box.getBoundingClientRect();if(last)zoomAt(d/last,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top);last=d;tx+=dx/2;ty+=dy/2;apply()}else{tx+=dx;ty+=dy;apply()}});
+  const up=e=>{if(!pt.has(e.pointerId))return;pt.delete(e.pointerId);if(e.type==='pointerup'&&moved<7&&!pt.size&&!lock){const r=box.getBoundingClientRect();guess=[(e.clientX-r.left-tx)/s,(e.clientY-r.top-ty)/s];draw();onPick&&onPick(toLL(guess[0],guess[1]))}if(pt.size<2)last=0};
+  box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+  box.addEventListener('wheel',e=>{e.preventDefault();const r=box.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+  box.querySelectorAll('.qz-zoom button').forEach(b=>b.onclick=()=>zoomAt(+b.dataset.z,box.clientWidth/2,box.clientHeight/2));
+  let shown=false;const home=()=>{if(shown)return;const [x,y]=toXY(48.008,37.79);center(x,y,Math.max(minS(),Math.min(box.clientWidth/1000,1)))};
+  home();
+  const ro=new ResizeObserver(()=>apply());ro.observe(box);
+  return {guess:()=>guess?toLL(guess[0],guess[1]):null,setGuess(ll){if(!ll)return;guess=toXY(ll[0],ll[1]);draw()},
+    reveal(lat,lon){shown=true;lock=true;ans=[lat,lon];draw();box.classList.add('done');const [ax,ay]=toXY(lat,lon);if(guess){const mx=(ax+guess[0])/2,my=(ay+guess[1])/2,span=Math.max(Math.abs(ax-guess[0])/(box.clientWidth*.7),Math.abs(ay-guess[1])/(box.clientHeight*.7),1/1.2);center(mx,my,Math.max(minS(),Math.min(1.2,1/span)))}else center(ax,ay,1)}}
+}
+/* ---------- modes ---------- */
+const MODES=[['place','qz1'],['map','qz2'],['year','qz3'],['daily','qz4']];
+let mode=LS.get('d11-qz-mode','place');if(!MODES.some(m=>m[0]===mode))mode='place';
+const best=LS.get('d11-qz-best',{});
+const saveBest=(m,v)=>{if(!(best[m]>=v)){best[m]=v;LS.set('d11-qz-best',best)}};
+const MAPPOOL=P.filter(p=>p.k!=='heaps'&&p.lat!=null);
+let st=null;
+function drawTabs(){if(!tabs)return;tabs.innerHTML=MODES.map(([m,k])=>`<button type="button" role="tab" aria-selected="${m===mode}" data-m="${m}">${esc(T(k))}${m==='daily'&&!playedToday()?'<i class="qz-dot" aria-hidden="true"></i>':''}</button>`).join('');
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;LS.set('d11-qz-mode',mode);st=null;drawTabs();render();box.focus({preventScroll:true})})}
+const N={place:8,year:8,map:5};
+function start(){const n=N[mode];const pool=mode==='map'?MAPPOOL:P;
+  /* spread the landmarks: one photo per landmark first */
+  const by={};shuf(pool).forEach(p=>{(by[p.k]=by[p.k]||[]).push(p)});const ids=shuf(Object.values(by).map(a=>a[0])).slice(0,n);
+  st={ids,i:0,score:0,ans:null,opts:null,res:[]};round()}
+function round(){const p=st.ids[st.i];st.ans=null;st.km=null;st.stat=null;
+  if(mode==='place'){st.opts=shuf([p.k,...shuf(KEYS.filter(k=>k!==p.k)).slice(0,3)])}
+  if(mode==='year'){st.opts=['b','e','a']}
+  render()}
+const yAns=p=>{const y=yr(p);return y<2011?'b':(y===2011?'e':'a')};
+const YL={b:'qz12',e:'qz13',a:'qz14'};
+function intro(){const b=mode==='map'?best.map:best[mode];const n=N[mode];
+  box.innerHTML=`<div class="gs-intro"><p class="qz-lead">${esc(T({place:'qz40',map:'qz41',year:'qz42'}[mode]))}</p><button type="button" class="btn primary" id="gsStart">${esc(T('g4'))}</button>${b?`<p class="gs-best">${esc(mode==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',n))}</p>`:''}</div>`;
+  box.querySelector('#gsStart').onclick=start}
+function end(){const n=st.ids.length;let txt,msg;
+  if(mode==='map'){const s=st.score;saveBest('map',s);txt=T('qz17').replace('{p}',fmtN(s)).replace('{max}',fmtN(n*1000));msg=s>=3500?'g15':(s>=2000?'g17':'g18')}
+  else{const s=st.score;saveBest(mode,s);txt=T('g9').replace('{s}',s).replace('{n}',n);msg=s>=6?'g15':(s>=4?'g17':'g18')}
+  const b=best[mode];
+  box.innerHTML=`<div class="gs-end"><b class="num">${esc(txt)}</b><p>${esc(T(msg))}</p><p class="gs-best">${esc(mode==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',n))}</p><div class="qz-row"><button type="button" class="btn primary" id="gsAgain">${esc(T('g5'))}</button>${!playedToday()?`<button type="button" class="btn ghost" id="gsDaily">${esc(T('qz4'))} →</button>`:''}</div></div>`;
+  box.querySelector('#gsAgain').onclick=start;const dl=box.querySelector('#gsDaily');if(dl)dl.onclick=()=>{mode='daily';LS.set('d11-qz-mode',mode);st=null;drawTabs();render()}}
+function render(){S=window.__d11S||S;box.classList.toggle('qz-wide',mode==='map'||mode==='daily');
+  if(mode==='daily')return daily();
+  if(!st)return intro();if(st.i>=st.ids.length)return end();
+  const p=st.ids[st.i],n=st.ids.length,head=`<span class="eyebrow">${esc(T('g16').replace('{i}',st.i+1).replace('{n}',n))}</span>`;
+  if(mode==='map'){const answered=st.km!=null;
+    box.innerHTML=`${photo(p,answered)}<div class="gs-side qz-mside">${head}<div class="qz-mapbox"></div>
+<p class="gs-fb" aria-live="polite">${answered?esc(T('qz16').replace('{km}',fmtKm(st.km)).replace('{p}',fmtN(pts(st.km)))):esc(T('qz10'))}</p>${answered?`<p class="gs-cap"><b>${esc(nm(p.k))}</b> · ${esc(T('qz15').replace('{d}',fmtD(p.d)))}</p><p class="qz-stat mono"></p>`:''}
+<div class="qz-row">${answered?`<button type="button" class="btn primary" id="gsNext">${esc(T('g8'))}</button>`:`<button type="button" class="btn primary" id="qzGo" disabled>${esc(T('qz9'))}</button>`}</div>${dots(st.i,n)}</div>`;
+    const mv=mapView(box.querySelector('.qz-mapbox'),()=>{const g=box.querySelector('#qzGo');if(g)g.disabled=false});
+    if(answered){mv.setGuess(st.g);mv.reveal(p.lat,p.lon)}
+    const go=box.querySelector('#qzGo');if(go)go.onclick=()=>{const g=mv.guess();if(!g)return;st.g=g;st.km=dist(g[0],g[1],p.lat,p.lon);st.score+=pts(st.km);const close=st.km<=1.5;render();
+      count(`qz-${p.id}-m`,close).then(s=>statLine(box.querySelector('.qz-stat'),s,'qz26'))};
+    const nx=box.querySelector('#gsNext');if(nx){nx.onclick=()=>{st.i++;st.i<n?round():render()};nx.focus({preventScroll:true})}
+    return}
+  const ok=mode==='place'?p.k:yAns(p);const lab=o=>mode==='place'?nm(o):T(YL[o]);
+  box.innerHTML=`${photo(p,!!st.ans)}<div class="gs-side">${head}<div class="gs-opts${mode==='year'?' qz-years':''}">${st.opts.map(o=>`<button type="button" data-o="${o}" class="${st.ans?(o===ok?'ok':(o===st.ans?'bad':'')):''}" ${st.ans?'disabled':''}>${esc(lab(o))}</button>`).join('')}</div>
+<p class="gs-fb" aria-live="polite">${st.ans?esc(st.ans===ok?T('g6'):T('g7').replace('{x}',lab(ok))):''}</p>${st.ans?`<p class="gs-cap">${mode==='year'?`<b>${esc(T('qz15').replace('{d}',fmtD(p.d)))}</b> · ${esc(nm(p.k))}`:esc(T('qz15').replace('{d}',fmtD(p.d)))}</p><p class="qz-stat mono"></p>`:''}${st.ans&&mode==='place'&&window.__mm?`<a class="gs-mem" href="#memory" id="gsMem">${esc(T('gr1'))}</a>`:''}${st.ans?`<button type="button" class="btn ghost" id="gsNext">${esc(T('g8'))}</button>`:''}${dots(st.i,n)}</div>`;
+  box.querySelectorAll('.gs-opts button').forEach(b=>b.onclick=()=>{if(st.ans)return;st.ans=b.dataset.o;const good=st.ans===ok;if(good)st.score++;render();const nx=box.querySelector('#gsNext');if(nx)nx.focus({preventScroll:true});
+    count(`qz-${p.id}-${mode==='place'?'p':'y'}`,good).then(s=>statLine(box.querySelector('.qz-stat'),s))});
+  const gm=box.querySelector('#gsMem');if(gm)gm.onclick=e=>{e.preventDefault();window.__mm.add(nm(p.k))};
+  const nx=box.querySelector('#gsNext');if(nx)nx.onclick=()=>{st.i++;st.i<n?round():render()}}
+/* ---------- photo of the day ---------- */
+const DAY0=Date.UTC(2026,9,7);
+const dayNo=()=>Math.floor((Date.now()-DAY0)/864e5)+1;
+function dailyPhoto(n){const L=MAPPOOL.length,cyc=Math.floor((n-1)/L);const order=shuf(MAPPOOL,rng(2011+cyc*7919));return order[(n-1)%L]}
+const playedToday=()=>{const d=LS.get('d11-qz-daily',null);return !!(d&&d.n===dayNo())};
+function shareText(n,km){const q=sq(km);return `Donetsk 2011 · ${T('qz20').replace('{n}',n)}\n${'🟩'.repeat(q)}${'⬜'.repeat(5-q)} ${fmtKm(km)}\nhttps://gek2or.github.io/donetsk-2011/city.html#guessing`}
+function untilMidnight(){const ms=DAY0+dayNo()*864e5-Date.now();const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return `${h}:${String(m).padStart(2,'0')}`}
+function daily(){const n=dayNo(),p=dailyPhoto(n),rec=LS.get('d11-qz-daily',null),done=rec&&rec.n===n;const streak=(rec&&rec.streak)||0;
+  box.innerHTML=`${photo(p,done)}<div class="gs-side qz-mside"><span class="eyebrow">${esc(T('qz20').replace('{n}',n))}</span><p class="qz-lead">${esc(T('qz21'))}</p><div class="qz-mapbox"></div>
+<p class="gs-fb" aria-live="polite">${done?esc(T('qz16').replace('{km}',fmtKm(rec.km)).replace('{p}',fmtN(pts(rec.km)))):esc(T('qz10'))}</p>${done?`<p class="qz-sq" aria-hidden="true">${'🟩'.repeat(sq(rec.km))}${'⬜'.repeat(5-sq(rec.km))}</p><p class="gs-cap"><b>${esc(nm(p.k))}</b> · ${esc(T('qz15').replace('{d}',fmtD(p.d)))}</p><p class="qz-stat mono"></p><p class="gs-best">${esc(T('qz25').replace('{n}',streak))} · ${esc(T('qz24').replace('{t}',untilMidnight()))}</p>`:''}
+<div class="qz-row">${done?`<button type="button" class="btn primary" id="qzShare">${esc(T('qz22'))}</button>`:`<button type="button" class="btn primary" id="qzGo" disabled>${esc(T('qz9'))}</button>`}</div></div>`;
+  const host=box.querySelector('.qz-mapbox');const mv=mapView(host,()=>{const g=box.querySelector('#qzGo');if(g)g.disabled=false});
+  if(done){mv.setGuess(rec.g);mv.reveal(p.lat,p.lon);get(`qd-${n}-n`).then(a=>get(`qd-${n}-ok`).then(b=>statLine(box.querySelector('.qz-stat'),a==null||b==null?null:{n:a,o:b},'qz26')))}
+  const go=box.querySelector('#qzGo');if(go)go.onclick=()=>{const g=mv.guess();if(!g)return;const km=dist(g[0],g[1],p.lat,p.lon);const prev=LS.get('d11-qz-daily',null);const streak=prev&&prev.n===n-1?(prev.streak||0)+1:1;
+    LS.set('d11-qz-daily',{n,km,g,streak});const close=km<=1.5;Promise.all([hit(`qd-${n}-n`),close?hit(`qd-${n}-ok`):get(`qd-${n}-ok`)]).then(()=>{if(mode==='daily'){drawTabs();daily()}});drawTabs();daily()};
+  const sh=box.querySelector('#qzShare');if(sh)sh.onclick=()=>{const t=shareText(n,rec.km);const done2=()=>{sh.textContent=T('qz23');setTimeout(()=>{sh.textContent=T('qz22')},1800)};
+    if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(done2,()=>{});}}
+addEventListener('d11lang',e=>{S=e.detail.S;drawTabs();render()});
+drawTabs();render();
 })();
