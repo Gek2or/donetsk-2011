@@ -308,6 +308,23 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   let loaded=false;
   new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){if(!loaded){v.querySelectorAll('source').forEach(x=>{x.src=x.dataset.src});v.load();loaded=true}const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{})}else v.pause()}),{threshold:.2}).observe(v)})();
 
+/* ---------- v3.5: readers' photos by email ---------- */
+(function(){const a=document.getElementById('spMail');if(!a)return;
+  const set=()=>{const S=window.__d11S||{};const T=k=>S[k]||document.querySelector(`#spstr [data-t="${k}"]`)?.textContent||'';
+    const body=[T('sp11')+':','',T('sp12')+':','',T('sp13')+':','',T('sp14')+':','','— '+T('sp15')].join('\n');
+    a.href='mailto:'+'stanislavkosytskyy'+'@'+'gmail.com'+'?subject='+encodeURIComponent('[Фото] '+T('sp10'))+'&body='+encodeURIComponent(body)};
+  set();addEventListener('d11lang',()=>setTimeout(set,0))})();
+
+/* ---------- v3.6: camera date stamps on archive prints ---------- */
+(function(){
+  const M=[/январ|січ|jan|tammi/,/феврал|лют|feb|helmi/,/март|берез|mar(ch)?\b|maalis/,/апрел|квіт|apr|huhti/,/\bма[йя]\b|трав|\bmay\b|touko/,/июн|черв|jun|kesä/,/июл|лип|jul|heinä/,/август|серп|aug|elo/,/сентябр|верес|sep|syys/,/октябр|жовт|oct|loka/,/ноябр|листопад|nov|marras/,/декабр|груд|dec|joulu/];
+  const fmt=t=>{t=(t||'').toLowerCase();const y=t.match(/(?:19|20)(\d\d)/);if(!y)return '';const m=M.findIndex(r=>r.test(t));return "'"+y[1]+(m>=0?' '+String(m+1).padStart(2,'0'):'')};
+  const put=(el,txt,cls)=>{if(!el||!txt||el.querySelector(':scope>.stamp'))return;const s=document.createElement('span');s.className='stamp'+(cls?' '+cls:'');s.setAttribute('aria-hidden','true');s.textContent=txt;el.appendChild(s)};
+  const run=()=>{document.querySelectorAll('.arch figure').forEach(f=>{const b=f.querySelector('figcaption b');put(f,fmt(b&&b.textContent))});
+    put(document.querySelector('.hero-photo'),"'11 11",'hero-st')};
+  run();setTimeout(run,800);addEventListener('d11lang',()=>setTimeout(run,50));
+})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';
@@ -379,6 +396,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-08-album',d:'2026-10-08',ty:'site',v:'v3.6',lab:'n1'},
  {id:'2026-10-08-quiz',d:'2026-10-07',ty:'site',v:'v3.5',img:'img/render/plan_top.jpg',lab:'qz0',cta:['city.html#guessing','uc9']},
  {id:'2026-10-07-v34',d:'2026-10-07',ty:'site',v:'v3.4',img:'assets/hero/quarter.jpg',lab:'rn1',cta:['dev.html#ba','uc8']},
  {id:'2026-10-01-press',d:'2026-10-01',ty:'site',v:'v3.3',img:'assets/og/press.jpg',lab:'n6',cta:['press.html','pr2']},
@@ -402,7 +420,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v3.5',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V='v3.6',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
