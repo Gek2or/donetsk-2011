@@ -325,6 +325,68 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   run();setTimeout(run,800);addEventListener('d11lang',()=>setTimeout(run,50));addEventListener('d11arch',()=>setTimeout(run,0));
 })();
 
+/* ---------- v3.7: hover shells that pre-open a page, prefetch, peeking prints ---------- */
+(function(){
+  const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+  const W=w=>u=>u.replace(/\/\d+px-/,'/'+w+'px-');
+  const GP40='https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg/330px-%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg';
+  const PH=window.__PHOTOS||[];
+  const IMG={'index.html':GP40,'city.html':PH[5]?W(330)(PH[5][0]):GP40,'model.html':'assets/peek/model.jpg','dev.html':'assets/peek/dev.jpg','updates.html':'assets/peek/updates.jpg','press.html':'assets/peek/press.jpg'};
+  const page=h=>(h||'').split('#')[0].split('/').pop()||'index.html';
+  const here=page(location.pathname);
+  /* prefetch the page behind a link the moment the cursor rests on it */
+  const done=new Set();
+  const prefetch=h=>{const p=page(h);if(!/\.html$/.test(p)||p===here||done.has(p))return;done.add(p);const l=document.createElement('link');l.rel='prefetch';l.href=p;document.head.appendChild(l)};
+  document.addEventListener('pointerover',e=>{const a=e.target.closest&&e.target.closest('a[href$=".html"],a[href*=".html#"]');if(a&&!a.target)prefetch(a.getAttribute('href'))},{passive:true});
+  document.addEventListener('focusin',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(a)prefetch(a.getAttribute('href'))});
+  /* doors: a second print waits behind the first one */
+  const DP={'city.html':PH[9]?W(500)(PH[9][0]):'','model.html':'img/render/overview.jpg','dev.html':'img/ue2/northern_2011_road_match.jpg'};
+  document.querySelectorAll('.door').forEach(d=>{const p=page(d.getAttribute('href'));const im=d.querySelector('.door-img');if(!im||!DP[p]||im.querySelector('.door-peek'))return;const s=document.createElement('span');s.className='door-peek';s.setAttribute('aria-hidden','true');s.style.backgroundImage=`url("${DP[p]}")`;im.prepend(s)});
+  if(!fine)return;
+  /* the shell */
+  const sh=document.createElement('a');sh.className='peek';sh.setAttribute('aria-hidden','true');sh.tabIndex=-1;
+  sh.innerHTML='<span class="peek-ph"><img alt="" referrerpolicy="no-referrer" decoding="async"></span><b></b><span class="d"></span><i>→</i>';
+  document.body.appendChild(sh);
+  const img=sh.querySelector('img'),tb=sh.querySelector('b'),td=sh.querySelector('.d'),ti=sh.querySelector('i');
+  let cur=null,tOpen=0,tClose=0;
+  const desc=p=>{const a=document.querySelector(`#mnav a[href="${p}"] span`);return a?a.textContent.trim():''};
+  const title=(a,p)=>{const b=document.querySelector(`#mnav a[href="${p}"] b`);return (b?b.textContent:a.textContent).trim().replace(/\s*[→↓↗]$/,'')};
+  function place(a){const r=a.getBoundingClientRect(),w=272,h=sh.offsetHeight||260;let x=r.left+r.width/2-w/2;x=Math.max(12,Math.min(innerWidth-w-12,x));let y=r.bottom+14;if(y+h>innerHeight-8&&r.top-h-14>8)y=r.top-h-14;sh.style.left=x+'px';sh.style.top=y+'px'}
+  function open(a){const p=page(a.getAttribute('href'));if(!IMG[p]||(p===here&&!a.hash))return;cur=a;
+    if(img.getAttribute('src')!==IMG[p])img.src=IMG[p];tb.textContent=a.dataset.peekTitle||title(a,p);td.textContent=desc(p);ti.textContent=(document.documentElement.lang||'ru').startsWith('en')?'open →':(document.documentElement.lang||'').startsWith('fi')?'avaa →':(document.documentElement.lang||'').startsWith('uk')?'відкрити →':'открыть →';
+    sh.href=a.getAttribute('href');place(a);document.querySelectorAll('.nav a.l.peeking').forEach(x=>x.classList.remove('peeking'));if(a.classList.contains('l'))a.classList.add('peeking');
+    requestAnimationFrame(()=>{place(a);sh.classList.add('on')})}
+  function close(){sh.classList.remove('on');if(cur)cur.classList.remove('peeking');cur=null}
+  const targets='.nav ul a.l, .foot-nav a, .hero .cta a[href^="model.html"], .upd-latest';
+  document.addEventListener('pointerover',e=>{const a=e.target.closest&&e.target.closest(targets);if(!a)return;clearTimeout(tClose);if(a===cur)return;clearTimeout(tOpen);tOpen=setTimeout(()=>open(a),cur?40:140)});
+  document.addEventListener('pointerout',e=>{const a=e.target.closest&&e.target.closest(targets+', .peek');if(!a)return;const to=e.relatedTarget;if(to&&(a.contains(to)||(to.closest&&to.closest('.peek'))||(cur&&cur.contains(to))))return;clearTimeout(tOpen);tClose=setTimeout(close,160)});
+  addEventListener('scroll',()=>{if(cur)close()},{passive:true});
+  addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  /* warm the images so the shell never opens empty */
+  setTimeout(()=>Object.values(IMG).forEach(u=>{const i=new Image();i.referrerPolicy='no-referrer';i.src=u}),2500);
+})();
+
+/* ---------- v3.7: the five pillars flutter like a paper flag ---------- */
+(function(){const ol=document.querySelector('.pillars ol');if(!ol||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const L=[...ol.children];if(!L.length)return;
+  const S=L.map((li,i)=>({a:0,v:0,b:i%2?.7:-.8}));
+  let hover=false,mx=null,raf=0,last=0;
+  const wake=()=>{if(!raf){last=performance.now();raf=requestAnimationFrame(step)}};
+  function step(t){const dt=Math.min(2.5,(t-last)/16.7);last=t;let e=0;const row=matchMedia('(min-width:901px)').matches;
+    S.forEach((s,i)=>{const L1=S[i-1],R1=S[i+1];const dv=x=>x?x.a-x.b:s.a-s.b;const nb=row?((dv(L1)+dv(R1))/2):(s.a-s.b);
+      const wind=hover?Math.sin(t/330-i*1.1)*.16+Math.sin(t/910-i*.5)*.07:0;
+      const acc=-.034*(s.a-s.b)+.03*(nb-(s.a-s.b))-.075*s.v+wind;
+      s.v+=acc*dt;s.a+=s.v*dt;s.a=Math.max(-16,Math.min(16,s.a));e+=Math.abs(s.v)+Math.abs(s.a-s.b)*.05});
+    L.forEach((li,i)=>{const a=S[i].a;li.style.transform=`rotate(${a.toFixed(2)}deg) rotateY(${(a*2.2).toFixed(2)}deg) skewY(${(a*.22).toFixed(2)}deg)`});
+    if(hover||e>.05)raf=requestAnimationFrame(step);else{raf=0;L.forEach(li=>li.style.transform='')}}
+  ol.addEventListener('pointerenter',()=>{hover=true;ol.classList.add('live');wake()});
+  ol.addEventListener('pointerleave',()=>{hover=false;mx=null});
+  ol.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const x=e.clientX;if(mx!=null){const vx=Math.max(-40,Math.min(40,x-mx));
+      L.forEach((li,i)=>{const r=li.getBoundingClientRect();const d=Math.abs(r.left+r.width/2-x)/r.width;const w=Math.max(0,1-d*.75);if(w)S[i].v+=vx*.028*w})}
+    mx=x;wake()},{passive:true});
+  ol.addEventListener('pointerdown',e=>{const i=L.indexOf(e.target.closest('li'));if(i<0)return;const k=(i%2?1:-1)*2.6;S[i].v+=k;if(S[i-1])S[i-1].v-=k*.5;if(S[i+1])S[i+1].v-=k*.5;wake()},{passive:true});
+})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';

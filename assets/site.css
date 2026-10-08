@@ -1114,7 +1114,7 @@ a{text-underline-offset:.18em;text-decoration-thickness:1px}
 .stat{border-right:1px dashed var(--rule)!important;border-bottom:0!important}
 .stat b,.why-stats b{font-family:var(--f-display);font-weight:700;font-style:italic;letter-spacing:0}
 .why-stats div{border-color:var(--rule)!important;border-style:dashed!important}
-.pillars li{border-style:dashed!important}
+
 .pillars li::before{content:"№ " counter(pl);font:600 20px var(--f-hand);color:var(--rose)}
 .status{font-family:var(--f-hand);font-size:18px;border-radius:2px;border-width:1.5px;transform:rotate(-2deg);padding:0 8px}
 .status::before{display:none}
@@ -1211,3 +1211,76 @@ footer{border-top:3px double var(--rule)}
 .foot-nav a{font-family:var(--f-body)}
 @media (max-width:640px){.arch figure,.gal figure{transform:none!important}.mm-map{margin:9px 9px 18px}}
 @media (prefers-reduced-motion:reduce){.arch figure,.gal figure,.door-img,.hero-photo,.hero-vid,.phead-img{transition:none}}
+
+/* =====================================================================
+   v3.7 · «живой альбом»: hover shells, peeking prints, ink buttons
+   ===================================================================== */
+/* ink buttons: colour sweeps in from the left */
+.btn{background-image:linear-gradient(var(--sweep,var(--rose)),var(--sweep,var(--rose)))!important;background-repeat:no-repeat!important;background-size:0% 100%!important;background-position:0 0!important;transition:background-size .38s cubic-bezier(.2,.8,.2,1),color .25s ease,border-color .25s ease,transform .18s ease,box-shadow .18s ease}
+.btn.primary{--sweep:var(--rose)}
+.btn.ghost,.hero .btn.ghost{--sweep:var(--ink)}
+.btn:hover,.btn:focus-visible{background-size:100% 100%!important;box-shadow:3px 3px 0 color-mix(in srgb,var(--ink) 85%,transparent)}
+.btn.primary:hover,.btn.primary:focus-visible{border-color:var(--rose);color:#fff}
+.btn.ghost:hover,.btn.ghost:focus-visible,.hero .btn.ghost:hover{color:var(--paper);border-color:var(--ink)}
+.btn.off{background-size:0 100%!important;box-shadow:none!important}
+
+/* nav + chip + cta shells */
+.peek{position:fixed;z-index:60;width:272px;padding:10px 10px 12px;background:var(--card);background-image:var(--grain);color:var(--ink);box-shadow:0 1px 2px #2a1f1226,0 22px 40px -18px #2a1f1288;text-decoration:none;display:grid;gap:8px;
+  transform-origin:50% 0;opacity:0;pointer-events:none;transform:translateY(-6px) rotate(-1.6deg) scaleY(.82);clip-path:inset(0 0 100% 0);
+  transition:opacity .2s ease,transform .32s cubic-bezier(.2,.9,.25,1.15),clip-path .32s cubic-bezier(.2,.8,.2,1)}
+.peek.on{opacity:1;pointer-events:auto;transform:translateY(0) rotate(-.7deg) scaleY(1);clip-path:inset(-14px -14px -14px -14px)}
+.peek::before{content:"";position:absolute;top:-10px;left:50%;width:74px;height:20px;margin-left:-37px;background:var(--tape);transform:rotate(3deg)}
+.peek-ph{display:block;background:var(--print);padding:6px 6px 6px;box-shadow:0 1px 2px #2a1f1222;transform:rotate(.9deg);transition:transform .4s ease}
+.peek.on .peek-ph{transform:rotate(-.4deg)}
+.peek-ph img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;filter:sepia(.12) saturate(.92)}
+.peek b{font:800 19px/1.1 var(--f-display);padding:0 2px}
+.peek span.d{font:14px/1.45 var(--f-body);color:var(--ink-2);padding:0 2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.peek i{font:600 20px/1 var(--f-hand);color:var(--rose);font-style:normal;padding:0 2px;justify-self:end;transform:translateX(-6px);opacity:0;transition:transform .35s ease .08s,opacity .35s ease .08s}
+.peek.on i{transform:none;opacity:1}
+.peek.cur b::after{content:" · " attr(data-here);font:600 18px var(--f-hand);color:var(--rose)}
+
+/* doors: a second print slides out from behind */
+.door-img{isolation:isolate}
+.door-peek{position:absolute;z-index:-1;inset:9px 9px 34px;background:var(--print) center/cover no-repeat;box-shadow:0 0 0 9px var(--print),0 0 0 9px var(--print),0 10px 22px -10px #3a2a1480;transform:rotate(0) translate(0,0);transition:transform .5s cubic-bezier(.2,.9,.25,1.1)}
+.door:hover .door-peek,.door:focus-visible .door-peek{transform:translate(30px,-24px) rotate(7deg)}
+.door:nth-child(2):hover .door-peek{transform:translate(-28px,-22px) rotate(-6deg)}
+.door-body i{display:inline-block;transition:transform .3s ease}
+.door:hover .door-body i{transform:translateX(8px)}
+.door:hover .door-body b{color:var(--rose)}
+.door-body b{transition:color .25s ease}
+
+/* archive & frames: a gentle lift with the shadow, stamp glows up */
+.arch figure .stamp,.stamp{transition:opacity .3s ease,text-shadow .3s ease}
+.arch figure:hover .stamp{opacity:1;text-shadow:0 0 6px var(--stamp),0 0 1px #000}
+
+/* text links: the ink line draws itself */
+main p a:not(.btn):not(.upd-cta),.why-src a,.thanks a:not(.btn){text-decoration:none;background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;transition:background-size .3s ease,color .2s ease}
+main p a:not(.btn):not(.upd-cta):hover,.why-src a:hover{color:var(--rose);background-size:100% 2px;background-image:linear-gradient(var(--rose),var(--rose))}
+
+/* nav links: underline draws on hover too */
+.nav a.l{position:relative}
+.nav a.l:not([aria-current="page"])::after{content:"";position:absolute;left:6px;right:6px;bottom:0;height:6px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' preserveAspectRatio='none'%3E%3Cpath d='M2 5 C 30 1, 60 7, 118 3' fill='none' stroke='%23b02c47' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;clip-path:inset(0 100% 0 0);transition:clip-path .35s cubic-bezier(.2,.8,.2,1)}
+.nav a.l:not([aria-current="page"]):hover::after,.nav a.l.peeking::after{clip-path:inset(0 0 0 0)}
+
+/* chips: a little lift */
+.chips a{transition:transform .2s ease,border-color .2s ease,color .2s ease}
+.chips a:hover{transform:translateY(-2px) rotate(-1deg);border-color:var(--rose);color:var(--rose)}
+
+/* quiz answers + filters press like paper */
+.gs-opts button,.qz-tabs button,.arch-filters button{transition:transform .15s ease,box-shadow .15s ease,background-color .2s ease}
+.gs-opts button:not([disabled]):hover,.qz-tabs button:hover,.arch-filters button:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--rose)}
+
+@media (prefers-reduced-motion:reduce){.peek,.peek-ph,.door-peek,.btn,.nav a.l::after{transition:none!important}}
+@media (hover:none){.peek{display:none}}
+
+/* v3.7 · pillars: paper slips on a string that flutter like a flag */
+.pillars{grid-template-columns:minmax(0,1fr)}
+.pillars ol{min-width:0;width:100%;border:0!important;background:none!important;box-shadow:none!important;gap:14px;padding:30px 4px 10px;position:relative;perspective:1000px;touch-action:pan-y}
+.pillars ol::before{content:"";position:absolute;left:-14px;right:-14px;top:4px;height:30px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 30' preserveAspectRatio='none'%3E%3Cpath d='M0 6 Q 100 20 200 12 T 400 12 T 600 12 T 800 12 T 1000 6' fill='none' stroke='%238a7a63' stroke-width='1.6'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.pillars li{border:0!important;background:var(--card);background-image:var(--grain);box-shadow:0 1px 1px #2a1f1214,0 12px 22px -14px #3a2a1480;padding:24px 18px 22px;position:relative;transform-origin:50% -10px;transform:rotate(var(--r,0deg));will-change:transform;backface-visibility:hidden}
+.pillars li:nth-child(odd){--r:-.8deg}.pillars li:nth-child(even){--r:.7deg}
+.pillars li::after{content:"";position:absolute;top:-17px;left:50%;width:9px;height:24px;margin-left:-4.5px;border-radius:2px;background:linear-gradient(90deg,#9c8662,#c8b48d 45%,#9c8662);box-shadow:0 1px 1px #0003}
+.pillars li::before{margin-bottom:2px}
+.pillars li b{font-family:var(--f-display);font-weight:800;font-size:18px;line-height:1.2}
+.pillars ol.live li{transition:none}
+@media (max-width:900px){.pillars ol{gap:22px;padding-top:18px}.pillars ol::before{display:none}.pillars li{border-bottom:0!important}}
