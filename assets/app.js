@@ -320,9 +320,9 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   const M=[/январ|січ|jan|tammi/,/феврал|лют|feb|helmi/,/март|берез|mar(ch)?\b|maalis/,/апрел|квіт|apr|huhti/,/\bма[йя]\b|трав|\bmay\b|touko/,/июн|черв|jun|kesä/,/июл|лип|jul|heinä/,/август|серп|aug|elo/,/сентябр|верес|sep|syys/,/октябр|жовт|oct|loka/,/ноябр|листопад|nov|marras/,/декабр|груд|dec|joulu/];
   const fmt=t=>{t=(t||'').toLowerCase();const y=t.match(/(?:19|20)(\d\d)/);if(!y)return '';const m=M.findIndex(r=>r.test(t));return "'"+y[1]+(m>=0?' '+String(m+1).padStart(2,'0'):'')};
   const put=(el,txt,cls)=>{if(!el||!txt||el.querySelector(':scope>.stamp'))return;const s=document.createElement('span');s.className='stamp'+(cls?' '+cls:'');s.setAttribute('aria-hidden','true');s.textContent=txt;el.appendChild(s)};
-  const run=()=>{document.querySelectorAll('.arch figure').forEach(f=>{const b=f.querySelector('figcaption b');put(f,fmt(b&&b.textContent))});
+  const run=()=>{document.querySelectorAll('.arch figure').forEach(f=>{const b=f.querySelector('figcaption b');put(f.querySelector('.arch-open')||f,fmt(b&&b.textContent))});
     put(document.querySelector('.hero-photo'),"'11 11",'hero-st')};
-  run();setTimeout(run,800);addEventListener('d11lang',()=>setTimeout(run,50));
+  run();setTimeout(run,800);addEventListener('d11lang',()=>setTimeout(run,50));addEventListener('d11arch',()=>setTimeout(run,0));
 })();
 
 ;(()=>{
