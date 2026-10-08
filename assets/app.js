@@ -6,11 +6,11 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const root=document.documentElement;
 /* theme */
 $('#themeBtn').addEventListener('click',()=>{
-  const cur=root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-  root.dataset.theme=cur==='dark'?'light':'dark';
-  try{localStorage.setItem('d11-theme',root.dataset.theme)}catch(e){}
+  const M=['auto','light','dark'],cur=window.__dn?window.__dn.mode():'auto',nx=M[(M.indexOf(cur)+1)%3];
+  try{localStorage.setItem('d11-theme',nx)}catch(e){}
+  if(window.__dn)window.__dn.apply();else root.dataset.theme=nx==='dark'?'dark':'light';
+  document.dispatchEvent(new Event('d11theme'));
 });
-try{const t=localStorage.getItem('d11-theme');if(t)root.dataset.theme=t}catch(e){}
 
 /* i18n */
 const I=window.__D11.I;
@@ -162,7 +162,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(LANG
 
 apply(pickLang());
 /* life: clock, counters, reveal, progress, ticker */
-function tickClock(){try{const d=new Date();const parts=new Intl.DateTimeFormat(L.meta.lang==='uk'?'uk-UA':L.meta.lang==='fi'?'fi-FI':L.meta.lang==='en'?'en-GB':'ru-RU',{timeZone:'Europe/Kyiv',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d);$('#clock').textContent=parts.replace(/(\d{1,2}\.?\s*\S+)/,'$1 2011')}catch(e){}}
+function tickClock(){try{const d=new Date();const parts=new Intl.DateTimeFormat(L.meta.lang==='uk'?'uk-UA':L.meta.lang==='fi'?'fi-FI':L.meta.lang==='en'?'en-GB':'ru-RU',{timeZone:'Europe/Kyiv',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d);$('#clock').textContent=parts.replace(/(\d{1,2}\.?\s*\S+)/,'$1 2011')+(window.__dn?' · '+((S&&S[{night:'dn1',dawn:'dn2',day:'dn3',dusk:'dn4'}[window.__dn.phase()]])||''):'')}catch(e){}}
 setInterval(()=>L&&tickClock(),1000);
 function renderTicker(){const s=L.STREETS.map((n,i)=>`<span class="${i===0?'me':''}">${esc(n)}</span>`).join('');$('#tk').innerHTML=s+s}
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -436,6 +436,82 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   addEventListener('d11lang',()=>setTimeout(draw,0));
 })();
 
+/* ---------- v3.9: the site lives on Donetsk time ---------- */
+(function(){const dn=window.__dn;if(!dn)return;const root=document.documentElement;
+  const S=()=>window.__d11S||{};const lang=()=>(root.lang||'ru').slice(0,2);
+  const PK={night:'dn1',dawn:'dn2',day:'dn3',dusk:'dn4'},ICO={night:'☾',dawn:'◒',day:'☀',dusk:'◓'},MI={auto:'◷',light:'☀',dark:'☾'},MK={auto:'dn6',light:'dn7',dark:'dn8'};
+  const T=k=>S()[k]||(document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+  function tick(){const was=root.dataset.phase,p=dn.apply();
+    let hm='';try{hm=new Intl.DateTimeFormat(lang()==='uk'?'uk-UA':lang()==='en'?'en-GB':lang(),{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit'}).format(new Date())}catch(e){}
+    document.querySelectorAll('.dn-chip').forEach(c=>{c.querySelector('i').textContent=ICO[p];c.querySelector('b').textContent=hm;const sm=c.querySelector('small');if(sm)sm.textContent=T(PK[p]);
+      c.title=T('dn5')+' · '+hm+' · '+T(PK[p])+'. '+T('dn9')});
+    const m=dn.mode();document.querySelectorAll('#themeBtn,#themeBtn2').forEach(b=>{b.textContent=MI[m];b.title=T(MK[m]);b.setAttribute('aria-label',T(MK[m]))});
+    if(was&&was!==p)document.dispatchEvent(new Event('d11phase'))}
+  tick();setInterval(tick,30000);addEventListener('d11lang',()=>setTimeout(tick,0));document.addEventListener('d11theme',tick);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+})();
+
+/* ---------- v3.9: then & later ---------- */
+(function(){const box=document.getElementById('tn'),P=window.__TN;if(!box||!P||!P.length)return;
+  const tabs=box.querySelector('#tnTabs'),bx=box.querySelector('#tnBox'),A=box.querySelector('#tnA'),B=box.querySelector('#tnB'),R=box.querySelector('#tnR');
+  const lang=()=>(document.documentElement.lang||'ru').slice(0,2);const ph=u=>window.__ph?window.__ph(u):u;
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const cp=f=>'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(f.replace(/ /g,'_'));
+  let cur=0;
+  const setK=v=>{bx.style.setProperty('--k',(v/100).toFixed(3));R.value=v};
+  function draw(){const p=P[cur],l=lang();
+    tabs.innerHTML=P.map((x,i)=>`<button type="button" aria-pressed="${i===cur}" data-i="${i}">${esc(x.n[l]||x.n.ru)}</button>`).join('');
+    box.querySelector('#tnName').textContent=p.n[l]||p.n.ru;box.querySelector('#tnNote').textContent=p.note[l]||p.note.ru;
+    box.querySelector('#tnYa').textContent=p.a.y;box.querySelector('#tnYb').textContent=p.b.y;
+    box.querySelector('#tnCr').innerHTML=[p.a,p.b].map(x=>`<a href="${cp(x.f)}" target="_blank" rel="noopener">${esc(x.y)} · © ${esc(x.au)} · ${esc(x.l)} ↗</a>`).join('');
+    A.alt=(p.n[l]||p.n.ru)+', '+p.a.y;B.alt=(p.n[l]||p.n.ru)+', '+p.b.y}
+  function pick(i){cur=i;const p=P[i];A.src=ph(p.a.u);B.src=ph(p.b.u);setK(0);draw()}
+  tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(b){pick(+b.dataset.i);sweep()}});
+  R.addEventListener('input',()=>{stop=true;setK(+R.value)});
+  let stop=false;
+  function sweep(){stop=false;const t0=performance.now();const D=2600;
+    const f=t=>{if(stop)return;const x=Math.min(1,(t-t0)/D);const k=x<.5?x*2:2-x*2;const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;setK(Math.round(e*100*.9));if(x<1)requestAnimationFrame(f);else setK(0)};
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;requestAnimationFrame(f)}
+  pick(0);
+  if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();setTimeout(sweep,500)}},{threshold:.5});io.observe(bx)}
+  addEventListener('d11lang',()=>setTimeout(draw,0));
+})();
+
+/* ---------- v3.9: how to help ---------- */
+(function(){const m=document.getElementById('hpMail');if(m){m.href='mailto:'+m.dataset.u+'@'+m.dataset.d+'?subject='+encodeURIComponent('Donetsk 2011')}
+  const s=document.getElementById('hpShare');if(s)s.addEventListener('click',()=>{const url='https://gek2or.github.io/donetsk-2011/';const S=window.__d11S||{};
+    const ok=()=>{const t=s.textContent;s.textContent=S.hp15||(document.querySelector('[data-t="hp15"]')||{}).textContent||'✓';setTimeout(()=>{s.textContent=S.hp14||t},1800)};
+    if(navigator.share)navigator.share({title:'Donetsk 2011',url}).catch(()=>{});
+    else if(navigator.clipboard)navigator.clipboard.writeText(url).then(ok,ok);else ok()});
+  const d=document.getElementById('hpDon'),L=window.__DONATE||[];
+  if(d&&L.length){d.hidden=false;d.innerHTML=L.map(x=>`<a class="btn primary" href="${x.url}" target="_blank" rel="noopener">${x.name} ↗</a>`).join('')}
+})();
+
+/* ---------- v3.9: sound diary (a cassette, no download button) ---------- */
+(function(){const sd=document.getElementById('sd');if(!sd)return;
+  const cas=sd.querySelector('#sdCas'),play=sd.querySelector('#sdPlay'),seek=sd.querySelector('#sdSeek'),tm=sd.querySelector('#sdTime'),list=sd.querySelector('#sdList'),empty=sd.querySelector('#sdEmpty'),title=sd.querySelector('#sdTitle'),note=sd.querySelector('#sdNote'),lab=sd.querySelector('#sdLab');
+  sd.addEventListener('contextmenu',e=>e.preventDefault());
+  const lang=()=>(document.documentElement.lang||'ru').slice(0,2);const tx=o=>o?(o[lang()]||o.ru||o.en||''):'';
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const S=k=>(window.__d11S||{})[k]||(document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+  const fm=s=>!isFinite(s)?'0:00':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+  let tr=[],cur=-1;const au=new Audio();au.preload='none';
+  function draw(){const has=tr.length>0;empty.hidden=has;play.disabled=!has;seek.disabled=!has;
+    list.innerHTML=tr.map((t,i)=>`<li class="${i===cur?'on':''}"><button type="button" data-i="${i}"><span class="mono">${esc(t.side||'A')}${i+1}</span><span>${esc(tx(t.t))}</span><small>${esc(t.date||'')}</small></button></li>`).join('');
+    if(cur>=0){title.textContent=tx(tr[cur].t);note.textContent=tx(tr[cur].n);lab.textContent=tx(tr[cur].t)}else if(has){title.textContent=tx(tr[0].t);note.textContent=tx(tr[0].n);lab.textContent='Donetsk 2011'}
+    else{title.textContent=S('sd13');note.textContent=''}}
+  function load(i){cur=i;au.src=tr[i].file;draw()}
+  function setPlay(on){cas.classList.toggle('play',on);play.textContent=on?'❚❚':'▶';play.setAttribute('aria-label',on?S('sd15'):S('sd4'))}
+  play.addEventListener('click',()=>{if(!tr.length)return;if(cur<0)load(0);if(au.paused)au.play().catch(()=>{});else au.pause()});
+  au.addEventListener('play',()=>setPlay(true));au.addEventListener('pause',()=>setPlay(false));
+  au.addEventListener('ended',()=>{if(cur<tr.length-1){load(cur+1);au.play().catch(()=>{})}});
+  au.addEventListener('timeupdate',()=>{if(au.duration)seek.value=Math.round(au.currentTime/au.duration*1000);tm.textContent=fm(au.currentTime)+' / '+fm(au.duration)});
+  seek.addEventListener('input',()=>{if(au.duration)au.currentTime=seek.value/1000*au.duration});
+  list.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;load(+b.dataset.i);au.play().catch(()=>{})});
+  fetch('sound/tracks.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{tracks:[]}).then(j=>{tr=(j&&j.tracks||[]).filter(t=>t&&t.file);draw()}).catch(()=>draw());
+  draw();addEventListener('d11lang',()=>setTimeout(draw,0));
+})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';
@@ -507,6 +583,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-08-daynight',d:'2026-10-08',ty:'site',v:'v3.9',cta:['city.html#then','tn0']},
  {id:'2026-10-08-guests',d:'2026-10-08',ty:'site',v:'v3.8',lab:'gv1',cta:['index.html#guests','gv1']},
  {id:'2026-10-08-album',d:'2026-10-08',ty:'site',v:'v3.6',lab:'n1'},
  {id:'2026-10-08-quiz',d:'2026-10-07',ty:'site',v:'v3.5',img:'img/render/plan_top.jpg',lab:'qz0',cta:['city.html#guessing','uc9']},
@@ -532,7 +609,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v3.8',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V='v3.9',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
