@@ -21,6 +21,15 @@ function palette(){
     est:dark?[.55,.5,.42]:[.97,.95,.91],roof:dark?[.46,.42,.4]:[.9,.87,.83],lvl:dark?[.52,.58,.63]:[.78,.82,.85],
     gE:mix(amber,steel,.4),gF:steel,gC:mix(moss,amber,.35)};
 }
+/* ---------- v4.1: facades. Illustrative materials picked by building type, not from photos of each house ---------- */
+const F0=[0,0,0,0];let fac=true;
+const MAT={m0:[.93,.91,.86],m1:[.91,.84,.67],m2:[.73,.81,.85],m3:[.62,.36,.28],m4:[.86,.75,.52],m5:[.86,.85,.8],m6:[.75,.74,.71]};
+const ROOF={house:[[.5,.53,.55],[.38,.5,.43],[.55,.32,.26],[.68,.68,.64]],flat:[.42,.42,.41]};
+const hash=str=>{let h=2166136261;for(const c of String(str)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+function matOf(b){const r=hash(b[1]),apt=b[3]>7;const key=apt?['m5','m6','m3','m4','m5'][r%5]:['m0','m1','m2','m3','m0','m4','m1'][r%7];
+  let c=MAT[key],rf=apt?ROOF.flat:ROOF.house[(r>>>4)%4];
+  if(C.dark){c=c.map(v=>v*.62);rf=rf.map(v=>v*.62)}else{c=mix(c,C.paper,.14);rf=mix(rf,C.paper,.1)}
+  return{c,r:rf,k:apt?1:2,key}}
 /* ---------- terrain ---------- */
 let EX=1;
 const TH=D.t.h,TS=D.t.s,TX=D.t.x,TY=D.t.y;
@@ -36,9 +45,9 @@ function tri(p){const n=p.length;if(n<3)return[];let idx=[...Array(n).keys()];if
 let G={};
 const W=(x,y,z)=>[x,z,-y]; /* data x east, y north, z up -> GL x, y up, -z north */
 function build(evid){
-  const P=[],N=[],Cl=[],I=[],Lp=[],Lc=[];
-  const push=(v,n,c,id)=>{P.push(...v);N.push(...n);Cl.push(...c);I.push(id)};
-  const quad=(a,b,c,d,col,id,cb)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);const k=[col,cb||col,col,col,col,col];[a,b,c,a,c,d].forEach((q,i)=>push(q,n,(cb&&(i===0||i===1||i===3))?cb:col,id))};
+  const P=[],N=[],Cl=[],I=[],Lp=[],Lc=[],F=[];
+  const push=(v,n,c,id,f)=>{P.push(...v);N.push(...n);Cl.push(...c);I.push(id);F.push(...(f||F0))};
+  const quad=(a,b,c,d,col,id,cb,fk)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);const k=[col,cb||col,col,col,col,col];const fu=fk?[[0,0],[fk.L,0],[fk.L,fk.h],[0,0],[fk.L,fk.h],[0,fk.h]]:null;[a,b,c,a,c,d].forEach((q,i)=>push(q,n,(cb&&(i===0||i===1||i===3))?cb:col,id,fu?[fu[i][0],fu[i][1],fk.z,fk.L]:null))};
   const tri3=(a,b,c,col,id)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);if(n[1]<0){n=n.map(x=>-x);[b,c]=[c,b]}for(const q of [a,b,c])push(q,n,col,id)};
   const SK=[],skirt=(a,b,base)=>{/* soft contact shadow on the ground around a footprint edge */const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,ox=dy/L*2.6,oy=-dx/L*2.6;const g=(x,y)=>W(x,y,H(x,y)+.22);SK.push(...g(a[0],a[1]),1,...g(b[0],b[1]),1,...g(b[0]+ox,b[1]+oy),0,...g(a[0],a[1]),1,...g(b[0]+ox,b[1]+oy),0,...g(a[0]+ox,a[1]+oy),0)};
   const line=(a,b,col)=>{Lp.push(...a,...b);Lc.push(...col,...col)};
@@ -53,11 +62,11 @@ function build(evid){
         quad(W(ax-ox,ay-oy,H(ax-ox,ay-oy)+lift),W(bx-ox,by-oy,H(bx-ox,by-oy)+lift),W(bx+ox,by+oy,H(bx+ox,by+oy)+lift),W(ax+ox,ay+oy,H(ax+ox,ay+oy)+lift),col,0)}}}
   /* buildings */
   const edge=C.dark?[0,0,0,.55]:[.08,.11,.14,.38];
-  const addB=(fp,h,col,roofCol,id)=>{let base=Infinity;for(const p of fp)base=Math.min(base,H(p[0],p[1]));base-=.4;const top=base+.4+h;
+  const addB=(fp,h,col,roofCol,id,kind)=>{let base=Infinity;for(const p of fp)base=Math.min(base,H(p[0],p[1]));base-=.4;const top=base+.4+h;
     let pts=fp.slice();if(pts.length>2&&pts[0][0]===pts[pts.length-1][0]&&pts[0][1]===pts[pts.length-1][1])pts.pop();
     const ccw=area(pts)>0?pts:pts.slice().reverse();
     const cb=col.map(v=>v*.86);
-    for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];quad(W(a[0],a[1],base),W(b[0],b[1],base),W(b[0],b[1],top),W(a[0],a[1],top),col,id,cb);line(W(a[0],a[1],top),W(b[0],b[1],top),edge);if(h>4)line(W(a[0],a[1],base+.4),W(a[0],a[1],top),edge);if(!evid)skirt(a,b)}
+    for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);quad(W(a[0],a[1],base),W(b[0],b[1],base),W(b[0],b[1],top),W(a[0],a[1],top),col,id,cb,kind&&L>1.2?{L,h:top-base,z:kind*100+Math.min(99,top-base)}:null);line(W(a[0],a[1],top),W(b[0],b[1],top),edge);if(h>4)line(W(a[0],a[1],base+.4),W(a[0],a[1],top),edge);if(!evid)skirt(a,b)}
     const hip=pitch&&h<=7?obb(ccw):null;
     if(hip){/* hipped roof: estimated (class E), pitch 24 deg over the minimum-area rectangle of a near-rectangular house */
       const {c,u,v,a:la,b:lb}=hip;const rh=Math.min(la,lb)*Math.tan(24*Math.PI/180);const P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z);
@@ -70,26 +79,43 @@ function build(evid){
   function obb(pts){let best=null;const ar=Math.abs(area(pts));for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];let dx=b[0]-a[0],dy=b[1]-a[1];const L=Math.hypot(dx,dy);if(L<.5)continue;const u=[dx/L,dy/L],v=[-u[1],u[0]];let s0=1e9,s1=-1e9,t0=1e9,t1=-1e9;for(const q of pts){const s=q[0]*u[0]+q[1]*u[1],t=q[0]*v[0]+q[1]*v[1];s0=Math.min(s0,s);s1=Math.max(s1,s);t0=Math.min(t0,t);t1=Math.max(t1,t)}const A=(s1-s0)*(t1-t0);if(!best||A<best.A){const cs=(s0+s1)/2,ct=(t0+t1)/2;best={A,c:[u[0]*cs+v[0]*ct,u[1]*cs+v[1]*ct],u,v,a:(s1-s0)/2,b:(t1-t0)/2}}}
     if(!best||ar/best.A<.86||best.A>320)return null;if(best.b>best.a){const {u,v,a,b}=best;best.u=v;best.v=u.map(x=>-x);best.a=b;best.b=a}return best}
   let pitch=false;
-  D.B.forEach((b,i)=>{const lvl=b[4]===1;let col=lvl?C.lvl:C.est,roof=lvl?col:C.roof;if(evid){col=C.gF;roof=C.gE}pitch=!lvl;addB(b[2],b[3],col,roof,i+1)});pitch=false;
-  D.DF.forEach((b,i)=>{const col=evid?C.gE:mix(C.rose,[1,1,1],.12);pitch=!evid;addB(b[2],3.2,col,evid?col:mix(C.rose,[0,0,0],.08),1000+i)});pitch=false;
+  D.B.forEach((b,i)=>{const lvl=b[4]===1;let col=lvl?C.lvl:C.est,roof=lvl?col:C.roof,kind=0;if(evid){col=C.gF;roof=C.gE}else if(fac){const m=matOf(b);col=m.c;roof=m.r;kind=m.k}pitch=!lvl;addB(b[2],b[3],col,roof,i+1,kind)});pitch=false;
+  D.DF.forEach((b,i)=>{const col=evid?C.gE:mix(C.rose,[1,1,1],.12);pitch=!evid;addB(b[2],3.2,col,evid?col:mix(C.rose,[0,0,0],.08),1000+i,!evid&&fac?2:0)});pitch=false;
   /* 2011 centerlines */
   const Hc=[];if(showHist)for(const [,segs] of D.HC)for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);const n=Math.max(1,Math.ceil(L/10));const ox=-(q[1]-p[1])/L*1.8,oy=(q[0]-p[0])/L*1.8;for(let k=0;k<n;k++){const t0=k/n,t1=(k+1)/n;const ax=p[0]+(q[0]-p[0])*t0,ay=p[1]+(q[1]-p[1])*t0,bx=p[0]+(q[0]-p[0])*t1,by=p[1]+(q[1]-p[1])*t1;const A=W(ax-ox,ay-oy,H(ax,ay)+.9),B2=W(bx-ox,by-oy,H(bx,by)+.9),C2=W(bx+ox,by+oy,H(bx,by)+.9),D2=W(ax+ox,ay+oy,H(ax,ay)+.9);Hc.push(...A,...B2,...C2,...A,...C2,...D2)}}
   /* panorama pins */
   const pin=[];for(const p of D.P){const g=H(p[5],p[6]);pin.push(...W(p[5],p[6],g+.3),...W(p[5],p[6],g+14))}
-  G={SK:new Float32Array(SK),sk:SK.length/4,P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(Cl),I:new Float32Array(I),n:P.length/3,L:new Float32Array(Lp),LC:new Float32Array(Lc),ln:Lp.length/3,H:new Float32Array(Hc),hn:Hc.length/3,pin:new Float32Array(pin),pn:pin.length/3};
+  G={F:new Float32Array(F),SK:new Float32Array(SK),sk:SK.length/4,P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(Cl),I:new Float32Array(I),n:P.length/3,L:new Float32Array(Lp),LC:new Float32Array(Lc),ln:Lp.length/3,H:new Float32Array(Hc),hn:Hc.length/3,pin:new Float32Array(pin),pn:pin.length/3};
   upload();smDirty=true;
 }
 /* ---------- GL ---------- */
 const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.warn(gl.getShaderInfoLog(o));return o};
 const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);return p};
 const HP='#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n';
-const PM=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 m;uniform mat4 lm;varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;uniform vec3 eye;uniform vec3 ld;void main(){vec3 N=normalize(n);vdf=max(dot(N,ld),0.);va=.5+.2*(.55+.45*N.y);vc=c;vd=distance(p,eye);vl=lm*vec4(p+N*.6,1.);gl_Position=m*vec4(p,1.);}`,
-HP+`varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;uniform vec3 fog;uniform vec2 fr;uniform sampler2D sm;uniform float smOn,smT,sk;
+const PM=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec4 f;uniform mat4 m;uniform mat4 lm;varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;varying vec4 vf;uniform vec3 eye;uniform vec3 ld;void main(){vf=f;vec3 N=normalize(n);vdf=max(dot(N,ld),0.);va=.5+.2*(.55+.45*N.y);vc=c;vd=distance(p,eye);vl=lm*vec4(p+N*.6,1.);gl_Position=m*vec4(p,1.);}`,
+HP+`varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;varying vec4 vf;uniform vec3 fog;uniform vec2 fr;uniform sampler2D sm;uniform float smOn,smT,sk,fac,dk;
+float h1(vec2 q){return fract(sin(dot(q,vec2(12.9898,78.233)))*43758.5453);}
+float box(vec2 q,vec2 a,vec2 b){return step(a.x,q.x)*step(q.x,b.x)*step(a.y,q.y)*step(q.y,b.y);}
 float un(vec4 c){return dot(c,vec4(1.,1./255.,1./65025.,1./16581375.));}
 float cmp(vec2 uv,float z){return z-.0016>un(texture2D(sm,uv))?0.:1.;}
 float bil(vec2 uv,float z){vec2 px=uv/smT-.5;vec2 f=fract(px);vec2 b=(floor(px)+.5)*smT;float a=cmp(b,z),c=cmp(b+vec2(smT,0.),z),d=cmp(b+vec2(0.,smT),z),e=cmp(b+vec2(smT),z);return mix(mix(a,c,f.x),mix(d,e,f.x),f.y);}
 void main(){float s=1.;if(smOn>.5&&vdf>0.){vec3 q=vl.xyz/vl.w*.5+.5;if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.){float t=0.;for(int i=0;i<4;i++){vec2 o=vec2(mod(float(i),2.)-.5,floor(float(i)/2.)-.5)*1.5*smT;t+=bil(q.xy+o,q.z);}s=t/4.;}}
-vec3 col=vc*(va*vec3(.96,.98,1.01)+sk*vdf*s*vec3(1.05,.98,.88));float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(col,fog,f*.85),1.);}`);
+vec3 bc=vc;float gl0=0.;
+if(fac>.5&&vf.z>50.){float k=floor(vf.z/100.),ht=vf.z-k*100.,u=vf.x,v=vf.y,L=vf.w;bool apt=k<1.5;
+  float fh=apt?2.8:3.1,sp=apt?3.1:3.6,ww=apt?1.35:1.15,wh=apt?1.5:1.3,sl=apt?.95:.85;
+  float n=max(1.,floor((L-.8)/sp)),o=(L-n*sp)*.5;float cu=u-o,ci=floor(cu/sp),cx=cu-ci*sp-sp*.5;
+  float lv=v-.6,fi=floor(lv/fh),fy=lv-fi*fh;float top=ht-(apt?.9:.6);
+  float inW=step(0.,cu)*step(cu,n*sp)*step(0.,lv)*step(.6+fi*fh+sl+wh,ht-(apt?.5:.25))*box(vec2(cx,fy),vec2(-ww*.5,sl),vec2(ww*.5,sl+wh));
+  float fr=inW*(1.-box(vec2(cx,fy),vec2(-ww*.5+.08,sl+.08),vec2(ww*.5-.08,sl+wh-.08)));
+  float mul=inW*step(abs(cx),.04)*step(sl+.5,fy);
+  float lod=1.-smoothstep(160.,520.,vd);float r=h1(vec2(ci,fi)+vec2(L,ht));
+  vec3 glass=mix(vec3(.13,.17,.21),vec3(.5,.58,.66),.22+.18*r)*(dk>.5?.8:1.);vec3 frame=dk>.5?bc*1.05:mix(bc,vec3(.97),.55);
+  vec3 wc=mix(glass,frame,max(fr,mul));
+  if(apt&&r>.72)wc=mix(wc,bc*.82,(1.-fr)*.55);
+  float pl=1.-step(.55,v);float cor=apt?step(ht-.35,v):0.;
+  vec3 fac2=mix(bc,wc,inW);fac2=mix(fac2,bc*.7,pl);fac2=mix(fac2,bc*.84,cor);
+  float cov=apt?.22:.14;bc=mix(mix(bc,glass,cov)*(1.-pl*.3),fac2,lod);gl0=inW*lod;}
+vec3 col=bc*(va*vec3(.96,.98,1.01)+sk*vdf*s*vec3(1.05,.98,.88))+gl0*vec3(.03,.035,.045);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(col,fog,f*.85),1.);}`);
 const PS=prog(`attribute vec3 p;uniform mat4 lm;varying float z;void main(){gl_Position=lm*vec4(p,1.);z=gl_Position.z/gl_Position.w*.5+.5;}`,
 HP+`varying float z;void main(){vec4 e=fract(z*vec4(1.,255.,65025.,16581375.));e-=e.yzww*vec4(1./255.,1./255.,1./255.,0.);gl_FragColor=e;}`);
 let SMS=2048,smFB=null,smTex=null,smRB=null,LM=null;
@@ -104,9 +130,9 @@ const PU=prog(`attribute vec3 p;uniform mat4 m;void main(){gl_Position=m*vec4(p,
 const PI=prog(`attribute vec3 p;attribute float i;uniform mat4 m;varying vec3 vi;void main(){float r=mod(i,256.);float g=floor(i/256.);vi=vec3(r/255.,g/255.,1.);gl_Position=m*vec4(p,1.);}`,`precision mediump float;varying vec3 vi;void main(){gl_FragColor=vec4(vi,1.);}`);
 const PK=prog(`attribute vec3 p;attribute float a;uniform mat4 m;varying float va;void main(){va=a;gl_Position=m*vec4(p,1.);gl_Position.z-=.0004*gl_Position.w;}`,`precision mediump float;varying float va;uniform float k;void main(){gl_FragColor=vec4(0.,0.,0.,va*va*k);}`);
 const B={};const buf=(k,a)=>{if(!B[k])B[k]=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,B[k]);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW)};
-function upload(){buf('sk',G.SK);buf('p',G.P);buf('n',G.N);buf('c',G.C);buf('i',G.I);buf('lp',G.L);buf('lc',G.LC);buf('h',G.H);buf('pin',G.pin)}
+function upload(){buf('f',G.F);buf('sk',G.SK);buf('p',G.P);buf('n',G.N);buf('c',G.C);buf('i',G.I);buf('lp',G.L);buf('lc',G.LC);buf('h',G.H);buf('pin',G.pin)}
 const attr=(pr,name,k,size)=>{const l=gl.getAttribLocation(pr,name);if(l<0)return;gl.bindBuffer(gl.ARRAY_BUFFER,B[k]);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,size,gl.FLOAT,false,0,0)};
-const off=pr=>{for(let i=0;i<4;i++)gl.disableVertexAttribArray(i)};
+const off=pr=>{for(let i=0;i<8;i++)gl.disableVertexAttribArray(i)};
 /* ---------- math ---------- */
 function persp(f,a,n,fa){const t=1/Math.tan(f/2);return[t/a,0,0,0,0,t,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0]}
 function look(e,c,u){let z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]];let l=Math.hypot(...z);z=z.map(v=>v/l);let x=[u[1]*z[2]-u[2]*z[1],u[2]*z[0]-u[0]*z[2],u[0]*z[1]-u[1]*z[0]];l=Math.hypot(...x);x=x.map(v=>v/l);const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];return[x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1]}
@@ -129,7 +155,7 @@ function draw(){
   EYE=camEye(cam);MVP=mul(persp(.78,W0/H0,2,5000),look(EYE,cam.t,[0,1,0]));
   gl.useProgram(PM);gl.uniformMatrix4fv(gl.getUniformLocation(PM,'m'),false,MVP);gl.uniform3fv(gl.getUniformLocation(PM,'eye'),EYE);gl.uniform3fv(gl.getUniformLocation(PM,'fog'),bg);gl.uniform2f(gl.getUniformLocation(PM,'fr'),cam.d*1.3,cam.d*3.4+700);
   gl.uniform3fv(gl.getUniformLocation(PM,'ld'),sunDir());gl.uniformMatrix4fv(gl.getUniformLocation(PM,'lm'),false,LM);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,smTex);gl.uniform1i(gl.getUniformLocation(PM,'sm'),0);gl.uniform1f(gl.getUniformLocation(PM,'smOn'),evid?0:1);gl.uniform1f(gl.getUniformLocation(PM,'smT'),1/SMS);gl.uniform1f(gl.getUniformLocation(PM,'sk'),C.dark?.4:.52);
-  attr(PM,'p','p',3);attr(PM,'n','n',3);attr(PM,'c','c',3);gl.drawArrays(gl.TRIANGLES,0,G.n);off();
+  gl.uniform1f(gl.getUniformLocation(PM,'fac'),fac&&!evid?1:0);gl.uniform1f(gl.getUniformLocation(PM,'dk'),C.dark?1:0);attr(PM,'p','p',3);attr(PM,'n','n',3);attr(PM,'c','c',3);attr(PM,'f','f',4);gl.drawArrays(gl.TRIANGLES,0,G.n);off();
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
   if(G.sk){gl.depthMask(false);gl.useProgram(PK);gl.uniformMatrix4fv(gl.getUniformLocation(PK,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PK,'k'),C.dark?.35:.2);gl.bindBuffer(gl.ARRAY_BUFFER,B.sk);const l0=gl.getAttribLocation(PK,'p'),l1=gl.getAttribLocation(PK,'a');gl.enableVertexAttribArray(l0);gl.vertexAttribPointer(l0,3,gl.FLOAT,false,16,0);gl.enableVertexAttribArray(l1);gl.vertexAttribPointer(l1,1,gl.FLOAT,false,16,12);gl.drawArrays(gl.TRIANGLES,0,G.sk);off();gl.depthMask(true)}
   if(cam.d<1300){gl.useProgram(PL);gl.uniformMatrix4fv(gl.getUniformLocation(PL,'m'),false,MVP);attr(PL,'p','lp',3);attr(PL,'c','lc',4);gl.drawArrays(gl.LINES,0,G.ln);off()}
@@ -159,10 +185,10 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const NOTE={'108941034':'q30','108941040':'q31','113120039':'q32'};
 const fmt=n=>n.toLocaleString(document.documentElement.lang||'ru',{maximumFractionDigits:1});
 function showCard(){
-  card.classList.toggle('empty',sel==null);if(sel==null){card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T('q21')}</p>`;return}
+  card.classList.toggle('empty',sel==null);if(sel==null){card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T(fac&&!evid?'q73':'q21')}</p>`;return}
   if(sel>=1000){const b=D.DF[sel-1000];card.innerHTML=`<span class="eyebrow">${T('q33')}</span><h3>${esc(b[0]||T('q22'))}</h3><p>${T('q34')}</p><dl><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q18')}</dt><dd>${T('q37')} <b class="gb e">E</b></dd></dl><a class="mono" href="#frames">${T('q35')}</a>`;return}
   const b=D.B[sel-1];const a=Math.abs(area(b[2]));
-  card.innerHTML=`<span class="eyebrow">OSM way/${b[1]}</span><h3>${esc(b[0]||T('q22'))}</h3>${NOTE[b[1]]?`<p>${T(NOTE[b[1]])}</p>`:''}<dl><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3])} ${T('q38')} · ${T(b[4]?'q26':'q27')} <b class="gb e">E</b></dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd></dl><a class="mono" href="https://www.openstreetmap.org/way/${b[1]}" target="_blank" rel="noopener">${T('q29')}</a>`}
+  card.innerHTML=`<span class="eyebrow">OSM way/${b[1]}</span><h3>${esc(b[0]||T('q22'))}</h3>${NOTE[b[1]]?`<p>${T(NOTE[b[1]])}</p>`:''}<dl><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3])} ${T('q38')} · ${T(b[4]?'q26':'q27')} <b class="gb e">E</b></dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd>${fac&&!evid?`<dt>${T('q71')}</dt><dd>${T('q'+matOf(b).key)} · <i>${T('q72')}</i></dd>`:''}</dl><a class="mono" href="https://www.openstreetmap.org/way/${b[1]}" target="_blank" rel="noopener">${T('q29')}</a>`}
 function showLegend(){leg.hidden=!evid;if(!evid)return;leg.innerHTML=`<span class="eyebrow">${T('q40')}</span><ul><li><b class="gb f">F</b>${T('q41')}</li><li><b class="gb e">E</b>${T('q42')}</li><li><b class="gb c">C</b>${T('q43')}</li></ul><p>${T('q44')}</p>`}
 /* ---------- input ---------- */
 const pts=new Map();let drag=null,moved=0;
@@ -184,6 +210,7 @@ box.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{c
 const tog=(id,fn)=>{const b=document.getElementById(id);b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);fn(on)})};
 tog('q3hist',on=>{showHist=on;build(evid);dirty=true});
 tog('q3ex',on=>{EX=on?3:1;build(evid);dirty=true});
+tog('q3fac',on=>{fac=on;build(evid);showCard();dirty=true});
 tog('q3ev',on=>{evid=on;box.classList.toggle('evid',on);build(evid);showLegend();dirty=true});
 /* touch activation */
 const act=document.getElementById('q3act'),done=document.getElementById('q3done');

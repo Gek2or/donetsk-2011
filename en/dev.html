@@ -1,0 +1,255 @@
+<!doctype html><html lang="en" data-plang="en"><head><meta charset="utf-8"><base href="../"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Donetsk 2011"><meta name="viewport" content="width=device-width,initial-scale=1"><script>(function(){var r=document.documentElement,R=Math.PI/180;function sun(d){var n=(d||new Date())/864e5+2440587.5-2451545,L=280.46+.9856474*n,g=(357.528+.9856003*n)*R,l=(L+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R,ra=Math.atan2(Math.cos(e)*Math.sin(l),Math.cos(l)),de=Math.asin(Math.sin(e)*Math.sin(l)),gm=(18.697374558+24.06570982441908*n)%24,H=(gm*15+37.8028)*R-ra,la=48.0159*R;return{alt:Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(H))/R,am:Math.sin(H)<0}}function phase(d){var s=sun(d);return s.alt<-5?'night':s.alt<7?(s.am?'dawn':'dusk'):'day'}function mode(){try{return localStorage.getItem('d11-theme')||'auto'}catch(e){return'auto'}}function apply(){var m=mode(),p=phase();r.dataset.phase=p;r.dataset.mode=m;r.dataset.theme=m==='auto'?(p==='night'?'dark':'light'):m;return p}window.__dn={sun:sun,phase:phase,mode:mode,apply:apply};apply();})();</script><title>Donetsk 2011 · Development</title><meta name="description" content="What I am building and by which rules: the goal, the evidence method, the engine and blockout, the plan to the whole city, the log with sound made without AI, and every source."><link rel="canonical" href="https://gek2or.github.io/donetsk-2011/en/dev.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Donetsk 2011"><meta property="og:title" content="Donetsk 2011 · Development"><meta property="og:description" content="What I am building and by which rules: the goal, the evidence method, the engine and blockout, the plan to the whole city, the log with sound made without AI, and every source."><meta property="og:url" content="https://gek2or.github.io/donetsk-2011/en/dev.html"><meta property="og:image" content="https://gek2or.github.io/donetsk-2011/assets/og/dev.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_US"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="uk_UA"><meta property="og:locale:alternate" content="fi_FI"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#10171d"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/alegreya-normal-latin.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/literata-normal-latin.woff2"><link rel="alternate" type="application/rss+xml" hreflang="ru" title="Donetsk 2011 · обновления" href="https://gek2or.github.io/donetsk-2011/feed.xml"><link rel="alternate" type="application/rss+xml" hreflang="uk" title="Donetsk 2011 · оновлення" href="https://gek2or.github.io/donetsk-2011/feed-uk.xml"><link rel="alternate" type="application/rss+xml" hreflang="en" title="Donetsk 2011 · updates" href="https://gek2or.github.io/donetsk-2011/feed-en.xml"><link rel="alternate" type="application/rss+xml" hreflang="fi" title="Donetsk 2011 · päivitykset" href="https://gek2or.github.io/donetsk-2011/feed-fi.xml"><link rel="alternate" hreflang="ru" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="alternate" hreflang="uk" href="https://gek2or.github.io/donetsk-2011/uk/dev.html"><link rel="alternate" hreflang="en" href="https://gek2or.github.io/donetsk-2011/en/dev.html"><link rel="alternate" hreflang="fi" href="https://gek2or.github.io/donetsk-2011/fi/dev.html"><link rel="alternate" hreflang="x-default" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/site.css?v=3a44e9f1"></head><body data-pt="n4">
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<a class="skip" href="#main" data-t="sk1">Skip to content</a><nav aria-label="Sections" class="nav" data-ta="aria-label:a1">
+<div class="wrap">
+<a class="brand" href="en/index.html">DONETSK<b>/</b>2011</a>
+<span class="dn-chip mono" aria-hidden="true"><i>◷</i><b>--:--</b><small></small></span><span hidden data-t="dn1">night</span><span hidden data-t="dn2">dawn</span><span hidden data-t="dn3">day</span><span hidden data-t="dn4">dusk</span><span hidden data-t="dn5">Now in Donetsk</span><span hidden data-t="dn6">Theme: Donetsk time</span><span hidden data-t="dn7">Theme: light</span><span hidden data-t="dn8">Theme: dark</span><span hidden data-t="dn9">The site lives on Donetsk time: it gets dark when it is night in Donetsk.</span><ul><li><a class="l" data-t="n1" href="en/index.html">Home</a></li><li><a class="l" data-t="n2" href="en/city.html">The city</a></li><li><a class="l" data-t="n3" href="en/model.html">Reconstruction</a></li><li><a class="l on" data-t="n4" href="en/dev.html" aria-current="page">Development</a></li><li><a class="l" data-t="n5" href="en/updates.html">Updates</a></li><li><a class="l" data-t="n7" href="en/help.html">Help</a></li></ul>
+<div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Switch theme" class="theme" data-ta="aria-label:a10" id="themeBtn" type="button">◐</button>
+<span class="nav-cur mono" data-t="n4">Development</span><button type="button" class="srch-btn" id="srchBtn" aria-haspopup="dialog" aria-controls="srch" aria-label="Search the site" data-ta="aria-label:sr0"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" class="burger" id="burger" aria-expanded="false" aria-controls="mnav" aria-label="Menu" data-ta="aria-label:mn1"><i></i><i></i><i></i></button>
+</div>
+<div class="mnav" id="mnav"><div class="wrap">
+<p class="eyebrow" data-t="mn2">Site sections</p>
+<ol class="mpages"><li><a class="" href="en/index.html"><b data-t="n1">Home</b><span data-t="mn4">The story, a film about Donetsk and the ways into each section.</span></a></li><li><a class="" href="en/city.html"><b data-t="n2">The city</b><span data-t="c2">A photo archive of Donetsk before 2014, the “Guess the place” game and a memory map where you can add your own memory.</span></a></li><li><a class="" href="en/model.html"><b data-t="n3">Reconstruction</b><span data-t="c3">The 3D quarter in your browser, a walk down Zarichna, the October 2011 panoramas and the street plan.</span></a></li><li><a class="on" href="en/dev.html" aria-current="page"><b data-t="n4">Development</b><span data-t="c4">The project goal, the evidence method, the engine and blockout, the plan to the whole city and the development log.</span></a></li><li><a class="" href="en/updates.html"><b data-t="n5">Updates</b><span data-t="c5">The change feed for the game and the site: new, improved, fixed.</span></a></li><li><a class="" href="en/press.html"><b data-t="n6">Press</b><span data-t="c6">Description, facts, images and a logo for coverage.</span></a></li><li><a class="" href="en/help.html"><b data-t="n7">Help</b><span data-t="c7">Photos, memories and other ways to help the project</span></a></li><li><a class="" href="en/sound.html"><b data-t="n8">Sounds</b><span data-t="c8">Sound diary: recordings and music for the game, made without AI</span></a></li></ol>
+<p class="eyebrow" data-t="mn3">On this page</p>
+<div class="mchips"><a href="#goal" data-t="dv1">Goal</a><a href="#method" data-t="t7">Method</a><a href="#build" data-t="t8">Engine</a><a href="#frames" data-t="t57">Blockout</a><a href="#roadmap" data-t="t9">Roadmap</a><a href="#dev" data-t="dv4">Log</a><a href="#sources" data-t="t178">Sources</a></div>
+<div class="mfoot"><div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Switch theme" class="theme" data-ta="aria-label:a10" id="themeBtn2" type="button">◐</button></div>
+<span hidden data-t="mn7">Show the whole log</span><span hidden data-t="mn8">Collapse the log</span>
+</div></div>
+</nav>
+<header class="phead" id="top">
+<div class="wrap phead-grid">
+<div class="phead-text">
+<div class="eyebrow">DONETSK 2011</div>
+<h1 data-t="pd1">Development</h1>
+<p class="lede" data-t="pd2">What I am building and by which rules: the goal, the evidence method, the engine and blockout, the plan to the whole city, the log with sound made without AI, and every source.</p>
+<nav class="chips" aria-label="Разработка"><a href="#goal" data-t="dv1">Goal</a><a href="#method" data-t="t7">Method</a><a href="#build" data-t="t8">Engine</a><a href="#frames" data-t="t57">Blockout</a><a href="#roadmap" data-t="t9">Roadmap</a><a href="#dev" data-t="dv4">Log</a><a href="#sources" data-t="t178">Sources</a></nav>
+</div>
+<figure class="phead-img"><img src="img/render/plan_top.jpg" alt="" referrerpolicy="no-referrer" fetchpriority="high"/><figcaption><span class="mono"><span data-t="rn1">3D model of the quarter · OSM + SRTM</span></span></figcaption></figure>
+</div>
+</header>
+<main id="main" tabindex="-1">
+<section id="goal">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>01</b><span data-t="dv1">Goal</span></div><h2 data-t="dv2">What I am building</h2></div>
+<p class="lede" data-t="dv3">Not a game inspired by Donetsk but the city itself: living Donetsk in 2011 with a layer of memory on top. Five pillars decide what the game will be.</p>
+</div>
+    <blockquote class="manifesto">
+      <p data-t="d4">This project is not a way to pass the time. In essence, it is a missing part of me.</p>
+      <p data-t="d5">I am sure that a great many people still consider this city their own and remember it the way I do. It is a part of them. A part that exists but is physically out of reach.</p>
+      <cite class="mono" data-t="d6">Stanislav</cite>
+    </blockquote>
+<blockquote class="north"><span class="eyebrow" data-t="r1">The main goal</span><p data-t="r2">“This is not a city inspired by Donetsk. This is Donetsk.”</p><small data-t="r3">After 20–30 minutes of play, a person should feel two things at once: “I am in the real Donetsk” and “this is a living open world, not a museum”.</small></blockquote>
+<div class="layers">
+<div><span class="eyebrow" data-t="t172">Layer 1</span><h3 data-t="t173">Living Donetsk 2011</h3><p data-t="t174" style="color:var(--ink-2)">A systemic open world: traffic, vehicles, residents' daily routines, an economy, the city's reactions and missions. Combat is not the core of the game. Real geometry comes before level-design convenience.</p></div>
+<div><span class="eyebrow" data-t="t175">Layer 2</span><h3 data-t="t176">The memory layer</h3><p data-t="t177" style="color:var(--ink-2)">“Memory Echoes”: flashbacks to earlier years at real places on Zarichna Street. The city seen through the eyes of someone who grew up there.</p></div>
+</div>
+<div class="pillars"><span class="eyebrow" data-t="p0" style="color:var(--muted)">Five pillars of the game</span><ol><li><b data-t="p1">Live in the real city</b><span data-t="p2">Walk, take the tram and the marshrutka, buy bread, sit on the bench.</span></li><li><b data-t="p3">The city lives without you</b><span data-t="p4">Residents have homes, jobs and routines. Yards keep their own rhythm through the time of day and the weather.</span></li><li><b data-t="p5">Freedom with consequences</b><span data-t="p6">The world notices what you do through witnesses, reputation and the militsiya, and responds in proportion.</span></li><li><b data-t="p7">Memory as discovery</b><span data-t="p8">Real places unlock memories. Exploring the city is how you find the personal story.</span></li><li><b data-t="p9">Small, human stakes</b><span data-t="p10">Family, friends, neighbours, work and the district. No criminal empires.</span></li></ol></div>
+</div>
+</section>
+<section id="method">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>02</b><span data-t="t82">Method</span></div><h2 data-t="t83">Nothing is invented</h2></div>
+<p class="lede" data-t="t84">Every detail carries an evidence class. If a window is not visible in a panorama, it is not in the model. If a size is estimated by eye, the data says so. That keeps the reconstruction honest as it grows to the scale of a city.</p>
+</div>
+<div class="classes">
+<div class="cls"><div class="sw" style="background:var(--moss)"></div><h3 data-t="t85">Observed in 2011</h3><p data-t="t86">Visible in the October 2011 panorama: material, colour, shape, number of windows.</p><span class="ex" data-t="t87">90 reference objects · 419 facade elements</span></div>
+<div class="cls"><div class="sw" style="background:var(--steel)"></div><h3 data-t="t88">Current footprint</h3><p data-t="t89">Building footprints and street centrelines from OpenStreetMap. They anchor the geometry but do not prove what stood there in 2011.</p><span class="ex" data-t="t90">126 footprints · snapshot of 22.09.2026</span></div>
+<div class="cls"><div class="sw" style="background:var(--amber)"></div><h3 data-t="t91">Author's estimate</h3><p data-t="t92">Heights, window sizes, tree positions. Flagged in the data and replaced as soon as a source turns up.</p><span class="ex" data-t="t93">71 trees · 847 fence posts · 106 roofs</span></div>
+<div class="cls"><div class="sw" style="background:repeating-linear-gradient(90deg,var(--muted) 0 6px,transparent 6px 10px)"></div><h3 data-t="t94">Not reconstructed</h3><p data-t="t95">Hidden facades, interiors and asphalt repairs whose positions cannot be fixed from the frame.</p><span class="ex" data-t="t96">hidden windows and doors are never invented</span></div>
+</div>
+<div aria-label="Source reliability scale" class="grades" data-ta="aria-label:a97">
+<div class="gr-head"><span class="eyebrow" data-t="t98" style="color:var(--muted)">Reliability scale in the source register</span></div>
+<div class="gr-bar">
+<div class="g" style="--c:var(--moss)"><b>A</b><span data-t="t99">verified for 2011</span></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 70%,var(--amber))"><b>B</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 40%,var(--amber))"><b>C</b></div>
+<div class="g" style="--c:var(--amber)"><b>D</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--amber) 60%,var(--steel))"><b>E</b></div>
+<div class="g" style="--c:var(--steel)"><b>F</b><span data-t="t100">modern data only</span></div>
+<div class="g x" style="--c:var(--muted)"><b>X</b><span data-t="t101">restricted sources</span></div>
+</div>
+<p class="mono" data-t="t102" style="color:var(--muted)">Google and Yandex serve only as visual reference. Their imagery never goes into the game.</p>
+</div>
+<div class="pipeline">
+<div><b data-t="t103">Source</b><span>OSM API, SRTM3, Street View 10.2011</span></div>
+<div><b data-t="t104">Register</b><span data-t="t105">JSON with date, hash and limits</span></div>
+<div><b>GIS</b><span data-t="t106">ENU metres from 33 Zarichna St</span></div>
+<div><b>Graybox</b><span data-t="t107">Blender, build scripts</span></div>
+<div><b data-t="t108">Checks</b><span data-t="t109">footprint audit, ground, collisions</span></div>
+<div><b data-t="t110">Art</b><span data-t="t111">materials and details from observations</span></div>
+<div><b data-t="t112">Engine</b><span>Unreal Engine 5.8</span></div>
+</div>
+<figure class="srccmp">
+<img alt="Comparison of OSM plans: today and July 2011" data-ta="alt:m3" loading="lazy" src="img/ue/source_plan_comparison.jpg"/>
+<figcaption><span class="eyebrow" data-t="m1">Conflict C-04 is open</span><p data-t="m2">White lines: today's OSM map. Orange lines: versions of the same database valid in July 2011. The difference reaches 3.23 m on Zarichna and 7.92 m on Donetska. This does not prove the roads moved: the map's accuracy may have changed. Both versions are kept until a dated source settles it.</p></figcaption>
+</figure>
+<article class="rules rules-wide">
+        <span class="eyebrow" data-t="d14">Development rules</span>
+        <ol>
+          <li data-t="d15">Invent nothing. Every detail has a source and a reliability class from A to F, or X.</li>
+          <li data-t="d16">Real geometry comes before level-design convenience.</li>
+          <li data-t="d17">Google and Yandex imagery is reference only and never goes into the game.</li>
+          <li data-t="d18">Sound and music are made by hand, without AI.</li>
+          <li data-t="d19">The city grows in rings: Zarichna Street, the Voroshylovskyi district, the neighbouring districts, all of Donetsk. Finished work is never redone.</li>
+          <li data-t="d31">The unknown stays labelled. An estimated height is never passed off as fact, and a house number or sign appears only with a grade C source or better.</li>
+        </ol>
+      </article>
+</div>
+</section>
+<section id="build">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>03</b><span data-t="t113">Engine</span></div><h2 data-t="t114">From prototype to Unreal Engine 5.8</h2></div>
+<p class="lede" data-t="t115">Zarichna was first assembled in a quick Unity prototype. The project now lives in Unreal Engine 5.8.3 with C++, while the models stay editable in Blender. Coordinates, the source register and the build scripts carried over unchanged. The whole early Unity and Blender history is preserved in an archive branch.</p>
+</div>
+<div class="engines">
+<div class="eng now">
+<div class="eng-top"><span class="status wip" data-t="t116">current engine</span><span class="mono">2026 →</span></div>
+<h3>Unreal Engine 5.8</h3>
+<p data-t="t117">The main platform of Donetsk 2011. Opening the project starts the playable L_ZarechnaQuarter map, and you can already walk through it. City systems (residents, traffic, vehicles, interiors) are tested separately in a synthetic test district and stay out of the reconstruction until there are sources for them.</p>
+<table>
+<tr><th data-t="t118">Version</th><td class="mono">UE 5.8.3 · C++ · DX11</td></tr>
+<tr><th data-t="t119">Startup map</th><td class="mono">L_ZarechnaQuarter</td></tr>
+<tr><th data-t="t120">Working frame</th><td data-t="t121">280 × 660 m, 189 volumes, a 412 m corridor</td></tr>
+<tr><th data-t="t122">Checks</th><td data-t="t123">18 surfaces, ≈ 564 m routes, 38 GIS tests</td></tr>
+<tr><th data-t="t124">Build</th><td data-t="t125">Windows player: pause, save, load</td></tr>
+</table>
+</div>
+<div class="eng past">
+<div class="eng-top"><span class="status done" data-t="t126">prototype complete</span><span class="mono">09.2026</span></div>
+<h3 data-t="t127">Unity prototype of Zarichna</h3>
+<p data-t="t128">A test of the method on a real block. The data, Blender models and findings carry over to Unreal.</p>
+<table>
+<tr><th data-t="t129">Scene</th><td data-t="t130">400 m block, 210 m corridor, 19 plots</td></tr>
+<tr><th data-t="t131">Geometry</th><td data-t="t132">234,415 / 46,930 triangles (LOD0 / LOD1)</td></tr>
+<tr><th data-t="t133">Collisions</th><td data-t="t134">198 colliders · 11,502 triangles</td></tr>
+<tr><th data-t="t135">Materials</th><td data-t="t136">20 surface families, 10 ambientCG CC0 assets</td></tr>
+</table>
+<ul class="checks">
+<li><span class="status done" data-t="t137">passed</span><span data-t="t138">6 controller routes, 1,200 m, 1,002 ground samples</span></li>
+<li><span class="status done" data-t="t139">passed</span><span data-t="t140">Audit of 126 footprints: no overlaps, no roof spill</span></li>
+<li><span class="status done" data-t="t141">passed</span><span data-t="t142">Blender/FBX: units, UVs, ground at 61 points, facade collision</span></li>
+<li><span class="status done" data-t="t143">passed</span><span data-t="t144">Windows and Android test builds</span></li>
+</ul>
+</div>
+</div>
+<div class="carry sys">
+<span class="eyebrow" data-t="b1" style="color:var(--muted)">Systems in code · Source/Donetsk2011</span>
+<div class="carry-row mono"><span>Core</span><span>WorldState / Save</span><span>GIS</span><span>Player</span><span>Vehicles</span><span>Traffic</span><span>Population</span><span>Interaction</span><span>Interior</span><span>Memory</span><span>Narrative</span><span>Environment</span><span>Audio</span><span>UI</span></div>
+<p data-t="b2" style="color:var(--ink-2);font-size:14px">Game data lives in JSON: missions, dialogue, memory echoes, residents, vehicles, interiors, shops and items. Architecture decisions are recorded in ADR-0001…0006: a world from the database, a simple arcade car before Chaos, actors before Mass, interiors at their true location.</p>
+</div>
+</div>
+</section>
+<section id="frames">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>04</b><span data-t="t57">Blockout</span></div><h2 data-t="t58">Blockout in Unreal Engine 5.8</h2></div>
+<p class="lede" data-t="t59">Working captures from the Unreal Engine 5.8.3 editor: the street is assembled from the October 2011 panoramas, with fences, gates, gas pipes, poles, trees and verges. Materials are still simple; dimensions and planting remain grade E estimates.</p>
+</div>
+<div class="ba" id="ba">
+<div class="ba-head"><span class="eyebrow" data-t="cm5">Before / after</span><p data-t="cm6">The same Unreal frame: the early blockout and the version after the surfaces pass. Asphalt, verge soil, grass, shrubs and trees are checked against the October 2011 panoramas. Drag the line.</p></div>
+<figure class="cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><img class="cmp-b" src="img/ue/southern_corridor.jpg" alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono" data-t="cm1">Before</span><span class="cmp-l r mono" data-t="cm2">After</span><input class="cmp-r" type="range" min="0" max="100" value="50" data-ta="aria-label:cm3" aria-label="Compare: before and after"></div></figure>
+<div class="ba-tabs" role="group" data-ta="aria-label:cm5" aria-label="Before / after">
+<button type="button" aria-pressed="true" data-k="southern_corridor"><img src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><span data-t="cm7">Southern corridor</span></button>
+<button type="button" aria-pressed="false" data-k="middle_corridor"><img src="img/ue2/middle_corridor.jpg" alt="" loading="lazy"><span data-t="cm8">Middle of the street</span></button>
+<button type="button" aria-pressed="false" data-k="p19_west_frontages"><img src="img/ue2/p19_west_frontages.jpg" alt="" loading="lazy"><span data-t="cm9">West frontages, point 19</span></button>
+<button type="button" aria-pressed="false" data-k="p5_east_frontages"><img src="img/ue2/p5_east_frontages.jpg" alt="" loading="lazy"><span data-t="cm10">East frontages, point 5</span></button>
+</div>
+</div>
+<div class="gal">
+<figure><img alt="The house 33 gate from the 2011 panorama position: scalloped concrete panels" data-ta="alt:fa1" loading="lazy" src="img/ue2/z33_2011_gate_match.jpg"/><figcaption><span data-t="f1">The house 33 gate from the 2011 panorama position: scalloped concrete panels</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Northern Zarichna: planting along the east verge" data-ta="alt:fa2" loading="lazy" src="img/ue2/northern_2011_road_match.jpg"/><figcaption><span data-t="f2">Northern Zarichna: planting along the east verge</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="The first 67 m looking north: sheet metal, brick, gardens and the gas pipe" data-ta="alt:fa3" loading="lazy" src="img/ue2/p30_p27_north.jpg"/><figcaption><span data-t="f3">The first 67 m looking north: sheet metal, brick, gardens and the gas pipe</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="East side at labels 30 and 27: hipped roofs and gates" data-ta="alt:fa4" loading="lazy" src="img/ue2/p30_p27_east_frontages.jpg"/><figcaption><span data-t="f4">East side at labels 30 and 27: hipped roofs and gates</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Southern corridor: open fence, canopy, brick and dirt shoulders" data-ta="alt:fa5" loading="lazy" src="img/ue2/southern_corridor.jpg"/><figcaption><span data-t="f5">Southern corridor: open fence, canopy, brick and dirt shoulders</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Looking north from label 30: a low board fence and an open forecourt" data-ta="alt:fa6" loading="lazy" src="img/ue2/z30_2011_north_match.jpg"/><figcaption><span data-t="f6">Looking north from label 30: a low board fence and an open forecourt</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Middle Zarichna: dark timber, brick, gardens and the yellow gas pipe" data-ta="alt:fa7" loading="lazy" src="img/ue2/middle_corridor.jpg"/><figcaption><span data-t="f7">Middle Zarichna: dark timber, brick, gardens and the yellow gas pipe</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Label 19: gas pipe, concrete poles and lamps" data-ta="alt:fa8" loading="lazy" src="img/ue2/p19_west_frontages.jpg"/><figcaption><span data-t="f8">Label 19: gas pipe, concrete poles and lamps</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Label 5: a pale house, a dark roof and a planted verge" data-ta="alt:fa9" loading="lazy" src="img/ue2/p5_east_frontages.jpg"/><figcaption><span data-t="f9">Label 5: a pale house, a dark roof and a planted verge</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Approach to Lahutenka: brown metal and grey precast fences" data-ta="alt:fa10" loading="lazy" src="img/ue2/lagutenko_approach.jpg"/><figcaption><span data-t="f10">Approach to Lahutenka: brown metal and grey precast fences</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="The north: a retaining wall, a raised lawn and conifers" data-ta="alt:fa11" loading="lazy" src="img/ue2/northern_terrace.jpg"/><figcaption><span data-t="f11">The north: a retaining wall, a raised lawn and conifers</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Service court of the northern building: doors, vents and apron" data-ta="alt:fa12" loading="lazy" src="img/ue2/northern_service_court.jpg"/><figcaption><span data-t="f12">Service court of the northern building: doors, vents and apron</span><span class="mono">UE 5.8</span></figcaption></figure>
+</div>
+<p class="mono gal-note" data-t="f13">Captured in Unreal itself on 28–30 September 2026, DX11. No Google pixels enter the scene. Label numbers mark panorama cameras, not plots. Planting, panels and dimensions remain grade E estimates.</p>
+</div>
+</section>
+<section id="roadmap">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>05</b><span data-t="t153">Roadmap</span></div><h2 data-t="t154">The road to a whole city</h2></div>
+<p class="lede" data-t="t155">Right now: a short complete route inside the quarter with one everyday interaction. Next, the vertical slice: a playable mini-version of the final game. After that, the same technology spreads across the district and the city.</p>
+</div>
+<div class="road-map" id="roadmapEl"></div>
+</div>
+</section>
+<section id="dev" class="dev">
+  <div class="wrap">
+    <div class="head">
+      <div><div class="code"><b>06</b><span data-t="dv4">Log</span></div><h2 data-t="d2">How the city is born</h2></div>
+      <p class="lede" data-t="d3">This is where I explain how the work goes: the rules I follow, what is already done and what comes next. This section grows along with the project.</p>
+    </div>
+    <div class="dev-grid">
+      <article class="sound">
+        <canvas id="wave" aria-hidden="true"></canvas>
+        <span class="eyebrow" data-t="d7">Sound and music</span>
+        <h3 data-t="d8">Only my own feelings. No AI.</h3>
+        <p data-t="d9">I create the sound design and music for Donetsk 2011 myself, guided only by my own feelings. No artificial intelligence: no generated music and no generated sounds.</p>
+        <p data-t="d10">Only original experiments. Every sound and every melody has to be lived, not generated.</p>
+        <ul class="tags"><li data-t="d11">Sound design: by me</li><li data-t="d12">Music: by me</li><li data-t="d13">AI generation: none</li></ul>
+      </article>
+<div class="shelf">
+<div><span class="eyebrow" data-t="g30">Sound diary</span><h3 data-t="g31">The shelf is empty for now</h3><p data-t="g32">My first sound sketches for Donetsk 2011 will go here. Each recording will have a date and a few words about what I felt while making it. No AI.</p></div>
+<ol class="slots"><li><span class="mono">01</span><i></i><em data-t="g33">soon</em></li><li><span class="mono">02</span><i></i><em data-t="g33">soon</em></li><li><span class="mono">03</span><i></i><em data-t="g33">soon</em></li></ol>
+</div>
+    </div>
+    <div class="devlog">
+      <span class="eyebrow" style="color:var(--muted)" data-t="d20">Development log</span>
+      <ol>
+        <li><time class="mono">13.09.2026</time><span data-t="d21">OpenStreetMap snapshot: 8,508 elements, a 4.37 × 2.84 km reference map of the centre.</span></li>
+        <li><time class="mono">14.09.2026</time><span data-t="d22">Origin confirmed: 33 Zarichna St, 47.9927461 N, 37.8183736 E.</span></li>
+        <li><time class="mono">21.09.2026</time><span data-t="d23">October 2011 Street View panoramas walked along Zarichna Street in both directions. The audit of 126 footprints found no overlaps.</span></li>
+        <li><time class="mono">22.09.2026</time><span data-t="d24">Unity prototype: 6 routes over 1,200 m, 1,002 ground samples, Windows and Android test builds.</span></li>
+        <li><time class="mono">23.09.2026</time><span data-t="d25">Move to Unreal Engine 5.8.3: the Development Editor build succeeded and the game launched on DX11. Decision DEC-0001: I start the First Playable while research continues in parallel.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d28">The first Windows player with a pause menu, saving and loading. A 54 m frontage study near no. 33 and eight frames captured straight from Unreal.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d26">Project website launched in four languages.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d29">A working Zarichna and Donetska quarter, 280 × 660 m: 189 volumes, SRTM terrain and a continuous 412 m corridor based on six October 2011 panoramas. 18 surface checks, ≈ 564 m routes along each street and 38 GIS tests passed.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d30">OSM in 2012 compared with today's map: 91 candidates, 18 reviewed. None entered the 2011 canon without dated imagery.</span></li>
+        <li><time class="mono">26.09.2026</time><span data-t="d32">New on the site: the 3D quarter with evidence mode, the walk down Zarichna, the “Guess the place” game and the sound diary shelf.</span></li>
+        <li><time class="mono">28.09.2026</time><span data-t="d34">The north of the quarter: a retaining wall with a lawn and conifers, end-wall windows and a service court without the misplaced annex. The first 67 m of the street got trees, shrubs, dirt shoulders and separate surfaces.</span></li>
+        <li><time class="mono">30.09.2026</time><span data-t="d35">The northern road and the house 33 gate were checked against the October 2011 panoramas: planting on the east verge, scalloped concrete panels, sheet metal turning to brick at label 27. DX11: 27 surface checks, 3 routes, 22 captures.</span></li>
+        <li class="now"><time class="mono">30.09.2026</time><span data-t="d33">Site: renders of the quarter with October sunlight and shadows, a 22-photo archive with filters and a viewer, a walk through the 3D model and a new page structure.</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+<section id="sources" style="border-bottom:0">
+<div class="wrap">
+<div class="head"><div><div class="code"><b>07</b><span data-t="t178">Sources</span></div><h2 data-t="t179">Source register</h2></div></div>
+<div class="srcs" id="srcs">
+<p data-t="t180"><b>OpenStreetMap.</b> Building footprints, roads, railways, water. © OpenStreetMap contributors, ODbL 1.0. Map snapshot 13.09.2026, block snapshot 22.09.2026. <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">openstreetmap.org/copyright</a></p>
+<p data-t="t181"><b>SRTM3 v2.1, tile N47E037.</b> Surveyed 11–22 Feb 2000, EGM96, Kurviger mirror of the USGS archive. SHA-256 3c78466e…6d58. <a href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-non" rel="noopener" target="_blank">USGS EROS</a></p>
+<p data-t="t182"><b>Google Street View, October 2011.</b> 8 panoramas of Zarichna Street, used for visual observations only. No Google imagery is stored or redistributed.</p>
+<p data-t="t183"><b>King's Tower.</b> A local history article dated 16.08.2012 confirms it was completed before 2011. <a href="https://donjetsk.com/homes/1414-korolevskaya-bashnya.html" rel="noopener" target="_blank">donjetsk.com</a></p>
+<p data-t="t184"><b>ambientCG.</b> 10 CC0 materials for 16 surface bindings. <a href="https://docs.ambientcg.com/license/" rel="noopener" target="_blank">License</a></p>
+<p data-t="t185"><b>Wikimedia Commons.</b> 22 photographs of Donetsk from 2008–2013 in the photo archive and the “Guess the place” game. The author and licence are listed with each image.</p>
+</div>
+</div>
+</section>
+</main>
+<div class="foot-nav wrap mono"><a href="en/index.html" data-t="n1">Home</a> · <a href="en/city.html" data-t="n2">The city</a> · <a href="en/model.html" data-t="n3">Reconstruction</a> · <a href="en/dev.html" data-t="n4">Development</a> · <a href="en/updates.html" data-t="n5">Updates</a> · <a href="en/press.html" data-t="n6">Press</a> · <a href="en/help.html" data-t="n7">Help</a> · <a href="en/sound.html" data-t="n8">Sounds</a> · <a class="rss" href="feed.xml" data-rss="1">RSS</a> <button type="button" class="pwa-inst" hidden data-t="pw0">Install as an app</button></div><div class="pwa-off mono" role="status" hidden data-t="pw1">You are offline. This is a saved copy of the page.</div>
+<dialog class="srch" id="srch" aria-labelledby="srchT"><form method="dialog" class="srch-top" role="search"><h2 class="srch-t" id="srchT" data-t="sr0">Search the site</h2><button type="submit" class="srch-x" value="close" aria-label="Close" data-ta="aria-label:sr3">×</button><input type="search" id="srchQ" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-labelledby="srchT" aria-describedby="srchN" placeholder="For example: Donbass Arena, panoramas, 3D" data-ta="placeholder:sr1"></form><p class="srch-n mono" id="srchN" aria-live="polite"></p><ol class="srch-r" id="srchR"></ol><span hidden data-t="sr2">Nothing found. Try another word.</span><span hidden data-t="sr4">Results: {n}</span><span hidden data-t="sr8">Loading…</span><span hidden data-t="sr5">Photo</span><span hidden data-t="sr6">Update</span><span hidden data-t="sr7">Then and later</span></dialog>
+<footer><div class="wrap"><span data-t="t186">DONETSK 2011 · Stanislav · a source-based reconstruction</span><span class="mono">47.9927461 N · 37.8183736 E</span></div></footer>
+
+
+
+<script src="photos/have.js"></script>
+<script src="assets/data-en.js?v=52ef085b"></script>
+<script src="assets/app.js?v=914f86ea"></script>
+
+</body></html>

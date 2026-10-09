@@ -1,0 +1,49 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Donetsk 2011 · offline</title><meta name="theme-color" content="#10171d">
+<style>
+:root{--paper:#eee7d8;--ink:#1d1912;--mute:#655a4b;--line:#d6cbb6;--acc:#a8323e}
+@media (prefers-color-scheme:dark){:root{--paper:#1a1713;--ink:#efe6d6;--mute:#b5a890;--line:#3a332a;--acc:#e2658a}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font:17px/1.55 Literata,Georgia,serif;min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+main{max-width:520px;width:100%}
+.mk{width:44px;height:44px;background:#141d26;display:grid;place-items:center;margin-bottom:28px}.mk i{width:20px;height:20px;border:3px solid #e2658a;display:block}
+.k{font:12px/1 "PT Mono",ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+h1{font:600 clamp(28px,7vw,40px)/1.1 Alegreya,Georgia,serif;margin:10px 0 14px}
+p{margin:0 0 18px;color:var(--mute)}
+ul{list-style:none;margin:0 0 24px;padding:0;border-top:1px solid var(--line)}
+li a{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+li a:hover,li a:focus-visible{color:var(--acc)}li small{font:12px "PT Mono",monospace;color:var(--mute)}
+button{font:inherit;font-size:15px;padding:10px 18px;border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+</style></head><body><main>
+<div class="mk" aria-hidden="true"><i></i></div>
+<div class="k">Donetsk 2011</div>
+<h1 id="h"></h1><p id="p"></p>
+<ul id="list"></ul>
+<button id="retry" type="button"></button>
+</main>
+<script>
+(function(){
+var L={ru:['Нет соединения','Эта страница ещё не сохранена на устройстве. Вот что можно открыть без сети:','Попробовать снова','Пока ничего не сохранено. Откройте сайт с интернетом, и прочитанные страницы будут доступны офлайн.'],
+uk:['Немає з’єднання','Ця сторінка ще не збережена на пристрої. Ось що можна відкрити без мережі:','Спробувати ще раз','Поки нічого не збережено. Відкрийте сайт з інтернетом, і прочитані сторінки будуть доступні офлайн.'],
+en:['You are offline','This page is not saved on your device yet. Here is what you can open without a connection:','Try again','Nothing is saved yet. Open the site while online and the pages you read will work offline.'],
+fi:['Ei yhteyttä','Tätä sivua ei ole vielä tallennettu laitteelle. Nämä voit avata ilman verkkoa:','Yritä uudelleen','Mitään ei ole vielä tallennettu. Avaa sivusto verkossa, niin lukemasi sivut toimivat ilman yhteyttä.']};
+var N={'':{ru:'Главная',uk:'Головна',en:'Home',fi:'Etusivu'},'index.html':{ru:'Главная',uk:'Головна',en:'Home',fi:'Etusivu'},'city.html':{ru:'Город',uk:'Місто',en:'The city',fi:'Kaupunki'},'model.html':{ru:'Реконструкция',uk:'Реконструкція',en:'Reconstruction',fi:'Rekonstruktio'},'dev.html':{ru:'Разработка',uk:'Розробка',en:'Development',fi:'Kehitys'},'updates.html':{ru:'Обновления',uk:'Оновлення',en:'Updates',fi:'Päivitykset'},'help.html':{ru:'Помочь',uk:'Допомогти',en:'Help',fi:'Auta'},'sound.html':{ru:'Звуковой дневник',uk:'Звуковий щоденник',en:'Sound diary',fi:'Äänipäiväkirja'},'press.html':{ru:'Для прессы',uk:'Для преси',en:'Press kit',fi:'Medialle'}};
+var m=location.pathname.match(/\/(uk|en|fi)\//),l=m?m[1]:null;
+if(!l){try{l=localStorage.getItem('d11-lang-pick')}catch(e){}}
+if(!L[l]){var n=(navigator.language||'ru').slice(0,2);l=L[n]?n:'ru'}
+document.documentElement.lang=l;var t=L[l];
+document.getElementById('h').textContent=t[0];document.getElementById('p').textContent=t[1];
+var b=document.getElementById('retry');b.textContent=t[2];b.onclick=function(){location.reload()};
+var ul=document.getElementById('list'),base=location.pathname.replace(/[^/]*$/,'').replace(/(uk|en|fi)\/$/,'');
+if(!('caches' in window)){ul.remove();return}
+caches.open('d11-pages').then(function(c){return c.keys()}).then(function(ks){
+  var seen={},rows=[];
+  ks.forEach(function(r){var u=new URL(r.url);if(u.origin!==location.origin)return;var rest=u.pathname.slice(base.length),mm=rest.match(/^(?:(uk|en|fi)\/)?((?:[a-z]+\.html)?)$/);if(!mm||!(mm[2] in N))return;
+    var key=(mm[1]||'ru')+'/'+(mm[2]||'index.html');if(seen[key])return;seen[key]=1;rows.push({u:u.pathname,lg:mm[1]||'ru',f:mm[2]||'index.html'})});
+  rows.sort(function(a,b){return (a.lg===l?0:1)-(b.lg===l?0:1)||Object.keys(N).indexOf(a.f)-Object.keys(N).indexOf(b.f)});
+  if(!rows.length){document.getElementById('p').textContent=t[3];ul.remove();return}
+  rows.forEach(function(r){var li=document.createElement('li'),a=document.createElement('a');a.href=r.u;a.innerHTML='<span></span><small></small>';a.firstChild.textContent=N[r.f][r.lg]||N[r.f].ru;a.lastChild.textContent=r.lg.toUpperCase();li.appendChild(a);ul.appendChild(li)});
+});
+})();
+</script></body></html>

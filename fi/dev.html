@@ -1,0 +1,255 @@
+<!doctype html><html lang="fi" data-plang="fi"><head><meta charset="utf-8"><base href="../"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Donetsk 2011"><meta name="viewport" content="width=device-width,initial-scale=1"><script>(function(){var r=document.documentElement,R=Math.PI/180;function sun(d){var n=(d||new Date())/864e5+2440587.5-2451545,L=280.46+.9856474*n,g=(357.528+.9856003*n)*R,l=(L+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R,ra=Math.atan2(Math.cos(e)*Math.sin(l),Math.cos(l)),de=Math.asin(Math.sin(e)*Math.sin(l)),gm=(18.697374558+24.06570982441908*n)%24,H=(gm*15+37.8028)*R-ra,la=48.0159*R;return{alt:Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(H))/R,am:Math.sin(H)<0}}function phase(d){var s=sun(d);return s.alt<-5?'night':s.alt<7?(s.am?'dawn':'dusk'):'day'}function mode(){try{return localStorage.getItem('d11-theme')||'auto'}catch(e){return'auto'}}function apply(){var m=mode(),p=phase();r.dataset.phase=p;r.dataset.mode=m;r.dataset.theme=m==='auto'?(p==='night'?'dark':'light'):m;return p}window.__dn={sun:sun,phase:phase,mode:mode,apply:apply};apply();})();</script><title>Donetsk 2011 · Kehitys</title><meta name="description" content="Mitä rakennan ja millä säännöillä: tavoite, todistemenetelmä, pelimoottori ja blockout, suunnitelma koko kaupunkiin, loki ilman tekoälyä tehtyine äänineen ja kaikki lähteet."><link rel="canonical" href="https://gek2or.github.io/donetsk-2011/fi/dev.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Donetsk 2011"><meta property="og:title" content="Donetsk 2011 · Kehitys"><meta property="og:description" content="Mitä rakennan ja millä säännöillä: tavoite, todistemenetelmä, pelimoottori ja blockout, suunnitelma koko kaupunkiin, loki ilman tekoälyä tehtyine äänineen ja kaikki lähteet."><meta property="og:url" content="https://gek2or.github.io/donetsk-2011/fi/dev.html"><meta property="og:image" content="https://gek2or.github.io/donetsk-2011/assets/og/dev.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="fi_FI"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="uk_UA"><meta property="og:locale:alternate" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#10171d"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/alegreya-normal-latin.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/literata-normal-latin.woff2"><link rel="alternate" type="application/rss+xml" hreflang="ru" title="Donetsk 2011 · обновления" href="https://gek2or.github.io/donetsk-2011/feed.xml"><link rel="alternate" type="application/rss+xml" hreflang="uk" title="Donetsk 2011 · оновлення" href="https://gek2or.github.io/donetsk-2011/feed-uk.xml"><link rel="alternate" type="application/rss+xml" hreflang="en" title="Donetsk 2011 · updates" href="https://gek2or.github.io/donetsk-2011/feed-en.xml"><link rel="alternate" type="application/rss+xml" hreflang="fi" title="Donetsk 2011 · päivitykset" href="https://gek2or.github.io/donetsk-2011/feed-fi.xml"><link rel="alternate" hreflang="ru" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="alternate" hreflang="uk" href="https://gek2or.github.io/donetsk-2011/uk/dev.html"><link rel="alternate" hreflang="en" href="https://gek2or.github.io/donetsk-2011/en/dev.html"><link rel="alternate" hreflang="fi" href="https://gek2or.github.io/donetsk-2011/fi/dev.html"><link rel="alternate" hreflang="x-default" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/site.css?v=3a44e9f1"></head><body data-pt="n4">
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<a class="skip" href="#main" data-t="sk1">Siirry sisältöön</a><nav aria-label="Osiot" class="nav" data-ta="aria-label:a1">
+<div class="wrap">
+<a class="brand" href="fi/index.html">DONETSK<b>/</b>2011</a>
+<span class="dn-chip mono" aria-hidden="true"><i>◷</i><b>--:--</b><small></small></span><span hidden data-t="dn1">yö</span><span hidden data-t="dn2">aamunkoitto</span><span hidden data-t="dn3">päivä</span><span hidden data-t="dn4">iltahämärä</span><span hidden data-t="dn5">Nyt Donetskissa</span><span hidden data-t="dn6">Teema: Donetskin aika</span><span hidden data-t="dn7">Teema: vaalea</span><span hidden data-t="dn8">Teema: tumma</span><span hidden data-t="dn9">Sivusto elää Donetskin ajassa: se tummuu, kun Donetskissa on yö.</span><ul><li><a class="l" data-t="n1" href="fi/index.html">Etusivu</a></li><li><a class="l" data-t="n2" href="fi/city.html">Kaupunki</a></li><li><a class="l" data-t="n3" href="fi/model.html">Rekonstruktio</a></li><li><a class="l on" data-t="n4" href="fi/dev.html" aria-current="page">Kehitys</a></li><li><a class="l" data-t="n5" href="fi/updates.html">Päivitykset</a></li><li><a class="l" data-t="n7" href="fi/help.html">Auta</a></li></ul>
+<div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Vaihda teemaa" class="theme" data-ta="aria-label:a10" id="themeBtn" type="button">◐</button>
+<span class="nav-cur mono" data-t="n4">Kehitys</span><button type="button" class="srch-btn" id="srchBtn" aria-haspopup="dialog" aria-controls="srch" aria-label="Hae sivustolta" data-ta="aria-label:sr0"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" class="burger" id="burger" aria-expanded="false" aria-controls="mnav" aria-label="Valikko" data-ta="aria-label:mn1"><i></i><i></i><i></i></button>
+</div>
+<div class="mnav" id="mnav"><div class="wrap">
+<p class="eyebrow" data-t="mn2">Sivuston osiot</p>
+<ol class="mpages"><li><a class="" href="fi/index.html"><b data-t="n1">Etusivu</b><span data-t="mn4">Tarina, elokuva Donetskista ja reitit osioihin.</span></a></li><li><a class="" href="fi/city.html"><b data-t="n2">Kaupunki</b><span data-t="c2">Donetskin valokuva-arkisto ajalta ennen vuotta 2014, ”Arvaa paikka” -peli ja muistojen kartta, johon voit lisätä oman muistosi.</span></a></li><li><a class="" href="fi/model.html"><b data-t="n3">Rekonstruktio</b><span data-t="c3">3D-kortteli selaimessa, kävely Zaritšnakadulla, lokakuun 2011 panoraamat ja katusuunnitelma.</span></a></li><li><a class="on" href="fi/dev.html" aria-current="page"><b data-t="n4">Kehitys</b><span data-t="c4">Hankkeen tavoite, todistemenetelmä, pelimoottori ja blockout, suunnitelma koko kaupunkiin ja kehitysloki.</span></a></li><li><a class="" href="fi/updates.html"><b data-t="n5">Päivitykset</b><span data-t="c5">Pelin ja sivuston muutosvirta: uutta, parannettua, korjattua.</span></a></li><li><a class="" href="fi/press.html"><b data-t="n6">Media</b><span data-t="c6">Kuvaus, faktat, kuvat ja logo julkaisuihin.</span></a></li><li><a class="" href="fi/help.html"><b data-t="n7">Auta</b><span data-t="c7">Kuvat, muistot ja muut tavat auttaa projektia</span></a></li><li><a class="" href="fi/sound.html"><b data-t="n8">Äänet</b><span data-t="c8">Äänipäiväkirja: pelin äänitteet ja musiikki ilman tekoälyä</span></a></li></ol>
+<p class="eyebrow" data-t="mn3">Tällä sivulla</p>
+<div class="mchips"><a href="#goal" data-t="dv1">Tavoite</a><a href="#method" data-t="t7">Menetelmä</a><a href="#build" data-t="t8">Pelimoottori</a><a href="#frames" data-t="t57">Blockout</a><a href="#roadmap" data-t="t9">Suunnitelma</a><a href="#dev" data-t="dv4">Loki</a><a href="#sources" data-t="t178">Lähteet</a></div>
+<div class="mfoot"><div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Vaihda teemaa" class="theme" data-ta="aria-label:a10" id="themeBtn2" type="button">◐</button></div>
+<span hidden data-t="mn7">Näytä koko loki</span><span hidden data-t="mn8">Tiivistä loki</span>
+</div></div>
+</nav>
+<header class="phead" id="top">
+<div class="wrap phead-grid">
+<div class="phead-text">
+<div class="eyebrow">DONETSK 2011</div>
+<h1 data-t="pd1">Kehitys</h1>
+<p class="lede" data-t="pd2">Mitä rakennan ja millä säännöillä: tavoite, todistemenetelmä, pelimoottori ja blockout, suunnitelma koko kaupunkiin, loki ilman tekoälyä tehtyine äänineen ja kaikki lähteet.</p>
+<nav class="chips" aria-label="Разработка"><a href="#goal" data-t="dv1">Tavoite</a><a href="#method" data-t="t7">Menetelmä</a><a href="#build" data-t="t8">Pelimoottori</a><a href="#frames" data-t="t57">Blockout</a><a href="#roadmap" data-t="t9">Suunnitelma</a><a href="#dev" data-t="dv4">Loki</a><a href="#sources" data-t="t178">Lähteet</a></nav>
+</div>
+<figure class="phead-img"><img src="img/render/plan_top.jpg" alt="" referrerpolicy="no-referrer" fetchpriority="high"/><figcaption><span class="mono"><span data-t="rn1">Korttelin 3D-malli · OSM + SRTM</span></span></figcaption></figure>
+</div>
+</header>
+<main id="main" tabindex="-1">
+<section id="goal">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>01</b><span data-t="dv1">Tavoite</span></div><h2 data-t="dv2">Mitä rakennan</h2></div>
+<p class="lede" data-t="dv3">Ei Donetskin innoittamaa peliä vaan itse kaupunki: elävä Donetsk vuonna 2011 ja muistojen kerros sen päällä. Viisi tukipilaria ratkaisee, millainen pelistä tulee.</p>
+</div>
+    <blockquote class="manifesto">
+      <p data-t="d4">Tämä hanke ei ole ajanvietettä. Pohjimmiltaan se on puuttuva osa minua.</p>
+      <p data-t="d5">Olen varma, että hyvin moni pitää yhä tätä kaupunkia omanaan ja muistaa sen samoin kuin minä. Se on osa heitä. Osa, joka on olemassa mutta fyysisesti saavuttamattomissa.</p>
+      <cite class="mono" data-t="d6">Stanislav</cite>
+    </blockquote>
+<blockquote class="north"><span class="eyebrow" data-t="r1">Päätavoite</span><p data-t="r2">”Tämä ei ole Donetskin innoittama kaupunki. Tämä on Donetsk.”</p><small data-t="r3">20–30 minuutin pelaamisen jälkeen pelaajan pitää tuntea kaksi asiaa yhtä aikaa: ”olen oikeassa Donetskissa” ja ”tämä on elävä avoin maailma, ei museo”.</small></blockquote>
+<div class="layers">
+<div><span class="eyebrow" data-t="t172">Kerros 1</span><h3 data-t="t173">Elävä Donetsk 2011</h3><p data-t="t174" style="color:var(--ink-2)">Systeeminen avoin maailma: liikenne, ajoneuvot, asukkaiden arki, talous, kaupungin reaktiot ja tehtävät. Taistelu ei ole pelin ydin. Todellinen geometria menee kenttäsuunnittelun mukavuuden edelle.</p></div>
+<div><span class="eyebrow" data-t="t175">Kerros 2</span><h3 data-t="t176">Muistikerros</h3><p data-t="t177" style="color:var(--ink-2)">”Muistin kaiut”: välähdyksiä aiemmilta vuosilta todellisissa paikoissa Zaritšnakadulla. Kaupunki sellaisen silmin, joka on kasvanut siellä.</p></div>
+</div>
+<div class="pillars"><span class="eyebrow" data-t="p0" style="color:var(--muted)">Pelin viisi tukipilaria</span><ol><li><b data-t="p1">Elä oikeassa kaupungissa</b><span data-t="p2">Kävele, matkusta raitiovaunulla ja maršrutkalla, osta leipää, istu penkillä.</span></li><li><b data-t="p3">Kaupunki elää ilman sinua</b><span data-t="p4">Asukkailla on koti, työ ja päivärytmi. Pihoilla on oma rytminsä vuorokaudenajan ja sään mukaan.</span></li><li><b data-t="p5">Vapaus ja seuraukset</b><span data-t="p6">Maailma huomaa tekosi todistajien, maineen ja miliisin kautta ja reagoi niihin suhteellisesti.</span></li><li><b data-t="p7">Muisti on löytöretki</b><span data-t="p8">Todelliset paikat avaavat muistoja. Kaupunkia tutkimalla löytää henkilökohtaisen tarinan.</span></li><li><b data-t="p9">Pienet inhimilliset panokset</b><span data-t="p10">Perhe, ystävät, naapurit, työ ja oma kaupunginosa. Ei rikollisimperiumeja.</span></li></ol></div>
+</div>
+</section>
+<section id="method">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>02</b><span data-t="t82">Menetelmä</span></div><h2 data-t="t83">Mitään ei ole keksitty</h2></div>
+<p class="lede" data-t="t84">Jokaisella yksityiskohdalla on näyttöluokka. Jos ikkunaa ei näy panoraamassa, sitä ei ole mallissa. Jos mitta on arvioitu silmämääräisesti, se kirjataan sen viereen. Näin rekonstruktio pysyy rehellisenä, vaikka se kasvaa kaupungin kokoiseksi.</p>
+</div>
+<div class="classes">
+<div class="cls"><div class="sw" style="background:var(--moss)"></div><h3 data-t="t85">Havaittu vuonna 2011</h3><p data-t="t86">Näkyy lokakuun 2011 panoraamassa: materiaali, väri, muoto, ikkunoiden määrä.</p><span class="ex" data-t="t87">90 vertailukohdetta · 419 julkisivuelementtiä</span></div>
+<div class="cls"><div class="sw" style="background:var(--steel)"></div><h3 data-t="t88">Nykyinen pohja</h3><p data-t="t89">Rakennusten pohjat ja katujen keskilinjat OpenStreetMapista. Ne ovat geometrian tukena, mutta eivät todista vuoden 2011 tilannetta.</p><span class="ex" data-t="t90">126 pohjaa · tilanne 22.9.2026</span></div>
+<div class="cls"><div class="sw" style="background:var(--amber)"></div><h3 data-t="t91">Tekijän arvio</h3><p data-t="t92">Korkeudet, ikkunoiden koot, puiden sijainnit. Ne on merkitty aineistoon ja korvataan heti, kun lähde löytyy.</p><span class="ex" data-t="t93">71 puuta · 847 aitatolppaa · 106 kattoa</span></div>
+<div class="cls"><div class="sw" style="background:repeating-linear-gradient(90deg,var(--muted) 0 6px,transparent 6px 10px)"></div><h3 data-t="t94">Ei mallinneta</h3><p data-t="t95">Piilossa olevat julkisivut, sisätilat ja asfalttipaikkaukset, joiden sijaintia ei voi määrittää kuvasta.</p><span class="ex" data-t="t96">piilossa olevia ikkunoita ja ovia ei keksitä</span></div>
+</div>
+<div aria-label="Lähteiden luotettavuusasteikko" class="grades" data-ta="aria-label:a97">
+<div class="gr-head"><span class="eyebrow" data-t="t98" style="color:var(--muted)">Luotettavuusasteikko lähderekisterissä</span></div>
+<div class="gr-bar">
+<div class="g" style="--c:var(--moss)"><b>A</b><span data-t="t99">vahvistettu vuodelle 2011</span></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 70%,var(--amber))"><b>B</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 40%,var(--amber))"><b>C</b></div>
+<div class="g" style="--c:var(--amber)"><b>D</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--amber) 60%,var(--steel))"><b>E</b></div>
+<div class="g" style="--c:var(--steel)"><b>F</b><span data-t="t100">vain nykyaineistoa</span></div>
+<div class="g x" style="--c:var(--muted)"><b>X</b><span data-t="t101">rajoitetut lähteet</span></div>
+</div>
+<p class="mono" data-t="t102" style="color:var(--muted)">Googlea ja Yandexia käytetään vain visuaalisena apuna. Niiden kuvia ei käytetä pelissä.</p>
+</div>
+<div class="pipeline">
+<div><b data-t="t103">Lähde</b><span>OSM API, SRTM3, Street View 10.2011</span></div>
+<div><b data-t="t104">Rekisteri</b><span data-t="t105">JSON, jossa päivämäärä, tiiviste ja rajoitukset</span></div>
+<div><b>GIS</b><span data-t="t106">ENU-metrit origosta Zaritšnakatu 33</span></div>
+<div><b>Graybox</b><span data-t="t107">Blender, rakennusskriptit</span></div>
+<div><b data-t="t108">Tarkistus</b><span data-t="t109">pohjien tarkastus, maanpinta, törmäykset</span></div>
+<div><b data-t="t110">Grafiikka</b><span data-t="t111">materiaalit ja yksityiskohdat havaintojen mukaan</span></div>
+<div><b data-t="t112">Moottori</b><span>Unreal Engine 5.8</span></div>
+</div>
+<figure class="srccmp">
+<img alt="OSM-karttojen vertailu: nykyhetki ja heinäkuu 2011" data-ta="alt:m3" loading="lazy" src="img/ue/source_plan_comparison.jpg"/>
+<figcaption><span class="eyebrow" data-t="m1">Ristiriita C-04 on auki</span><p data-t="m2">Valkoiset viivat: nykyinen OSM-kartta. Oranssit: saman tietokannan heinäkuussa 2011 voimassa olleet versiot. Ero on enimmillään 3,23 m Zaritšnakadulla ja 7,92 m Donetskakadulla. Se ei todista, että tiet olisivat siirtyneet: kartan tarkkuus on voinut muuttua. Molemmat versiot säilytetään, kunnes päivätty lähde ratkaisee asian.</p></figcaption>
+</figure>
+<article class="rules rules-wide">
+        <span class="eyebrow" data-t="d14">Kehityksen säännöt</span>
+        <ol>
+          <li data-t="d15">Mitään ei keksitä. Jokaisella yksityiskohdalla on lähde ja luotettavuusluokka A–F tai X.</li>
+          <li data-t="d16">Todellinen geometria menee kenttäsuunnittelun mukavuuden edelle.</li>
+          <li data-t="d17">Googlen ja Yandexin kuvat ovat vain apuna eivätkä päädy peliin.</li>
+          <li data-t="d18">Ääni ja musiikki tehdään käsin, ilman tekoälyä.</li>
+          <li data-t="d19">Kaupunki kasvaa kehinä: Zaritšnakatu, Vorošylovskyin piiri, naapuripiirit, koko Donetsk. Valmista työtä ei tehdä uudelleen.</li>
+          <li data-t="d31">Tuntematon pysyy merkittynä. Arvioitua korkeutta ei esitetä tosiasiana, ja talon numero tai kyltti tulee näkyviin vain vähintään C-luokan lähteellä.</li>
+        </ol>
+      </article>
+</div>
+</section>
+<section id="build">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>03</b><span data-t="t113">Pelimoottori</span></div><h2 data-t="t114">Prototyypistä Unreal Engine 5.8:aan</h2></div>
+<p class="lede" data-t="t115">Zaritšnakatu koottiin ensin nopeaan Unity-prototyyppiin. Nyt hanke elää Unreal Engine 5.8.3:ssa C++:lla, ja mallit pysyvät muokattavina Blenderissä. Koordinaatit, lähderekisteri ja koontiskriptit siirtyivät sellaisinaan. Koko varhainen Unity- ja Blender-historia on tallessa arkistohaarassa.</p>
+</div>
+<div class="engines">
+<div class="eng now">
+<div class="eng-top"><span class="status wip" data-t="t116">nykyinen moottori</span><span class="mono">2026 →</span></div>
+<h3>Unreal Engine 5.8</h3>
+<p data-t="t117">Donetsk 2011:n pääalusta. Kun projektin avaa, käynnistyy pelattava L_ZarechnaQuarter-kartta, ja siellä voi jo kävellä. Kaupungin järjestelmiä (asukkaat, liikenne, ajoneuvot, sisätilat) testataan erikseen synteettisellä testialueella, eivätkä ne pääse rekonstruktioon ennen kuin niille on lähteet.</p>
+<table>
+<tr><th data-t="t118">Versio</th><td class="mono">UE 5.8.3 · C++ · DX11</td></tr>
+<tr><th data-t="t119">Aloituskartta</th><td class="mono">L_ZarechnaQuarter</td></tr>
+<tr><th data-t="t120">Työalue</th><td data-t="t121">280 × 660 m, 189 kappaletta, 412 metrin käytävä</td></tr>
+<tr><th data-t="t122">Tarkistukset</th><td data-t="t123">18 pintaa, ≈ 564 m:n reitit, 38 GIS-testiä</td></tr>
+<tr><th data-t="t124">Käännös</th><td data-t="t125">Windows-soitin: tauko, tallennus, lataus</td></tr>
+</table>
+</div>
+<div class="eng past">
+<div class="eng-top"><span class="status done" data-t="t126">prototyyppi valmis</span><span class="mono">09.2026</span></div>
+<h3 data-t="t127">Zaritšnakadun Unity-prototyyppi</h3>
+<p data-t="t128">Menetelmän koe todellisessa korttelissa. Aineisto, Blender-mallit ja havainnot siirtyvät Unrealiin.</p>
+<table>
+<tr><th data-t="t129">Näkymä</th><td data-t="t130">400 m:n kortteli, 210 m:n katuosuus, 19 tonttia</td></tr>
+<tr><th data-t="t131">Geometria</th><td data-t="t132">234 415 / 46 930 kolmiota (LOD0 / LOD1)</td></tr>
+<tr><th data-t="t133">Törmäykset</th><td data-t="t134">198 törmäyskappaletta · 11 502 kolmiota</td></tr>
+<tr><th data-t="t135">Materiaalit</th><td data-t="t136">20 pintaperhettä, 10 ambientCG CC0 -assettia</td></tr>
+</table>
+<ul class="checks">
+<li><span class="status done" data-t="t137">läpäisty</span><span data-t="t138">6 ohjainreittiä, 1 200 m, 1 002 maanpintamittausta</span></li>
+<li><span class="status done" data-t="t139">läpäisty</span><span data-t="t140">126 pohjan tarkastus: ei päällekkäisyyksiä eikä yli meneviä kattoja</span></li>
+<li><span class="status done" data-t="t141">läpäisty</span><span data-t="t142">Blender/FBX: yksiköt, UV:t, maanpinta 61 pisteessä, julkisivujen törmäykset</span></li>
+<li><span class="status done" data-t="t143">läpäisty</span><span data-t="t144">Windows- ja Android-testikäännökset</span></li>
+</ul>
+</div>
+</div>
+<div class="carry sys">
+<span class="eyebrow" data-t="b1" style="color:var(--muted)">Järjestelmät koodissa · Source/Donetsk2011</span>
+<div class="carry-row mono"><span>Core</span><span>WorldState / Save</span><span>GIS</span><span>Player</span><span>Vehicles</span><span>Traffic</span><span>Population</span><span>Interaction</span><span>Interior</span><span>Memory</span><span>Narrative</span><span>Environment</span><span>Audio</span><span>UI</span></div>
+<p data-t="b2" style="color:var(--ink-2);font-size:14px">Pelin data on JSON-muodossa: tehtävät, dialogit, muistojen kaiut, asukkaat, ajoneuvot, sisätilat, kaupat ja esineet. Arkkitehtuuripäätökset on kirjattu ADR-0001…0006:een: maailma tietokannasta, yksinkertainen arcade-auto ennen Chaosia, aktorit ennen Massia, sisätilat todellisilla paikoillaan.</p>
+</div>
+</div>
+</section>
+<section id="frames">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>04</b><span data-t="t57">Blockout</span></div><h2 data-t="t58">Blockout Unreal Engine 5.8:ssa</h2></div>
+<p class="lede" data-t="t59">Työkuvia Unreal Engine 5.8.3 -editorista: katu kootaan lokakuun 2011 panoraamojen mukaan aitoineen, portteineen, kaasuputkineen, pylväineen, puineen ja pientareineen. Materiaalit ovat vielä yksinkertaisia; mitat ja istutukset ovat yhä E-luokan arvioita.</p>
+</div>
+<div class="ba" id="ba">
+<div class="ba-head"><span class="eyebrow" data-t="cm5">Ennen / jälkeen</span><p data-t="cm6">Sama Unreal-kuva: varhainen blockout ja versio pintojen läpikäynnin jälkeen. Asfaltti, pientareiden maa, ruoho, pensaat ja puut on tarkistettu lokakuun 2011 panoraamoista. Vedä viivaa.</p></div>
+<figure class="cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><img class="cmp-b" src="img/ue/southern_corridor.jpg" alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono" data-t="cm1">Ennen</span><span class="cmp-l r mono" data-t="cm2">Jälkeen</span><input class="cmp-r" type="range" min="0" max="100" value="50" data-ta="aria-label:cm3" aria-label="Vertaa: ennen ja jälkeen"></div></figure>
+<div class="ba-tabs" role="group" data-ta="aria-label:cm5" aria-label="Ennen / jälkeen">
+<button type="button" aria-pressed="true" data-k="southern_corridor"><img src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><span data-t="cm7">Eteläinen käytävä</span></button>
+<button type="button" aria-pressed="false" data-k="middle_corridor"><img src="img/ue2/middle_corridor.jpg" alt="" loading="lazy"><span data-t="cm8">Kadun keskikohta</span></button>
+<button type="button" aria-pressed="false" data-k="p19_west_frontages"><img src="img/ue2/p19_west_frontages.jpg" alt="" loading="lazy"><span data-t="cm9">Länsijulkisivut, piste 19</span></button>
+<button type="button" aria-pressed="false" data-k="p5_east_frontages"><img src="img/ue2/p5_east_frontages.jpg" alt="" loading="lazy"><span data-t="cm10">Itäjulkisivut, piste 5</span></button>
+</div>
+</div>
+<div class="gal">
+<figure><img alt="Talon 33 portti vuoden 2011 panoraaman kohdalta: kaarevat betonipaneelit" data-ta="alt:fa1" loading="lazy" src="img/ue2/z33_2011_gate_match.jpg"/><figcaption><span data-t="f1">Talon 33 portti vuoden 2011 panoraaman kohdalta: kaarevat betonipaneelit</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Pohjoinen Zaritšnakatu: istutukset itäpientareella" data-ta="alt:fa2" loading="lazy" src="img/ue2/northern_2011_road_match.jpg"/><figcaption><span data-t="f2">Pohjoinen Zaritšnakatu: istutukset itäpientareella</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Ensimmäiset 67 m pohjoiseen: pelti, tiili, puutarhat ja kaasuputki" data-ta="alt:fa3" loading="lazy" src="img/ue2/p30_p27_north.jpg"/><figcaption><span data-t="f3">Ensimmäiset 67 m pohjoiseen: pelti, tiili, puutarhat ja kaasuputki</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Itäpuoli merkkien 30 ja 27 kohdalla: aumakatot ja portit" data-ta="alt:fa4" loading="lazy" src="img/ue2/p30_p27_east_frontages.jpg"/><figcaption><span data-t="f4">Itäpuoli merkkien 30 ja 27 kohdalla: aumakatot ja portit</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Eteläinen käytävä: avoin aita, katos, tiili ja hiekkapientareet" data-ta="alt:fa5" loading="lazy" src="img/ue2/southern_corridor.jpg"/><figcaption><span data-t="f5">Eteläinen käytävä: avoin aita, katos, tiili ja hiekkapientareet</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Näkymä pohjoiseen merkistä 30: matala lauta-aita ja avoin piha" data-ta="alt:fa6" loading="lazy" src="img/ue2/z30_2011_north_match.jpg"/><figcaption><span data-t="f6">Näkymä pohjoiseen merkistä 30: matala lauta-aita ja avoin piha</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Keskinen Zaritšnakatu: tumma puu, tiili, puutarhat ja keltainen kaasuputki" data-ta="alt:fa7" loading="lazy" src="img/ue2/middle_corridor.jpg"/><figcaption><span data-t="f7">Keskinen Zaritšnakatu: tumma puu, tiili, puutarhat ja keltainen kaasuputki</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Merkki 19: kaasuputki, betonipylväät ja lamput" data-ta="alt:fa8" loading="lazy" src="img/ue2/p19_west_frontages.jpg"/><figcaption><span data-t="f8">Merkki 19: kaasuputki, betonipylväät ja lamput</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Merkki 5: vaalea talo, tumma katto ja istutettu piennar" data-ta="alt:fa9" loading="lazy" src="img/ue2/p5_east_frontages.jpg"/><figcaption><span data-t="f9">Merkki 5: vaalea talo, tumma katto ja istutettu piennar</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Lähestyminen Lahutenkalle: ruskea metalli ja harmaat betoniaidat" data-ta="alt:fa10" loading="lazy" src="img/ue2/lagutenko_approach.jpg"/><figcaption><span data-t="f10">Lähestyminen Lahutenkalle: ruskea metalli ja harmaat betoniaidat</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Pohjoinen: tukimuuri, pengerretty nurmikko ja havupuut" data-ta="alt:fa11" loading="lazy" src="img/ue2/northern_terrace.jpg"/><figcaption><span data-t="f11">Pohjoinen: tukimuuri, pengerretty nurmikko ja havupuut</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Pohjoisen rakennuksen huoltopiha: ovet, ilmanvaihto ja kenttä" data-ta="alt:fa12" loading="lazy" src="img/ue2/northern_service_court.jpg"/><figcaption><span data-t="f12">Pohjoisen rakennuksen huoltopiha: ovet, ilmanvaihto ja kenttä</span><span class="mono">UE 5.8</span></figcaption></figure>
+</div>
+<p class="mono gal-note" data-t="f13">Kuvattu suoraan Unrealissa 28.–30.9.2026, DX11. Googlen pikseleitä ei päädy näkymään. Merkkien numerot tarkoittavat panoraamakameroita, eivät tontteja. Istutukset, paneelit ja mitat ovat yhä E-luokan arvioita.</p>
+</div>
+</section>
+<section id="roadmap">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>05</b><span data-t="t153">Suunnitelma</span></div><h2 data-t="t154">Tie koko kaupunkiin</h2></div>
+<p class="lede" data-t="t155">Nyt työn alla on lyhyt yhtenäinen reitti korttelin sisällä ja yksi arkinen toiminto. Seuraavaksi vertikaalinen läpileikkaus: pelattava pienoisversio lopullisesta pelistä. Sen jälkeen sama tekniikka laajenee koko piiriin ja kaupunkiin.</p>
+</div>
+<div class="road-map" id="roadmapEl"></div>
+</div>
+</section>
+<section id="dev" class="dev">
+  <div class="wrap">
+    <div class="head">
+      <div><div class="code"><b>06</b><span data-t="dv4">Loki</span></div><h2 data-t="d2">Näin kaupunki syntyy</h2></div>
+      <p class="lede" data-t="d3">Tässä kerron, miten työ etenee: mitä sääntöjä noudatan, mikä on jo valmista ja mitä on edessä. Osio päivittyy hankkeen mukana.</p>
+    </div>
+    <div class="dev-grid">
+      <article class="sound">
+        <canvas id="wave" aria-hidden="true"></canvas>
+        <span class="eyebrow" data-t="d7">Ääni ja musiikki</span>
+        <h3 data-t="d8">Vain omat tunteeni. Ei tekoälyä.</h3>
+        <p data-t="d9">Teen Donetsk 2011:n äänisuunnittelun ja musiikin itse, ja nojaan vain omiin tunteisiini. Ei tekoälyä: ei generoitua musiikkia eikä generoituja ääniä.</p>
+        <p data-t="d10">Vain omia, alkuperäisiä kokeiluja. Jokaisen äänen ja jokaisen melodian on oltava elettyjä, ei generoituja.</p>
+        <ul class="tags"><li data-t="d11">Äänisuunnittelu: itse</li><li data-t="d12">Musiikki: itse</li><li data-t="d13">Tekoälygenerointi: ei</li></ul>
+      </article>
+<div class="shelf">
+<div><span class="eyebrow" data-t="g30">Äänipäiväkirja</span><h3 data-t="g31">Hylly on vielä tyhjä</h3><p data-t="g32">Tänne tulevat ensimmäiset äänisketsini Donetsk 2011:lle. Jokaisella tallenteella on päivämäärä ja muutama sana siitä, mitä tunsin sitä tehdessäni. Ei tekoälyä.</p></div>
+<ol class="slots"><li><span class="mono">01</span><i></i><em data-t="g33">tulossa</em></li><li><span class="mono">02</span><i></i><em data-t="g33">tulossa</em></li><li><span class="mono">03</span><i></i><em data-t="g33">tulossa</em></li></ol>
+</div>
+    </div>
+    <div class="devlog">
+      <span class="eyebrow" style="color:var(--muted)" data-t="d20">Kehitysloki</span>
+      <ol>
+        <li><time class="mono">13.09.2026</time><span data-t="d21">OpenStreetMap-tilanne: 8 508 kohdetta, keskustan 4,37 × 2,84 km:n vertailukartta.</span></li>
+        <li><time class="mono">14.09.2026</time><span data-t="d22">Origo vahvistettu: Zaritšnakatu 33, 47.9927461 N, 37.8183736 E.</span></li>
+        <li><time class="mono">21.09.2026</time><span data-t="d23">Lokakuun 2011 Street View -panoraamat käyty läpi Zaritšnakadulla molempiin suuntiin. 126 pohjan tarkastuksessa ei löytynyt päällekkäisyyksiä.</span></li>
+        <li><time class="mono">22.09.2026</time><span data-t="d24">Unity-prototyyppi: 6 reittiä 1 200 metrillä, 1 002 maanpintamittausta, Windows- ja Android-testikäännökset.</span></li>
+        <li><time class="mono">23.09.2026</time><span data-t="d25">Siirtyminen Unreal Engine 5.8.3:een: Development Editor -käännös onnistui ja peli käynnistyi DX11:llä. Päätös DEC-0001: aloitan First Playablen, ja tutkimus jatkuu rinnalla.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d28">Ensimmäinen Windows-soitin taukovalikolla, tallennuksella ja latauksella. 54 metrin julkisivututkielma talon 33 kohdalla ja kahdeksan kuvaa suoraan Unrealista.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d26">Hankkeen verkkosivusto julkaistu neljällä kielellä.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d29">Zaritšnan ja Donetskan 280 × 660 metrin työkortteli: 189 kappaletta, SRTM-maasto ja yhtenäinen 412 metrin käytävä kuuden lokakuun 2011 panoraaman pohjalta. 18 pintatarkistusta, ≈ 564 metrin reitit kummallakin kadulla ja 38 GIS-testiä läpäisty.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d30">Vuoden 2012 OSM verrattuna nykykarttaan: 91 ehdokasta, 18 tarkistettu. Yksikään ei päässyt vuoden 2011 kaanoniin ilman päivättyjä kuvia.</span></li>
+        <li><time class="mono">26.09.2026</time><span data-t="d32">Uutta sivustolla: 3D-kortteli todistetilalla, kävely Zaritšnakadulla, ”Arvaa paikka” -peli ja äänipäiväkirjan hylly.</span></li>
+        <li><time class="mono">28.09.2026</time><span data-t="d34">Korttelin pohjoisosa: tukimuuri nurmikon ja havupuiden kera, päätyseinän ikkunat ja huoltopiha ilman väärin sijoitettua lisäsiipeä. Kadun ensimmäiset 67 m saivat puita, pensaita, hiekkapientareet ja erilliset pinnat.</span></li>
+        <li><time class="mono">30.09.2026</time><span data-t="d35">Pohjoinen tie ja talon 33 portti tarkistettiin lokakuun 2011 panoraamoja vasten: istutukset itäpientareella, kaarevat betonipaneelit, pelti vaihtuu tiileksi merkin 27 kohdalla. DX11: 27 pintatarkistusta, 3 reittiä, 22 kuvaa.</span></li>
+        <li class="now"><time class="mono">30.09.2026</time><span data-t="d33">Sivusto: korttelin renderöinnit lokakuun auringonvalossa varjoineen, 22 kuvan arkisto suodattimineen ja katselimineen, kävely 3D-mallissa ja uusi sivurakenne.</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+<section id="sources" style="border-bottom:0">
+<div class="wrap">
+<div class="head"><div><div class="code"><b>07</b><span data-t="t178">Lähteet</span></div><h2 data-t="t179">Lähderekisteri</h2></div></div>
+<div class="srcs" id="srcs">
+<p data-t="t180"><b>OpenStreetMap.</b> Rakennusten pohjat, tiet, rautatiet, vesistöt. © OpenStreetMapin tekijät, ODbL 1.0. Karttatilanne 13.9.2026, korttelin tilanne 22.9.2026. <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">openstreetmap.org/copyright</a></p>
+<p data-t="t181"><b>SRTM3 v2.1, karttalehti N47E037.</b> Mitattu 11.–22.2.2000, EGM96, USGS-arkiston Kurviger-peili. SHA-256 3c78466e…6d58. <a href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-non" rel="noopener" target="_blank">USGS EROS</a></p>
+<p data-t="t182"><b>Google Street View, lokakuu 2011.</b> Kahdeksan Zaritšnakadun panoraamaa, vain visuaalisia havaintoja varten. Googlen kuvia ei tallenneta eikä levitetä.</p>
+<p data-t="t183"><b>King's Tower.</b> Paikallishistoriallinen artikkeli 16.8.2012 vahvistaa, että torni valmistui ennen vuotta 2011. <a href="https://donjetsk.com/homes/1414-korolevskaya-bashnya.html" rel="noopener" target="_blank">donjetsk.com</a></p>
+<p data-t="t184"><b>ambientCG.</b> 10 CC0-materiaalia 16 pintakytkentään. <a href="https://docs.ambientcg.com/license/" rel="noopener" target="_blank">Lisenssi</a></p>
+<p data-t="t185"><b>Wikimedia Commons.</b> 22 valokuvaa Donetskista vuosilta 2008–2013 kuva-arkistossa ja ”Arvaa paikka” -pelissä. Tekijä ja lisenssi on merkitty jokaiseen kuvaan.</p>
+</div>
+</div>
+</section>
+</main>
+<div class="foot-nav wrap mono"><a href="fi/index.html" data-t="n1">Etusivu</a> · <a href="fi/city.html" data-t="n2">Kaupunki</a> · <a href="fi/model.html" data-t="n3">Rekonstruktio</a> · <a href="fi/dev.html" data-t="n4">Kehitys</a> · <a href="fi/updates.html" data-t="n5">Päivitykset</a> · <a href="fi/press.html" data-t="n6">Media</a> · <a href="fi/help.html" data-t="n7">Auta</a> · <a href="fi/sound.html" data-t="n8">Äänet</a> · <a class="rss" href="feed.xml" data-rss="1">RSS</a> <button type="button" class="pwa-inst" hidden data-t="pw0">Asenna sovelluksena</button></div><div class="pwa-off mono" role="status" hidden data-t="pw1">Ei verkkoyhteyttä. Tämä on sivun tallennettu kopio.</div>
+<dialog class="srch" id="srch" aria-labelledby="srchT"><form method="dialog" class="srch-top" role="search"><h2 class="srch-t" id="srchT" data-t="sr0">Hae sivustolta</h2><button type="submit" class="srch-x" value="close" aria-label="Sulje" data-ta="aria-label:sr3">×</button><input type="search" id="srchQ" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-labelledby="srchT" aria-describedby="srchN" placeholder="Esimerkiksi: Donbass Arena, panoraamat, 3D" data-ta="placeholder:sr1"></form><p class="srch-n mono" id="srchN" aria-live="polite"></p><ol class="srch-r" id="srchR"></ol><span hidden data-t="sr2">Ei tuloksia. Kokeile toista sanaa.</span><span hidden data-t="sr4">Tuloksia: {n}</span><span hidden data-t="sr8">Ladataan…</span><span hidden data-t="sr5">Kuva</span><span hidden data-t="sr6">Päivitys</span><span hidden data-t="sr7">Silloin ja myöhemmin</span></dialog>
+<footer><div class="wrap"><span data-t="t186">DONETSK 2011 · Stanislav · lähteisiin perustuva rekonstruktio</span><span class="mono">47.9927461 N · 37.8183736 E</span></div></footer>
+
+
+
+<script src="photos/have.js"></script>
+<script src="assets/data-fi.js?v=6ca5e9a1"></script>
+<script src="assets/app.js?v=914f86ea"></script>
+
+</body></html>

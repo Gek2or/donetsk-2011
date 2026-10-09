@@ -18,16 +18,22 @@ const LANGS=['ru','uk','en','fi'];
 const RU_STATIC={};
 document.querySelectorAll('[data-t]').forEach(el=>RU_STATIC[el.dataset.t]=el.innerHTML);
 document.querySelectorAll('[data-ta]').forEach(el=>el.dataset.ta.split(' ').forEach(pair=>{const [a,k]=pair.split(':');RU_STATIC[k]=el.getAttribute(a)}));
-I.ru.S=RU_STATIC;
-const __ph=u=>{const m=window.__PHMAP||{},h=m[u],H=window.__PHHAVE||[];return h&&H.indexOf(h)>=0?'photos/'+h+'.jpg':u};window.__ph=__ph;
-document.addEventListener('error',e=>{const t=e.target;if(!t||t.tagName!=='IMG'||t.dataset.fb)return;const m=(t.getAttribute('src')||'').match(/photos\/([0-9a-f]{12})\.jpg/);if(!m)return;const u=Object.keys(window.__PHMAP||{}).find(k=>window.__PHMAP[k]===m[1]);if(u){t.dataset.fb='1';t.src=u}},true);
+if(I.ru)I.ru.S=RU_STATIC;
+const __ph=(u,sm)=>{const m=window.__PHMAP||{},h=m[u],W=window.__PHW||[],H=window.__PHHAVE||[];if(h&&W.indexOf(h)>=0)return 'photos/'+h+(sm?'-640':'')+'.webp';return h&&H.indexOf(h)>=0?'photos/'+h+'.jpg':u};window.__ph=__ph;
+document.addEventListener('error',e=>{const t=e.target;if(!t||t.tagName!=='IMG'||t.dataset.fb)return;const m=(t.getAttribute('src')||'').match(/photos\/([0-9a-f]{12})(-640)?\.(jpg|webp)/);if(!m)return;if(m[3]==='webp'&&!t.dataset.fbj){t.dataset.fbj='1';t.removeAttribute('srcset');t.src='photos/'+m[1]+'.jpg';return}const u=Object.keys(window.__PHMAP||{}).find(k=>window.__PHMAP[k]===m[1]);if(u){t.dataset.fb='1';t.removeAttribute('srcset');t.src=u}},true);
+const PLANG=document.documentElement.dataset.plang||'ru';
+const PAGE=(location.pathname.split('/').pop()||'index.html').replace(/^$/,'index.html');
+function langURL(l,hash){const h=hash!=null?hash:location.hash;return (l==='ru'?'':l+'/')+PAGE+(h&&!LANGS.includes(h.slice(1))?h:'')}
+window.__langURL=langURL;window.__PLANG=PLANG;
 function pickLang(){
-  try{const q=new URLSearchParams(location.search).get('lang');if(LANGS.includes(q))return q}catch(e){}
-  const h=(location.hash||'').slice(1);if(LANGS.includes(h))return h;
-  try{const s=localStorage.getItem('d11-lang');if(LANGS.includes(s))return s}catch(e){}
-  const nav=(navigator.languages||[navigator.language||'']).map(x=>x.slice(0,2).toLowerCase());
-  for(const n of nav){if(LANGS.includes(n))return n}
-  return 'ru';
+  /* every language has its own address now: /, /uk/, /en/, /fi/. Old ?lang= and #en links are forwarded. */
+  let want=null;
+  try{const q=new URLSearchParams(location.search).get('lang');if(LANGS.includes(q))want=q}catch(e){}
+  const h=(location.hash||'').slice(1);if(!want&&LANGS.includes(h))want=h;
+  if(!want){try{const s=localStorage.getItem('d11-lang-pick');if(LANGS.includes(s))want=s}catch(e){}}
+  if(want&&want!==PLANG){location.replace(new URL(langURL(want,''),document.baseURI).href+(LANGS.includes(h)?'':location.hash));return PLANG}
+  if(want===PLANG&&LANGS.includes(h)&&history.replaceState)history.replaceState(null,'',location.pathname);
+  return PLANG;
 }
 let L,S;
 
@@ -118,7 +124,7 @@ $('#svLive').addEventListener('click',()=>{if(EMBED)showLens('live');else if(cur
 $('#svMap').addEventListener('click',()=>showLens('map'));
 {const y=new Date().getFullYear()-2012;const el=$('#awayYears');if(el&&y>0)el.textContent=y;const d=new Date(),s=new Date(2014,3,7);let ly=d.getFullYear()-2014-((d.getMonth()<3||(d.getMonth()==3&&d.getDate()<7))?1:0);const e2=$('#lostYears');if(e2)e2.textContent=ly;}
 window.__PHOTOS=null;const PHOTOS=[["https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Panorama25.jpg/1920px-Panorama25.jpg", "https://commons.wikimedia.org/wiki/File:Panorama25.jpg", "Kirill Fandeev", "CC BY-SA 3.0", "pan"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Fountain_in_Shcherbakov_Park_-_panoramio.jpg/1280px-Fountain_in_Shcherbakov_Park_-_panoramio.jpg", "https://commons.wikimedia.org/wiki/File:Fountain_in_Shcherbakov_Park_-_panoramio.jpg", "Toronto_guy", "CC BY 3.0", "park"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/%D0%9F%D0%B0%D1%80%D0%BA_%D0%A9%D0%B5%D1%80%D0%B1%D0%B0%D0%BA%D0%BE%D0%B2%D0%B0_059.jpg/1280px-%D0%9F%D0%B0%D1%80%D0%BA_%D0%A9%D0%B5%D1%80%D0%B1%D0%B0%D0%BA%D0%BE%D0%B2%D0%B0_059.jpg", "https://commons.wikimedia.org/wiki/File:%D0%9F%D0%B0%D1%80%D0%BA_%D0%A9%D0%B5%D1%80%D0%B1%D0%B0%D0%BA%D0%BE%D0%B2%D0%B0_059.jpg", "Andrey Butko", "CC BY-SA 3.0", "park"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81_%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%A7%D1%83%D0%BF%D1%80%D0%B8%D0%BD%D0%B0_%D0%92%D0%B0%D0%B4%D0%B8%D0%BC._%D0%90.jpg/1280px-%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81_%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%A7%D1%83%D0%BF%D1%80%D0%B8%D0%BD%D0%B0_%D0%92%D0%B0%D0%B4%D0%B8%D0%BC._%D0%90.jpg", "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81_%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%A7%D1%83%D0%BF%D1%80%D0%B8%D0%BD%D0%B0_%D0%92%D0%B0%D0%B4%D0%B8%D0%BC._%D0%90.jpg", "Вадим Чуприна", "CC BY-SA 4.0", "arena"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81-%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%B8_%D0%92%D0%B8%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F_-_panoramio.jpg/1280px-%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81-%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%B8_%D0%92%D0%B8%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F_-_panoramio.jpg", "https://commons.wikimedia.org/wiki/File:%D0%94%D0%BE%D0%BD%D0%B1%D0%B0%D1%81%D1%81-%D0%90%D1%80%D0%B5%D0%BD%D0%B0_%D0%B8_%D0%92%D0%B8%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F_-_panoramio.jpg", "jonni29", "CC BY 3.0", "arena"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_185.jpg/1280px-%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_185.jpg", "https://commons.wikimedia.org/wiki/File:%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_185.jpg", "Andrey Butko", "CC BY-SA 3.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Voroshylovs%27kyi_district%2C_Donetsk%2C_Donetsk_Oblast%2C_Ukraine_-_panoramio_%282%29.jpg/1280px-Voroshylovs%27kyi_district%2C_Donetsk%2C_Donetsk_Oblast%2C_Ukraine_-_panoramio_%282%29.jpg", "https://commons.wikimedia.org/wiki/File:Voroshylovs%27kyi_district,_Donetsk,_Donetsk_Oblast,_Ukraine_-_panoramio_(2).jpg", "jonni29", "CC BY 3.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Voroshylovs%27kyi_district%2C_Donetsk%2C_Donetsk_Oblast%2C_Ukraine_-_panoramio_%281%29.jpg/1280px-Voroshylovs%27kyi_district%2C_Donetsk%2C_Donetsk_Oblast%2C_Ukraine_-_panoramio_%281%29.jpg", "https://commons.wikimedia.org/wiki/File:Voroshylovs%27kyi_district,_Donetsk,_Donetsk_Oblast,_Ukraine_-_panoramio_(1).jpg", "quantizer", "CC BY 3.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0_-_panoramio_%282%29.jpg/1280px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0_-_panoramio_%282%29.jpg", "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80_%D0%BE%D0%BF%D0%B5%D1%80%D1%8B_%D0%B8_%D0%B1%D0%B0%D0%BB%D0%B5%D1%82%D0%B0_-_panoramio_(2).jpg", "Olya Usova", "CC BY 3.0", "build"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Center_of_Donetsk_2012.JPG/1280px-Center_of_Donetsk_2012.JPG", "https://commons.wikimedia.org/wiki/File:Center_of_Donetsk_2012.JPG", "MOs810", "CC BY-SA 3.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg/1280px-%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg", "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg", "Andrey Butko", "CC BY-SA 3.0", "pan"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_024.jpg/1280px-%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_024.jpg", "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_024.jpg", "Andrey Butko", "CC BY-SA 3.0", "pan"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_065.jpg/1280px-%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_065.jpg", "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_065.jpg", "Andrey Butko", "CC BY-SA 3.0", "pan"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Industrial_city_Donetsk_%2811484852103%29.jpg/1280px-Industrial_city_Donetsk_%2811484852103%29.jpg", "https://commons.wikimedia.org/wiki/File:Industrial_city_Donetsk_(11484852103).jpg", "Vladimir Yaitskiy", "CC BY-SA 2.0", "pan"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/%D0%9C%D0%BE%D1%81%D1%82_%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%B0_%D0%98%D0%BB%D1%8C%D0%B8%D1%87%D0%B0_%D1%87%D0%B5%D1%80%D0%B5%D0%B7_%D0%9A%D0%B0%D0%BB%D1%8C%D0%BC%D0%B8%D1%83%D1%81.jpg/1280px-%D0%9C%D0%BE%D1%81%D1%82_%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%B0_%D0%98%D0%BB%D1%8C%D0%B8%D1%87%D0%B0_%D1%87%D0%B5%D1%80%D0%B5%D0%B7_%D0%9A%D0%B0%D0%BB%D1%8C%D0%BC%D0%B8%D1%83%D1%81.jpg", "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%BE%D1%81%D1%82_%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%B0_%D0%98%D0%BB%D1%8C%D0%B8%D1%87%D0%B0_%D1%87%D0%B5%D1%80%D0%B5%D0%B7_%D0%9A%D0%B0%D0%BB%D1%8C%D0%BC%D0%B8%D1%83%D1%81.jpg", "Artemka", "CC BY-SA 4.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Donezk_Donbass_Palace_07.JPG/1280px-Donezk_Donbass_Palace_07.JPG", "https://commons.wikimedia.org/wiki/File:Donezk_Donbass_Palace_07.JPG", "Brücke-Osteuropa", "Public domain", "build"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/%D0%A2%D0%B5%D0%B0%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D1%8C_016.JPG/1280px-%D0%A2%D0%B5%D0%B0%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D1%8C_016.JPG", "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B5%D0%B0%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_%D0%BF%D0%BB%D0%BE%D1%89%D0%B0%D0%B4%D1%8C_016.JPG", "Andrey Butko", "CC BY-SA 3.0", "street"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Donetsk_0072.jpg/1280px-Donetsk_0072.jpg", "https://commons.wikimedia.org/wiki/File:Donetsk_0072.jpg", "Wadco2", "CC BY-SA 3.0", "build"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_140.jpg/1280px-%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_140.jpg", "https://commons.wikimedia.org/wiki/File:%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_140.jpg", "Andrey Butko", "CC BY-SA 3.0", "build"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_149.jpg/1280px-%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_149.jpg", "https://commons.wikimedia.org/wiki/File:%D0%91%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80_%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D0%B0_149.jpg", "Andrey Butko", "CC BY-SA 3.0", "park"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/2012_0611_20_Donetsk_%287977485875%29.jpg/1280px-2012_0611_20_Donetsk_%287977485875%29.jpg", "https://commons.wikimedia.org/wiki/File:2012_0611_20_Donetsk_(7977485875).jpg", "Peter Collins", "CC BY-SA 2.0", "arena"], ["https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA%D0%BE%D0%B9_%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D0%BD%D0%BE%D0%B9_%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D0%B8_004.jpg/1280px-%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA%D0%BE%D0%B9_%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D0%BD%D0%BE%D0%B9_%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D0%B8_004.jpg", "https://commons.wikimedia.org/wiki/File:%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA%D0%BE%D0%B9_%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D0%BD%D0%BE%D0%B9_%D0%B0%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D0%B8_004.jpg", "Andrey Butko", "CC BY-SA 3.0", "pan"]];const ARCH_ORDER=[[10,"big"],[11,"w2"],[20,""],[3,""],[0,"full"],[5,"tall"],[19,""],[18,""],[14,""],[1,"big"],[15,""],[16,""],[2,"w2"],[12,"w2"],[13,"w2"],[8,""],[17,"w2"],[21,"w2"],[4,""],[7,"tall"],[6,""],[9,"w2"]];window.__PHOTOS=PHOTOS;
-function renderArch(){window.__PHCAP=L.PHOTOS;const sm=u=>__ph(u.replace(/\/\d+px-/,'/960px-'));$('#arch').innerHTML=ARCH_ORDER.map(([i,sz])=>{const x=PHOTOS[i];return `<figure class="${sz}" data-i="${i}" data-c="${x[4]}"><button type="button" class="arch-open" data-i="${i}" aria-label="${esc(S.ar11||'')}: ${esc(L.PHOTOS[i])}"><img src="${sm(x[0])}" alt="${esc(L.PHOTOS[i])}" loading="lazy" referrerpolicy="no-referrer"></button><figcaption><b>${esc(L.PHOTOS[i])}</b><a href="${x[1]}" target="_blank" rel="noopener">© ${esc(x[2])} · ${x[3]} ↗</a></figcaption></figure>`}).join('');dispatchEvent(new Event('d11arch'))}
+function renderArch(){window.__PHCAP=L.PHOTOS;const sm=u=>__ph(u.replace(/\/\d+px-/,'/960px-'),true);$('#arch').innerHTML=ARCH_ORDER.map(([i,sz])=>{const x=PHOTOS[i];return `<figure class="${sz}" data-i="${i}" data-c="${x[4]}"><button type="button" class="arch-open" data-i="${i}" aria-label="${esc(S.ar11||'')}: ${esc(L.PHOTOS[i])}"><img src="${sm(x[0])}" alt="${esc(L.PHOTOS[i])}" loading="lazy" referrerpolicy="no-referrer"></button><figcaption><b>${esc(L.PHOTOS[i])}</b><a href="${x[1]}" target="_blank" rel="noopener">© ${esc(x[2])} · ${x[3]} ↗</a></figcaption></figure>`}).join('');dispatchEvent(new Event('d11arch'))}
 function render(){window.__UPD=L.UPD;window.__RMX={RM:L.RM,RMI};renderArch();renderTicker();tickClock();
   /* ladder */
   const steps=$('#steps');steps.dataset.cls='step';const fig=$('#stageFig');
@@ -154,10 +160,19 @@ function apply(lang){
   document.querySelectorAll('.langs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   render();
   window.__d11S=S;dispatchEvent(new CustomEvent('d11lang',{detail:{S}}));
-  try{localStorage.setItem('d11-lang',lang)}catch(e){}
 }
-document.querySelectorAll('.langs button').forEach(b=>b.addEventListener('click',()=>{apply(b.dataset.lang);if(history.replaceState)history.replaceState(null,'','#'+b.dataset.lang)}));
-window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(LANGS.includes(h))apply(h)});
+document.querySelectorAll('.langs button').forEach(b=>b.addEventListener('click',()=>{const l=b.dataset.lang;try{localStorage.setItem('d11-lang-pick',l)}catch(e){}if(l!==PLANG)location.href=new URL(langURL(l),document.baseURI).href}));
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(LANGS.includes(h)&&h!==PLANG)location.replace(new URL(langURL(h,''),document.baseURI).href)});
+/* pages in /uk/ /en/ /fi/ use <base href="../">: keep in-page anchors on this page and page links in this language */
+if(PLANG!=='ru'){
+  const PG=/^(index|city|model|dev|updates|press|help|sound)\.html/;
+  const fix=root=>{(root.querySelectorAll?root:document).querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(PG.test(h))a.setAttribute('href',PLANG+'/'+h)})};
+  fix(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.tagName==='A'&&PG.test(n.getAttribute('href')||''))n.setAttribute('href',PLANG+'/'+n.getAttribute('href'));fix(n)}}))).observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey)return;const id=a.getAttribute('href').slice(1);e.preventDefault();
+    const el=id?document.getElementById(id):null;if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});else if(!id)scrollTo({top:0,behavior:'smooth'});
+    if(history.pushState)history.pushState(null,'',location.pathname+location.search+(id?'#'+id:''))});
+}
+
 
 
 apply(pickLang());
@@ -512,6 +527,81 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   draw();addEventListener('d11lang',()=>setTimeout(draw,0));
 })();
 
+/* ---------- v4.0: offer the reader's own language once (no automatic redirects) ---------- */
+(function(){const P=window.__PLANG||'ru',L=['ru','uk','en','fi'];let pick=null,off=null;
+  try{pick=localStorage.getItem('d11-lang-pick');off=localStorage.getItem('d11-lang-hint')}catch(e){}
+  if(pick||off)return;
+  const want=(navigator.languages||[navigator.language||'']).map(x=>String(x).slice(0,2).toLowerCase()).find(x=>L.includes(x));
+  if(!want||want===P)return;
+  const TX={ru:['Эта страница есть на русском','Читать по-русски'],uk:['Ця сторінка є українською','Читати українською'],en:['This page is also in English','Read in English'],fi:['Sivu on myös suomeksi','Lue suomeksi']}[want];
+  const bar=document.createElement('div');bar.className='lang-hint';bar.setAttribute('role','region');bar.setAttribute('aria-label',TX[0]);
+  bar.innerHTML=`<span>${TX[0]}</span><a href="${window.__langURL?window.__langURL(want):''}" lang="${want}">${TX[1]} →</a><button type="button" aria-label="×">×</button>`;
+  bar.querySelector('a').addEventListener('click',()=>{try{localStorage.setItem('d11-lang-pick',want)}catch(e){}});
+  bar.querySelector('button').addEventListener('click',()=>{bar.remove();try{localStorage.setItem('d11-lang-hint','off')}catch(e){}});
+  setTimeout(()=>document.body.appendChild(bar),900);
+})();
+
+;(()=>{/* ---------- v4.1: the site as an app ---------- */
+if(!('serviceWorker' in navigator))return;
+if(!(location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname)))return;
+addEventListener('load',()=>{navigator.serviceWorker.register(new URL('sw.js',document.baseURI).href).catch(()=>{})});
+const ib=document.querySelector('.pwa-inst');let ev=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;if(ib)ib.hidden=false});
+if(ib)ib.addEventListener('click',async()=>{if(!ev)return;ev.prompt();try{await ev.userChoice}catch(_){}ev=null;ib.hidden=true});
+addEventListener('appinstalled',()=>{if(ib)ib.hidden=true});
+const off=document.querySelector('.pwa-off'),upd=()=>{if(off)off.hidden=navigator.onLine!==false};
+addEventListener('online',upd);addEventListener('offline',upd);upd();
+})();
+;(()=>{/* ---------- v4.1: site search ---------- */
+const dlg=document.getElementById('srch'),btn=document.getElementById('srchBtn');if(!dlg||!btn||!dlg.showModal)return;
+const q=dlg.querySelector('#srchQ'),R=dlg.querySelector('#srchR'),N=dlg.querySelector('#srchN');
+const T=k=>((window.__d11S||{})[k])||(dlg.querySelector(`[data-t="${k}"]`)||document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+const lang=()=>document.documentElement.dataset.plang||(document.documentElement.lang||'ru').slice(0,2);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* length-preserving normaliser so match positions map back to the original text */
+const norm=s=>{let o='';for(const c of String(s)){const l=c.toLowerCase();o+=l==='ё'?'е':l==='ї'?'і':(l.normalize('NFD')[0]||l)}return o};
+const W=/[\p{L}\p{N}]/u;
+let IDX=null,IL=null,busy=null;
+const load=()=>{const l=lang();if(IDX&&IL===l)return Promise.resolve(IDX);if(busy)return busy;
+  busy=fetch(new URL(`assets/search-${l}.json`,document.baseURI)).then(r=>r.json()).then(d=>{IDX=d.map(e=>({...e,nh:norm(e.h),nx:norm(e.x),np:norm(e.p)}));IL=l;busy=null;return IDX}).catch(()=>{busy=null;return []});return busy};
+const find=(ns,stem)=>{let i=ns.indexOf(stem);while(i>-1){if(i===0||!W.test(ns[i-1]))return i;i=ns.indexOf(stem,i+1)}return -1};
+const mark=(txt,ntxt,stems)=>{const hit=new Array(txt.length).fill(0);for(const s of stems){let i=ntxt.indexOf(s);while(i>-1){if(i===0||!W.test(ntxt[i-1])){let j=i+s.length;while(j<txt.length&&W.test(ntxt[j])&&j-i<s.length+3)j++;for(let k=i;k<j;k++)hit[k]=1}i=ntxt.indexOf(s,i+1)}}
+  let o='',on=0;for(let k=0;k<txt.length;k++){if(hit[k]&&!on){o+='<mark>';on=1}if(!hit[k]&&on){o+='</mark>';on=0}o+=esc(txt[k])}return o+(on?'</mark>':'')};
+function search(str){const toks=norm(str).split(/[^\p{L}\p{N}]+/u).filter(t=>t.length>1||/\d/.test(t));if(!toks.length)return null;
+  const stems=toks.map(t=>t.length>=5?t.slice(0,t.length-2):t);
+  const out=[];for(const e of IDX){let sc=0,ok=true;
+    for(let n=0;n<stems.length;n++){const s=stems[n];const a=find(e.nh,s),b=find(e.np,s),c=find(e.nx,s);if(a<0&&b<0&&c<0){ok=false;break}
+      sc+=(a>-1?10:0)+(b>-1?3:0)+(c>-1?2:0)+((e.nh+' '+e.nx).includes(toks[n])?1:0)}
+    if(ok)out.push([sc+(e.k?0:.5),e])}
+  out.sort((x,y)=>y[0]-x[0]);return {stems,res:out.slice(0,40).map(x=>x[1])}}
+function snip(e,stems){if(!e.x)return '';let p=-1;for(const s of stems){const i=find(e.nx,s);if(i>-1&&(p<0||i<p))p=i}
+  let a=0,b=Math.min(e.x.length,170);if(p>60){a=e.x.lastIndexOf(' ',p-50);if(a<0)a=p-50;b=Math.min(e.x.length,a+170)}
+  const cut=e.x.lastIndexOf(' ',b);if(b<e.x.length&&cut>a+80)b=cut;
+  return (a>0?'…':'')+mark(e.x.slice(a,b),e.nx.slice(a,b),stems)+(b<e.x.length?'…':'')}
+const thumb=i=>{const x=(window.__PHOTOS||[])[i];if(!x)return '';const u=x[0].replace(/\/\d+px-/,'/960px-');return `<img src="${esc(window.__ph?__ph(u,true):u)}" alt="" loading="lazy" referrerpolicy="no-referrer">`};
+function render(){const v=q.value.trim();if(!v){R.innerHTML='';N.textContent='';return}
+  if(!IDX){N.textContent=T('sr8');load().then(render);return}
+  const r=search(v);if(!r){R.innerHTML='';N.textContent='';return}
+  N.textContent=r.res.length?T('sr4').replace('{n}',r.res.length):T('sr2');
+  R.innerHTML=r.res.map(e=>`<li><a href="${esc(e.u)}"${e.ph!=null?` data-ph="${e.ph}"`:''} class="${e.ph!=null?'ph':''}">${e.ph!=null?thumb(e.ph):''}<span class="srch-m mono">${esc(e.p)}${e.k?' · '+esc(T(e.k)):''}${e.v?' · '+esc(e.v):''}</span><b>${mark(e.h,e.nh,r.stems)}</b>${e.x?`<span class="srch-s">${snip(e,r.stems)}</span>`:''}</a></li>`).join('')}
+dlg.querySelector('form').addEventListener('submit',e=>{if(e.submitter&&e.submitter.classList.contains('srch-x'))return;e.preventDefault()});
+let tm=0;q.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(render,90)});
+const open=()=>{load();if(!dlg.open)dlg.showModal();q.focus();q.select()};
+btn.addEventListener('click',open);
+addEventListener('keydown',e=>{const t=e.target,typing=t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  if((e.key==='/'&&!typing&&!e.ctrlKey&&!e.metaKey&&!e.altKey)||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k')){e.preventDefault();open()}});
+dlg.addEventListener('click',e=>{if(e.target===dlg){dlg.close();return}
+  const a=e.target.closest('#srchR a');if(!a)return;
+  const here=new URL(a.href,document.baseURI),same=here.pathname===location.pathname;dlg.close();
+  if(a.dataset.ph!=null&&same){const o=document.querySelector(`#arch .arch-open[data-i="${a.dataset.ph}"]`);if(o){e.preventDefault();const s=document.getElementById('archive');if(s)s.scrollIntoView();setTimeout(()=>o.click(),60)}}});
+dlg.addEventListener('keydown',e=>{const items=[...R.querySelectorAll('a')];if(!items.length)return;const i=items.indexOf(document.activeElement);
+  if(e.key==='ArrowDown'){e.preventDefault();(items[i+1]||items[0]).focus()}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(i<=0)q.focus();else items[i-1].focus()}
+  else if(e.key==='Enter'&&document.activeElement===q){e.preventDefault();items[0].click()}});
+dlg.addEventListener('close',()=>btn.focus({preventScroll:true}));
+addEventListener('d11lang',()=>{IDX=null;if(dlg.open)render()});
+})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';
@@ -583,6 +673,8 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-09-v41',d:'2026-10-09',ty:'site',v:'v4.1',cta:['model.html#q3d','q70']},
+ {id:'2026-10-09-v40',d:'2026-10-09',ty:'site',v:'v4.0',cta:['city.html#atlas','at0']},
  {id:'2026-10-08-daynight',d:'2026-10-08',ty:'site',v:'v3.9',cta:['city.html#then','tn0']},
  {id:'2026-10-08-guests',d:'2026-10-08',ty:'site',v:'v3.8',lab:'gv1',cta:['index.html#guests','gv1']},
  {id:'2026-10-08-album',d:'2026-10-08',ty:'site',v:'v3.6',lab:'n1'},
@@ -609,7 +701,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v3.9',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V='v4.0',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
@@ -834,4 +926,73 @@ function daily(){const n=dayNo(),p=dailyPhoto(n),rec=LS.get('d11-qz-daily',null)
     if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(done2,()=>{});}}
 addEventListener('d11lang',e=>{S=e.detail.S;drawTabs();render()});
 drawTabs();render();
+})();
+
+;(()=>{
+/* ---------- v4.0: atlas — every photo of the site on one map ---------- */
+const sec=document.getElementById('atlas');if(!sec||!window.__QZ)return;
+const map=sec.querySelector('#atMap'),inner=sec.querySelector('#atIn'),pins=sec.querySelector('#atPins'),card=sec.querySelector('#atCard'),nEl=sec.querySelector('#atN');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+const lang=()=>(document.documentElement.lang||'ru').slice(0,2);
+const ph=(u,sm)=>window.__ph?window.__ph(u,sm):u;
+const MW=3277,MH=2557,W0=37.58,N0=48.13,KX=111320*Math.cos(48*Math.PI/180)/10,KY=111180/10;
+const toXY=(lat,lon)=>[(lon-W0)*KX,(N0-lat)*KY];
+const NAME={sherb:'g10',arena:'g11',pushkin:'g12',opera:'g14',artema:'g41'};
+const nm=k=>T(NAME[k]||('lm_'+k))||k;
+const sn=p=>p.k?nm(p.k):cap((p.items.find(x=>x.ar!=null)||{}).ar).replace(/,[^,]*\d{4}$/,'');
+const cp=f=>'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(String(f).replace(/ /g,'_'));
+/* data: quiz photos (with coordinates) + then & later pairs */
+const Q=window.__QZ.P.map(a=>({id:a[0],k:a[1],src:a[2],pg:a[3],au:a[4],li:a[5],d:a[6],lat:a[7],lon:a[8]})).filter(p=>p.lat!=null);
+/* v4.1: archive photos placed by their Commons camera position or by the landmark they show */
+const AR={1:[47.997131,37.788353,'sherb'],2:[47.9957,37.788,'sherb'],3:[48.0209,37.8098,'arena'],4:[48.014132,37.81801],5:[48.0021,37.8014,'pushkin'],6:[48.014089,37.81809],7:[47.995253,37.802142],8:[48.006151,37.804073,'opera'],14:[48.00212,37.814458],15:[48.0039,37.8041,'palace'],16:[48.006,37.8036,'opera'],17:[48.006018,37.803605,'opera'],18:[48.0021,37.8014,'pushkin'],19:[48.0021,37.8014,'pushkin'],20:[48.0209,37.8098,'arena']};
+const PH=window.__PHOTOS||[];
+const AQ=Object.keys(AR).filter(i=>PH[i]).map(i=>{const a=AR[i],x=PH[i];return {ar:+i,k:a[2]||null,src:x[0].replace(/\/\d+px-/,'/960px-'),pg:x[1],au:x[2],li:x[3],lat:a[0],lon:a[1]}});
+const cap=i=>(window.__PHCAP||[])[i]||'';
+const TN=(window.__TN||[]).filter(p=>p.ll);
+const spots=[];
+const near=(lat,lon,type)=>spots.find(s=>s.type===type&&Math.abs(s.lat-lat)<.0012&&Math.abs(s.lon-lon)<.0016);
+Q.concat(AQ).forEach(p=>{let s=near(p.lat,p.lon,'ph');if(!s){s={type:'ph',lat:p.lat,lon:p.lon,k:p.k,items:[]};spots.push(s)}if(!s.k&&p.k)s.k=p.k;s.items.push(p)});
+TN.forEach((p,i)=>spots.push({type:'tn',lat:p.ll[0],lon:p.ll[1],k:p.k,pair:p,idx:(window.__TN||[]).indexOf(p)}));
+let filt='all',act=-1,s=1,tx=0,ty=0;
+/* view */
+const minS=()=>Math.max(map.clientWidth/MW,map.clientHeight/MH);
+const clamp=()=>{s=Math.max(minS(),Math.min(2.5,s));tx=Math.min(0,Math.max(map.clientWidth-MW*s,tx));ty=Math.min(0,Math.max(map.clientHeight-MH*s,ty))};
+const apply=()=>{clamp();inner.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;inner.style.setProperty('--iz',(1/s).toFixed(4))};
+const center=(x,y,z)=>{if(z)s=z;tx=map.clientWidth/2-x*s;ty=map.clientHeight/2-y*s;apply()};
+const zoomAt=(f,cx,cy)=>{const s0=s;s=Math.max(minS(),Math.min(2.5,s*f));tx=cx-(cx-tx)*s/s0;ty=cy-(cy-ty)*s/s0;apply()};
+function draw(){const vis=spots.map((p,i)=>[p,i]).filter(([p])=>filt==='all'||p.type===filt);
+  pins.innerHTML=vis.map(([p,i])=>{const [x,y]=toXY(p.lat,p.lon);const n=p.type==='ph'?p.items.length:0;const label=p.type==='tn'?(p.pair.n[lang()]||p.pair.n.ru):sn(p);
+    return `<button type="button" class="at-pin ${p.type}${i===act?' act':''}" style="left:${x.toFixed(0)}px;top:${y.toFixed(0)}px" data-i="${i}" aria-label="${esc(label)}">${n>1?`<b>${n}</b>`:''}</button>`}).join('');
+  const nPh=vis.reduce((a,[p])=>a+(p.type==='ph'?p.items.length:2),0);
+  nEl.textContent=T('at8').replace('{n}',vis.length)+' · '+nPh+' '+(lang()==='en'?'photos':lang()==='fi'?'kuvaa':lang()==='uk'?'фото':'фото')}
+function show(i){act=i;draw();const p=spots[i];if(!p){card.innerHTML=`<p class="at-empty">${esc(T('at9'))}</p>`;return}
+  if(p.type==='tn'){const t=p.pair,l=lang();
+    card.innerHTML=`<h3>${esc(t.n[l]||t.n.ru)}</h3><div class="at-tn" style="--k:.5"><img src="${ph(t.a.u)}" alt="${esc(t.a.y)}" loading="lazy"><img class="b" src="${ph(t.b.u)}" alt="${esc(t.b.y)}" loading="lazy"><input type="range" min="0" max="100" value="50" aria-label="${esc(T('tn5'))}"></div>
+      <p style="margin:0;color:#4b4338">${esc(t.note[l]||t.note.ru)}</p><p class="mono" style="margin:0;font-size:11px;color:#655a4b">${[t.a,t.b].map(x=>`<a href="${cp(x.f)}" target="_blank" rel="noopener">${esc(x.y)} · © ${esc(x.au)} · ${esc(x.l)} ↗</a>`).join('<br>')}</p>
+      <a class="at-go" href="#then" data-tn="${p.idx}">${esc(T('at6'))}</a>`;
+    const r=card.querySelector('input'),b=card.querySelector('.at-tn');r.addEventListener('input',()=>b.style.setProperty('--k',r.value/100));
+    card.querySelector('.at-go').addEventListener('click',()=>{const tb=document.querySelector(`#tnTabs button[data-i="${p.idx}"]`);if(tb)tb.click()})}
+  else{const name=sn(p),fig=x=>{const d=x.ar!=null?cap(x.ar):x.d,img=`<img src="${ph(x.src,true)}" alt="${esc(x.ar!=null?d:name+', '+d)}" loading="lazy">`;
+      return `<figure class="at-shot">${x.ar!=null?`<button type="button" class="at-ar" data-ar="${x.ar}" aria-label="${esc(S().ar11||'')}: ${esc(d)}">${img}</button>`:img}<figcaption>${esc(d)} · <a href="${x.pg}" target="_blank" rel="noopener">© ${esc(x.au)} · ${esc(x.li)} ↗</a></figcaption></figure>`};
+    card.innerHTML=`<h3>${esc(name)}</h3><p class="mono" style="margin:0;font-size:12px;color:#655a4b">${esc(T('at7').replace('{n}',p.items.length).replace(p.items.length===1&&lang()==='en'?'photos':'\u0000','photo'))}</p><div class="at-shots">${p.items.map(fig).join('')}</div>${p.items.some(x=>x.ar==null)?`<a class="at-go" href="#guessing">${esc(T('at10'))}</a>`:''}`;
+    card.querySelectorAll('.at-ar').forEach(b=>b.addEventListener('click',()=>{const o=document.querySelector(`#arch .arch-open[data-i="${b.dataset.ar}"]`);if(o)o.click()}))}
+  card.scrollTop=0}
+/* interaction: drag, pinch, wheel, tap */
+const pt=new Map();let moved=0,last=0;
+map.addEventListener('pointerdown',e=>{if(e.target.closest('.at-zoom'))return;map.setPointerCapture(e.pointerId);pt.set(e.pointerId,[e.clientX,e.clientY]);moved=0;if(pt.size===2){const [a,b]=[...pt.values()];last=Math.hypot(a[0]-b[0],a[1]-b[1])}});
+map.addEventListener('pointermove',e=>{if(!pt.has(e.pointerId))return;const p=pt.get(e.pointerId),dx=e.clientX-p[0],dy=e.clientY-p[1];pt.set(e.pointerId,[e.clientX,e.clientY]);moved+=Math.abs(dx)+Math.abs(dy);
+  if(pt.size===2){const [a,b]=[...pt.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),r=map.getBoundingClientRect();if(last)zoomAt(d/last,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top);last=d}else{tx+=dx;ty+=dy;apply()}});
+const up=e=>{if(!pt.has(e.pointerId))return;pt.delete(e.pointerId);if(e.type==='pointerup'&&moved<7&&!pt.size){const el=document.elementFromPoint(e.clientX,e.clientY);const b=el&&el.closest('.at-pin');if(b)show(+b.dataset.i)}if(pt.size<2)last=0};
+map.addEventListener('pointerup',up);map.addEventListener('pointercancel',up);
+map.addEventListener('wheel',e=>{if(!e.ctrlKey&&!map.matches(':focus-within')&&Math.abs(e.deltaY)>0&&!map.dataset.wheel){return}e.preventDefault();const r=map.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+map.addEventListener('click',()=>{map.dataset.wheel='1'});
+pins.addEventListener('keydown',e=>{const b=e.target.closest('.at-pin');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();show(+b.dataset.i)}});
+sec.querySelectorAll('.at-zoom button').forEach(b=>b.addEventListener('click',()=>zoomAt(+b.dataset.z,map.clientWidth/2,map.clientHeight/2)));
+sec.querySelectorAll('#atF button').forEach(b=>b.addEventListener('click',()=>{filt=b.dataset.f;sec.querySelectorAll('#atF button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));act=-1;draw();show(-1)}));
+let inited=false;
+function init(){if(inited)return;inited=true;const [x,y]=toXY(48.03,37.775);center(x,y,Math.max(minS(),Math.min(map.clientWidth/1500,.8)));draw()}
+if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();init()}},{rootMargin:'300px'});io.observe(map)}else init();
+new ResizeObserver(()=>{if(inited)apply()}).observe(map);
+addEventListener('d11lang',()=>setTimeout(()=>{if(inited){draw();if(act>=0)show(act)}},0));
 })();

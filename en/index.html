@@ -1,0 +1,127 @@
+<!doctype html><html lang="en" data-plang="en"><head><meta charset="utf-8"><base href="../"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Donetsk 2011"><meta name="viewport" content="width=device-width,initial-scale=1"><script>(function(){var r=document.documentElement,R=Math.PI/180;function sun(d){var n=(d||new Date())/864e5+2440587.5-2451545,L=280.46+.9856474*n,g=(357.528+.9856003*n)*R,l=(L+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R,ra=Math.atan2(Math.cos(e)*Math.sin(l),Math.cos(l)),de=Math.asin(Math.sin(e)*Math.sin(l)),gm=(18.697374558+24.06570982441908*n)%24,H=(gm*15+37.8028)*R-ra,la=48.0159*R;return{alt:Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(H))/R,am:Math.sin(H)<0}}function phase(d){var s=sun(d);return s.alt<-5?'night':s.alt<7?(s.am?'dawn':'dusk'):'day'}function mode(){try{return localStorage.getItem('d11-theme')||'auto'}catch(e){return'auto'}}function apply(){var m=mode(),p=phase();r.dataset.phase=p;r.dataset.mode=m;r.dataset.theme=m==='auto'?(p==='night'?'dark':'light'):m;return p}window.__dn={sun:sun,phase:phase,mode:mode,apply:apply};apply();})();</script><title>Donetsk 2011</title><meta name="description" content="A source-based reconstruction of Donetsk in 2011 in Unreal Engine 5.8, built from OpenStreetMap, SRTM terrain and October 2011 Street View panoramas."><link rel="canonical" href="https://gek2or.github.io/donetsk-2011/en/"><meta property="og:type" content="website"><meta property="og:site_name" content="Donetsk 2011"><meta property="og:title" content="Donetsk 2011"><meta property="og:description" content="A source-based reconstruction of Donetsk in 2011 in Unreal Engine 5.8, built from OpenStreetMap, SRTM terrain and October 2011 Street View panoramas."><meta property="og:url" content="https://gek2or.github.io/donetsk-2011/en/"><meta property="og:image" content="https://gek2or.github.io/donetsk-2011/assets/og/index.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_US"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="uk_UA"><meta property="og:locale:alternate" content="fi_FI"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#10171d"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "VideoGame", "name": "Donetsk 2011", "url": "https://gek2or.github.io/donetsk-2011/en/", "description": "A source-based reconstruction of Donetsk in 2011 in Unreal Engine 5.8, built from OpenStreetMap, SRTM terrain and October 2011 Street View panoramas.", "image": "https://gek2or.github.io/donetsk-2011/assets/og/index.jpg", "genre": ["Open world", "Historical reconstruction"], "gamePlatform": "Windows", "creativeWorkStatus": "In development", "author": {"@type": "Person", "name": "Stanislav"}, "inLanguage": "en", "contentLocation": {"@type": "City", "name": "Donetsk"}, "temporalCoverage": "2011-10"}</script><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/alegreya-normal-latin.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/literata-normal-latin.woff2"><link rel="alternate" type="application/rss+xml" hreflang="ru" title="Donetsk 2011 · обновления" href="https://gek2or.github.io/donetsk-2011/feed.xml"><link rel="alternate" type="application/rss+xml" hreflang="uk" title="Donetsk 2011 · оновлення" href="https://gek2or.github.io/donetsk-2011/feed-uk.xml"><link rel="alternate" type="application/rss+xml" hreflang="en" title="Donetsk 2011 · updates" href="https://gek2or.github.io/donetsk-2011/feed-en.xml"><link rel="alternate" type="application/rss+xml" hreflang="fi" title="Donetsk 2011 · päivitykset" href="https://gek2or.github.io/donetsk-2011/feed-fi.xml"><link rel="alternate" hreflang="ru" href="https://gek2or.github.io/donetsk-2011/"><link rel="alternate" hreflang="uk" href="https://gek2or.github.io/donetsk-2011/uk/"><link rel="alternate" hreflang="en" href="https://gek2or.github.io/donetsk-2011/en/"><link rel="alternate" hreflang="fi" href="https://gek2or.github.io/donetsk-2011/fi/"><link rel="alternate" hreflang="x-default" href="https://gek2or.github.io/donetsk-2011/"><link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/site.css?v=3a44e9f1"></head><body data-pt="">
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<a class="skip" href="#main" data-t="sk1">Skip to content</a><nav aria-label="Sections" class="nav" data-ta="aria-label:a1">
+<div class="wrap">
+<a class="brand" href="en/index.html">DONETSK<b>/</b>2011</a>
+<span class="dn-chip mono" aria-hidden="true"><i>◷</i><b>--:--</b><small></small></span><span hidden data-t="dn1">night</span><span hidden data-t="dn2">dawn</span><span hidden data-t="dn3">day</span><span hidden data-t="dn4">dusk</span><span hidden data-t="dn5">Now in Donetsk</span><span hidden data-t="dn6">Theme: Donetsk time</span><span hidden data-t="dn7">Theme: light</span><span hidden data-t="dn8">Theme: dark</span><span hidden data-t="dn9">The site lives on Donetsk time: it gets dark when it is night in Donetsk.</span><ul><li><a class="l on" data-t="n1" href="en/index.html" aria-current="page">Home</a></li><li><a class="l" data-t="n2" href="en/city.html">The city</a></li><li><a class="l" data-t="n3" href="en/model.html">Reconstruction</a></li><li><a class="l" data-t="n4" href="en/dev.html">Development</a></li><li><a class="l" data-t="n5" href="en/updates.html">Updates</a></li><li><a class="l" data-t="n7" href="en/help.html">Help</a></li></ul>
+<div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Switch theme" class="theme" data-ta="aria-label:a10" id="themeBtn" type="button">◐</button>
+<span class="nav-cur mono" data-t="n1">Home</span><button type="button" class="srch-btn" id="srchBtn" aria-haspopup="dialog" aria-controls="srch" aria-label="Search the site" data-ta="aria-label:sr0"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" class="burger" id="burger" aria-expanded="false" aria-controls="mnav" aria-label="Menu" data-ta="aria-label:mn1"><i></i><i></i><i></i></button>
+</div>
+<div class="mnav" id="mnav"><div class="wrap">
+<p class="eyebrow" data-t="mn2">Site sections</p>
+<ol class="mpages"><li><a class="on" href="en/index.html" aria-current="page"><b data-t="n1">Home</b><span data-t="mn4">The story, a film about Donetsk and the ways into each section.</span></a></li><li><a class="" href="en/city.html"><b data-t="n2">The city</b><span data-t="c2">A photo archive of Donetsk before 2014, the “Guess the place” game and a memory map where you can add your own memory.</span></a></li><li><a class="" href="en/model.html"><b data-t="n3">Reconstruction</b><span data-t="c3">The 3D quarter in your browser, a walk down Zarichna, the October 2011 panoramas and the street plan.</span></a></li><li><a class="" href="en/dev.html"><b data-t="n4">Development</b><span data-t="c4">The project goal, the evidence method, the engine and blockout, the plan to the whole city and the development log.</span></a></li><li><a class="" href="en/updates.html"><b data-t="n5">Updates</b><span data-t="c5">The change feed for the game and the site: new, improved, fixed.</span></a></li><li><a class="" href="en/press.html"><b data-t="n6">Press</b><span data-t="c6">Description, facts, images and a logo for coverage.</span></a></li><li><a class="" href="en/help.html"><b data-t="n7">Help</b><span data-t="c7">Photos, memories and other ways to help the project</span></a></li><li><a class="" href="en/sound.html"><b data-t="n8">Sounds</b><span data-t="c8">Sound diary: recordings and music for the game, made without AI</span></a></li></ol>
+<p class="eyebrow" data-t="mn3">On this page</p>
+<div class="mchips"><a href="#story" data-t="s1">Story</a><a href="#why" data-t="w10">Video</a><a href="#more" data-t="c0">Next</a></div>
+<div class="mfoot"><div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Switch theme" class="theme" data-ta="aria-label:a10" id="themeBtn2" type="button">◐</button></div>
+<span hidden data-t="mn7">Show the whole log</span><span hidden data-t="mn8">Collapse the log</span>
+</div></div>
+</nav>
+<header class="hero" id="top">
+<div class="hero-photo"><img alt="" src="photos/87d6bd56f436.webp" srcset="photos/87d6bd56f436-640.webp 640w, photos/87d6bd56f436.webp 1280w" sizes="(max-width: 760px) 100vw, 640px" fetchpriority="high" referrerpolicy="no-referrer"/></div>
+<a class="hero-credit mono" href="https://commons.wikimedia.org/wiki/File:%D0%92%D0%B8%D0%B4_%D0%B8%D0%B7_Green_Plaza_040.jpg" target="_blank" rel="noopener"><span data-t="hc1">Donetsk at dusk from Green Plaza, November 2011</span><small>© Andrey Butko · CC BY-SA 3.0 ↗</small></a>
+
+<div class="wrap">
+<div class="eyebrow" data-t="t13">Historical open world · Unreal Engine 5.8</div>
+<h1><span>DONETSK</span><span class="yr">2011</span></h1>
+<p class="lede" data-t="t14">I have not been to Donetsk since 2012. So I am rebuilding it as it was in October 2011. Every street, house and fence is reconstructed from sources: OpenStreetMap, SRTM radar terrain and Google Street View panoramas from that year. I start with the Voroshylovskyi district, where I grew up, and build the whole city.</p>
+<div class="coords mono">
+<span data-t="t15">Origin <b>47.99275° N · 37.81837° E</b></span>
+<span data-t="t16">Elevation <b>143.2 m</b> EGM96</span>
+<span data-t="t17">Map frame <b>4.37 × 2.84 km</b></span>
+<span data-t="t18">Reference date <b>10.2011</b></span>
+</div>
+<div class="live mono"><i></i><span data-t="s24">Right now in Donetsk</span> <b id="clock">—</b></div>
+<div class="cta">
+<a class="btn primary" data-t="t19" href="#story">My story ↓</a>
+<a class="btn ghost" data-t="t20" href="en/model.html#q3d">Fly over the quarter in 3D →</a>
+</div>
+<a class="hero-vid" href="en/model.html#q3d" data-ta="aria-label:hv2" aria-label="Open the 3D model of the quarter"><span class="hv-frame"><video muted loop playsinline preload="none" poster="assets/hero/quarter.jpg" aria-hidden="true" tabindex="-1"><source data-src="assets/hero/quarter.mp4" type="video/mp4"><source data-src="assets/hero/quarter.webm" type="video/webm"></video></span><span class="hv-cap mono"><i aria-hidden="true"></i><span data-t="hv1">Live 3D model of the quarter</span></span><span class="hv-go" data-t="hv3">Open 3D →</span></a>
+</div>
+</header>
+<div class="ticker" aria-hidden="true"><div class="tk" id="tk"></div></div>
+<main id="main" tabindex="-1">
+<section id="story" class="story">
+  <div class="story-bg" aria-hidden="true"><img src="maps/osm_city.svg" alt=""></div><div class="story-pano" aria-hidden="true" style="background-image:url(https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Panorama25.jpg/2560px-Panorama25.jpg)"></div>
+  <div class="wrap story-grid">
+    <div class="story-text">
+      <div class="code mono"><b>00</b><span data-t="s2">Why this project</span></div>
+      <h2 data-t="s3">A city I cannot go back to</h2>
+      <p data-t="s4">I was born in Donetsk in 1995. My whole childhood was spent in the Voroshylovskyi district: the courtyards, the streets, the way from home to school. It is my home ground, a place I know from memory rather than from maps.</p>
+      <p data-t="s5">In 2012 I left. In 2014 war came to the city, and the way back was closed. I have not been there since.</p>
+      <p data-t="s6">For me, Donetsk 2011 is the only way to go back: to rebuild the city as it was, from photographs, maps and panoramas, without inventing anything.</p>
+      <p class="story-accent" data-t="s7">I start with my own district, but I am building all of Donetsk. This city matters to more people than me. There are thousands like me.</p>
+      <p class="sign mono" data-t="s8">Stanislav, creator of the project</p>
+    </div>
+    <aside class="story-side">
+      <div class="away"><b class="num" id="awayYears">14</b><span data-t="s9">years since I was last home</span></div>
+      <ol class="tline">
+        <li><span class="y">1995</span><span data-t="s10">Born in Donetsk</span></li>
+        <li><span class="y">1995–2012</span><span data-t="s11">Childhood and youth in the Voroshylovskyi district</span></li>
+        <li class="hl"><span class="y">10.2011</span><span data-t="s12">A Google Street View car drives down Zarichna Street. These frames become the project's reference</span></li>
+        <li><span class="y">2012</span><span data-t="s13">Left Donetsk</span></li>
+        <li class="war"><span class="y">2014</span><span data-t="s14">War. The way home is closed</span></li>
+        <li class="now"><span class="y">2026</span><span data-t="s15">The city returns in Unreal Engine 5</span></li>
+      </ol>
+    </aside>
+  </div>
+</section>
+<section id="why" class="why">
+  <div class="wrap">
+    <div class="head">
+      <div><div class="code"><b>01</b><span data-t="w1">Learn more about my city</span></div><h2 data-t="w2">A city out of reach for millions</h2></div>
+      <div class="why-text">
+        <p class="lede" data-t="w3">Since 7 April 2014, Donetsk has not been under Ukrainian control. On 30 September 2022, Russia declared it Russian territory. The international community does not recognise the annexation.</p>
+        <p class="lede" data-t="w4">The war in Donbas displaced millions of people. For many of them, as for me, the way home is closed. The city still exists, but it cannot be reached physically.</p>
+      </div>
+    </div>
+    <div class="why-stats">
+      <div><b class="num" data-t="w17">985,000</b><span data-t="w5">people lived in Donetsk before the war</span><small class="mono" data-t="w13">2009 · Wikipedia: Donetsk</small></div>
+      <div><b class="num" data-nocount data-t="w16">1.6 million</b><span data-t="w6">people displaced by the war in Donbas</span><small class="mono" data-t="w14">March 2016 · UN (OHCHR)</small></div>
+      <div><b class="num" id="lostYears">12</b><span data-t="w7">years the city has been outside Ukrainian control</span><small class="mono" data-t="w15">since 7 April 2014 · Wikipedia: Donetsk</small></div>
+    </div>
+    <figure class="player">
+      <div class="yt"><button type="button" class="yt-poster" id="ytPoster" aria-label="Play: Donetsk Ukraine - Before The War Started on a Historic City">
+        <span class="yt-bg" style="background-image:url(photos/3beb5b63a553.webp)"></span>
+        <span class="yt-meta"><span class="mono yt-k" data-t="w18">Documentary · 2012 · EN</span><span class="yt-t">Donetsk, Ukraine</span><span class="yt-s" data-t="w19">The city before the war</span></span>
+        <span class="yt-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>
+      </button></div>
+      <figcaption><span data-t="w8">Documentary in English, filmed in 2012: Donetsk as it was before the war.</span> <a class="mono" style="color:#8a979f" href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BF%D0%B0%D1%81%D0%BE-%D0%9F%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%BA%D0%B0%D1%84%D0%B5%D0%B4%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9_%D1%81%D0%BE%D0%B1%D0%BE%D1%80_(%D0%94%D0%BE%D0%BD%D0%B5%D1%86%D0%BA)._%D0%90%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D0%B0._01.jpg" target="_blank" rel="noopener"><span data-t="w20">Cover</span>: © MilenaV601 · CC BY-SA 4.0</a> <a class="mono" href="https://www.youtube.com/watch?v=3lj1tFT3wGw" target="_blank" rel="noopener">Davito Daveeni · YouTube ↗</a></figcaption>
+    </figure>
+    <div class="thanks"><p data-t="w11">Thank you, Davito Daveeni, for this film. It preserved Donetsk in 2012, a big, lively, densely populated city, the way hundreds of thousands of people remember it.</p><a class="btn ghost" href="https://www.youtube.com/@DavitoDaveeni" target="_blank" rel="noopener"><span data-t="w12">Davito Daveeni on YouTube</span> ↗</a></div>
+    <p class="mono why-src"><span data-t="w9">Sources:</span> <a href="https://en.wikipedia.org/wiki/Donetsk" target="_blank" rel="noopener">Wikipedia: Donetsk</a> · <a href="https://en.wikipedia.org/wiki/Humanitarian_situation_during_the_war_in_Donbas" target="_blank" rel="noopener">Wikipedia: Humanitarian impact of the war in Donbas</a></p>
+  </div>
+</section>
+<section id="more" class="more">
+<div class="wrap">
+<div class="head"><div><div class="code"><b>02</b><span data-t="c0">Next</span></div><h2 data-t="c1">More on the site</h2></div></div>
+<a class="upd-latest" id="updLatest" href="en/updates.html"></a>
+<p class="eyebrow nums-h" data-t="nm1">The project in numbers</p>
+<div class="stats" id="nums">
+<div class="stat"><b class="num">8 805</b><span data-t="t21">objects in the city reference map</span></div>
+<div class="stat"><b class="num">1 551</b><span data-t="t22">buildings with OSM IDs and tags</span></div>
+<div class="stat"><b class="num">1 654</b><span data-t="t23">road centrelines, plus 420 rail lines</span></div>
+<div class="stat"><b class="num">419</b><span data-t="t24">facade elements recorded from 2011 panoramas</span></div>
+<div class="stat"><b class="num">189</b><span data-t="t25">volumes in the 280 × 660 m Unreal quarter</span></div>
+<div class="stat"><b class="num">412</b><span data-t="t26">metres of street checked against six 2011 panoramas</span></div>
+</div>
+<div class="doors"><a class="door" href="en/city.html"><span class="door-img"><img src="photos/fc855d2f3bcb.webp" srcset="photos/fc855d2f3bcb-640.webp 640w, photos/fc855d2f3bcb.webp 1280w" sizes="(max-width: 760px) 100vw, 640px" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono">© Andrey Butko · CC BY-SA 3.0</small></span><span class="door-body"><b data-t="n2">The city</b><span data-t="c2">A photo archive of Donetsk before 2014, the “Guess the place” game and a memory map where you can add your own memory.</span><i class="mono">→</i></span></a><a class="door" href="en/model.html"><span class="door-img"><img src="img/render/corridor.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono"><span data-t="rn1">3D model of the quarter · OSM + SRTM</span></small></span><span class="door-body"><b data-t="n3">Reconstruction</b><span data-t="c3">The 3D quarter in your browser, a walk down Zarichna, the October 2011 panoramas and the street plan.</span><i class="mono">→</i></span></a><a class="door" href="en/dev.html"><span class="door-img"><img src="img/render/house33.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"/><small class="mono"><span data-t="rn1">3D model of the quarter · OSM + SRTM</span></small></span><span class="door-body"><b data-t="n4">Development</b><span data-t="c4">The project goal, the evidence method, the engine and blockout, the plan to the whole city and the development log.</span><i class="mono">→</i></span></a></div>
+<div class="doors-2"><a class="door-note" href="en/sound.html"><span class="dn-ico" aria-hidden="true">♪</span><span><b data-t="n8">Sounds</b><span data-t="c8">Sound diary: recordings and music for the game, made without AI</span></span><i class="mono">→</i></a><a class="door-note" href="en/help.html"><span class="dn-ico" aria-hidden="true">♥</span><span><b data-t="n7">Help</b><span data-t="c7">Photos, memories and other ways to help the project</span></span><i class="mono">→</i></a></div>
+<div class="guests" id="guests"><div class="gs-head"><span class="eyebrow" data-t="gv1">Guests of Donetsk 2011</span><p class="gs-total"><b class="num" id="gvN">—</b> <span data-t="gv3">visits</span> · <b class="num" id="gvC">—</b> <span data-t="gv4">countries</span></p><p class="gs-note" data-t="gv2">How many times people came here and from where. One visit per device per day; the country comes from the IP address, which is never stored.</p></div><ol class="gv-stamps" id="gvList" aria-live="polite"></ol><p class="gv-me mono" id="gvMe" hidden></p><span hidden data-t="gv5">Other countries</span><span hidden data-t="gv6">You came from: {c}. Thank you for stopping by.</span><span hidden data-t="gv7">Nobody yet. You can be the first guest.</span></div>
+</div>
+</section>
+</main>
+<div class="foot-nav wrap mono"><a href="en/index.html" data-t="n1">Home</a> · <a href="en/city.html" data-t="n2">The city</a> · <a href="en/model.html" data-t="n3">Reconstruction</a> · <a href="en/dev.html" data-t="n4">Development</a> · <a href="en/updates.html" data-t="n5">Updates</a> · <a href="en/press.html" data-t="n6">Press</a> · <a href="en/help.html" data-t="n7">Help</a> · <a href="en/sound.html" data-t="n8">Sounds</a> · <a class="rss" href="feed.xml" data-rss="1">RSS</a> <button type="button" class="pwa-inst" hidden data-t="pw0">Install as an app</button></div><div class="pwa-off mono" role="status" hidden data-t="pw1">You are offline. This is a saved copy of the page.</div>
+<dialog class="srch" id="srch" aria-labelledby="srchT"><form method="dialog" class="srch-top" role="search"><h2 class="srch-t" id="srchT" data-t="sr0">Search the site</h2><button type="submit" class="srch-x" value="close" aria-label="Close" data-ta="aria-label:sr3">×</button><input type="search" id="srchQ" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-labelledby="srchT" aria-describedby="srchN" placeholder="For example: Donbass Arena, panoramas, 3D" data-ta="placeholder:sr1"></form><p class="srch-n mono" id="srchN" aria-live="polite"></p><ol class="srch-r" id="srchR"></ol><span hidden data-t="sr2">Nothing found. Try another word.</span><span hidden data-t="sr4">Results: {n}</span><span hidden data-t="sr8">Loading…</span><span hidden data-t="sr5">Photo</span><span hidden data-t="sr6">Update</span><span hidden data-t="sr7">Then and later</span></dialog>
+<footer><div class="wrap"><span data-t="t186">DONETSK 2011 · Stanislav · a source-based reconstruction</span><span class="mono">47.9927461 N · 37.8183736 E</span></div></footer>
+
+
+
+<script src="photos/have.js"></script>
+<script src="assets/data-en.js?v=52ef085b"></script>
+<script src="assets/app.js?v=914f86ea"></script>
+
+</body></html>

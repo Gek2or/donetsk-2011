@@ -31,7 +31,17 @@ for h, e in M.items():
     new += 1
     time.sleep(1.2)
 have = sorted(f[:-4] for f in os.listdir("photos") if f.endswith(".jpg") and f[:-4] in M)
-open("photos/have.js", "w").write("window.__PHHAVE=" + json.dumps(have) + ";\n")
+# WebP copies: full size and 640 px for thumbnails and phones
+webp = []
+for h in have:
+    full, small = f"photos/{h}.webp", f"photos/{h}-640.webp"
+    if not (os.path.exists(full) and os.path.exists(small)):
+        im = Image.open(f"photos/{h}.jpg").convert("RGB")
+        im.save(full, "WEBP", quality=76, method=6)
+        sm = im if im.width <= 640 else im.resize((640, round(im.height * 640 / im.width)), Image.LANCZOS)
+        sm.save(small, "WEBP", quality=74, method=6)
+    webp.append(h)
+open("photos/have.js", "w").write("window.__PHHAVE=" + json.dumps(have) + ";window.__PHW=" + json.dumps(webp) + ";\n")
 print(f"new {new}, cached {len(have)} of {len(M)}, failed {len(failed)}")
 for u in failed:
     print("FAILED", u)

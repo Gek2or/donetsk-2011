@@ -1,0 +1,255 @@
+<!doctype html><html lang="uk" data-plang="uk"><head><meta charset="utf-8"><base href="../"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23141d26%22/%3E%3Crect x=%229%22 y=%229%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%23e2658a%22 stroke-width=%223%22/%3E%3C/svg%3E"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Donetsk 2011"><meta name="viewport" content="width=device-width,initial-scale=1"><script>(function(){var r=document.documentElement,R=Math.PI/180;function sun(d){var n=(d||new Date())/864e5+2440587.5-2451545,L=280.46+.9856474*n,g=(357.528+.9856003*n)*R,l=(L+1.915*Math.sin(g)+.02*Math.sin(2*g))*R,e=(23.439-4e-7*n)*R,ra=Math.atan2(Math.cos(e)*Math.sin(l),Math.cos(l)),de=Math.asin(Math.sin(e)*Math.sin(l)),gm=(18.697374558+24.06570982441908*n)%24,H=(gm*15+37.8028)*R-ra,la=48.0159*R;return{alt:Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(H))/R,am:Math.sin(H)<0}}function phase(d){var s=sun(d);return s.alt<-5?'night':s.alt<7?(s.am?'dawn':'dusk'):'day'}function mode(){try{return localStorage.getItem('d11-theme')||'auto'}catch(e){return'auto'}}function apply(){var m=mode(),p=phase();r.dataset.phase=p;r.dataset.mode=m;r.dataset.theme=m==='auto'?(p==='night'?'dark':'light'):m;return p}window.__dn={sun:sun,phase:phase,mode:mode,apply:apply};apply();})();</script><title>Donetsk 2011 · Розробка</title><meta name="description" content="Що я будую і за якими правилами: мета, метод доказів, рушій і блокаут, план до цілого міста, журнал зі звуком без ШІ й усі джерела."><link rel="canonical" href="https://gek2or.github.io/donetsk-2011/uk/dev.html"><meta property="og:type" content="website"><meta property="og:site_name" content="Donetsk 2011"><meta property="og:title" content="Donetsk 2011 · Розробка"><meta property="og:description" content="Що я будую і за якими правилами: мета, метод доказів, рушій і блокаут, план до цілого міста, журнал зі звуком без ШІ й усі джерела."><meta property="og:url" content="https://gek2or.github.io/donetsk-2011/uk/dev.html"><meta property="og:image" content="https://gek2or.github.io/donetsk-2011/assets/og/dev.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="uk_UA"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="en_US"><meta property="og:locale:alternate" content="fi_FI"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#10171d"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/alegreya-normal-cyrillic.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/literata-normal-cyrillic.woff2"><link rel="alternate" type="application/rss+xml" hreflang="ru" title="Donetsk 2011 · обновления" href="https://gek2or.github.io/donetsk-2011/feed.xml"><link rel="alternate" type="application/rss+xml" hreflang="uk" title="Donetsk 2011 · оновлення" href="https://gek2or.github.io/donetsk-2011/feed-uk.xml"><link rel="alternate" type="application/rss+xml" hreflang="en" title="Donetsk 2011 · updates" href="https://gek2or.github.io/donetsk-2011/feed-en.xml"><link rel="alternate" type="application/rss+xml" hreflang="fi" title="Donetsk 2011 · päivitykset" href="https://gek2or.github.io/donetsk-2011/feed-fi.xml"><link rel="alternate" hreflang="ru" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="alternate" hreflang="uk" href="https://gek2or.github.io/donetsk-2011/uk/dev.html"><link rel="alternate" hreflang="en" href="https://gek2or.github.io/donetsk-2011/en/dev.html"><link rel="alternate" hreflang="fi" href="https://gek2or.github.io/donetsk-2011/fi/dev.html"><link rel="alternate" hreflang="x-default" href="https://gek2or.github.io/donetsk-2011/dev.html"><link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/site.css?v=3a44e9f1"></head><body data-pt="n4">
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<a class="skip" href="#main" data-t="sk1">Перейти до змісту</a><nav aria-label="Розділи" class="nav" data-ta="aria-label:a1">
+<div class="wrap">
+<a class="brand" href="uk/index.html">DONETSK<b>/</b>2011</a>
+<span class="dn-chip mono" aria-hidden="true"><i>◷</i><b>--:--</b><small></small></span><span hidden data-t="dn1">ніч</span><span hidden data-t="dn2">світанок</span><span hidden data-t="dn3">день</span><span hidden data-t="dn4">захід</span><span hidden data-t="dn5">Зараз у Донецьку</span><span hidden data-t="dn6">Тема: за часом Донецька</span><span hidden data-t="dn7">Тема: світла</span><span hidden data-t="dn8">Тема: темна</span><span hidden data-t="dn9">Сайт живе за донецьким часом: уночі в Донецьку він темнішає.</span><ul><li><a class="l" data-t="n1" href="uk/index.html">Головна</a></li><li><a class="l" data-t="n2" href="uk/city.html">Місто</a></li><li><a class="l" data-t="n3" href="uk/model.html">Реконструкція</a></li><li><a class="l on" data-t="n4" href="uk/dev.html" aria-current="page">Розробка</a></li><li><a class="l" data-t="n5" href="uk/updates.html">Оновлення</a></li><li><a class="l" data-t="n7" href="uk/help.html">Допомогти</a></li></ul>
+<div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Змінити тему" class="theme" data-ta="aria-label:a10" id="themeBtn" type="button">◐</button>
+<span class="nav-cur mono" data-t="n4">Розробка</span><button type="button" class="srch-btn" id="srchBtn" aria-haspopup="dialog" aria-controls="srch" aria-label="Пошук по сайту" data-ta="aria-label:sr0"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button type="button" class="burger" id="burger" aria-expanded="false" aria-controls="mnav" aria-label="Меню" data-ta="aria-label:mn1"><i></i><i></i><i></i></button>
+</div>
+<div class="mnav" id="mnav"><div class="wrap">
+<p class="eyebrow" data-t="mn2">Розділи сайту</p>
+<ol class="mpages"><li><a class="" href="uk/index.html"><b data-t="n1">Головна</b><span data-t="mn4">Історія, фільм про Донецьк і входи до розділів.</span></a></li><li><a class="" href="uk/city.html"><b data-t="n2">Місто</b><span data-t="c2">Фотоархів Донецька до 2014 року, гра «Вгадай місце» і мапа пам'яті, куди можна додати свій спогад.</span></a></li><li><a class="" href="uk/model.html"><b data-t="n3">Реконструкція</b><span data-t="c3">3D-квартал у браузері, прогулянка Зарічною, панорами жовтня 2011 року й план вулиці.</span></a></li><li><a class="on" href="uk/dev.html" aria-current="page"><b data-t="n4">Розробка</b><span data-t="c4">Мета проєкту, метод доказів, рушій і блокаут, план до цілого міста й журнал розробки.</span></a></li><li><a class="" href="uk/updates.html"><b data-t="n5">Оновлення</b><span data-t="c5">Стрічка змін гри й сайту: нове, покращено, виправлено.</span></a></li><li><a class="" href="uk/press.html"><b data-t="n6">Преса</b><span data-t="c6">Опис, факти, зображення й логотип для публікацій.</span></a></li><li><a class="" href="uk/help.html"><b data-t="n7">Допомогти</b><span data-t="c7">Фото, спогади та інші способи допомогти проєкту</span></a></li><li><a class="" href="uk/sound.html"><b data-t="n8">Звуки</b><span data-t="c8">Звуковий щоденник: записи й музика гри, без ШІ</span></a></li></ol>
+<p class="eyebrow" data-t="mn3">На цій сторінці</p>
+<div class="mchips"><a href="#goal" data-t="dv1">Мета</a><a href="#method" data-t="t7">Метод</a><a href="#build" data-t="t8">Рушій</a><a href="#frames" data-t="t57">Блокаут</a><a href="#roadmap" data-t="t9">План</a><a href="#dev" data-t="dv4">Журнал</a><a href="#sources" data-t="t178">Джерела</a></div>
+<div class="mfoot"><div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="uk">UA</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="fi">FI</button></div>
+<button aria-label="Змінити тему" class="theme" data-ta="aria-label:a10" id="themeBtn2" type="button">◐</button></div>
+<span hidden data-t="mn7">Показати весь журнал</span><span hidden data-t="mn8">Згорнути журнал</span>
+</div></div>
+</nav>
+<header class="phead" id="top">
+<div class="wrap phead-grid">
+<div class="phead-text">
+<div class="eyebrow">DONETSK 2011</div>
+<h1 data-t="pd1">Розробка</h1>
+<p class="lede" data-t="pd2">Що я будую і за якими правилами: мета, метод доказів, рушій і блокаут, план до цілого міста, журнал зі звуком без ШІ й усі джерела.</p>
+<nav class="chips" aria-label="Разработка"><a href="#goal" data-t="dv1">Мета</a><a href="#method" data-t="t7">Метод</a><a href="#build" data-t="t8">Рушій</a><a href="#frames" data-t="t57">Блокаут</a><a href="#roadmap" data-t="t9">План</a><a href="#dev" data-t="dv4">Журнал</a><a href="#sources" data-t="t178">Джерела</a></nav>
+</div>
+<figure class="phead-img"><img src="img/render/plan_top.jpg" alt="" referrerpolicy="no-referrer" fetchpriority="high"/><figcaption><span class="mono"><span data-t="rn1">3D-модель кварталу · OSM + SRTM</span></span></figcaption></figure>
+</div>
+</header>
+<main id="main" tabindex="-1">
+<section id="goal">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>01</b><span data-t="dv1">Мета</span></div><h2 data-t="dv2">Що я будую</h2></div>
+<p class="lede" data-t="dv3">Не гру за мотивами, а саме місто: живий Донецьк 2011 року й шар пам'яті поверх нього. П'ять опор визначають, якою буде гра.</p>
+</div>
+    <blockquote class="manifesto">
+      <p data-t="d4">Цей проєкт не спосіб згаяти час. По суті, це частина мене, якої мені бракує.</p>
+      <p data-t="d5">Я впевнений, що дуже багато людей досі вважають це місто своїм і пам'ятають його так само, як я. Воно частина їх. Частина, яка існує, але фізично недосяжна.</p>
+      <cite class="mono" data-t="d6">Станіслав</cite>
+    </blockquote>
+<blockquote class="north"><span class="eyebrow" data-t="r1">Головна мета</span><p data-t="r2">«Це не місто за мотивами Донецька. Це Донецьк».</p><small data-t="r3">Після 20–30 хвилин гри людина має відчути дві речі водночас: «я в справжньому Донецьку» і «це живий відкритий світ, а не музей».</small></blockquote>
+<div class="layers">
+<div><span class="eyebrow" data-t="t172">Шар 1</span><h3 data-t="t173">Живий Донецьк 2011</h3><p data-t="t174" style="color:var(--ink-2)">Системний відкритий світ: трафік, транспорт, розпорядок мешканців, економіка, реакція міста й місії. Бій не в центрі гри. Реальна геометрія важливіша за зручність левел-дизайну.</p></div>
+<div><span class="eyebrow" data-t="t175">Шар 2</span><h3 data-t="t176">Шар пам'яті</h3><p data-t="t177" style="color:var(--ink-2)">«Відлуння пам'яті»: спалахи минулих років у реальних місцях Зарічної. Місто очима того, хто тут виріс.</p></div>
+</div>
+<div class="pillars"><span class="eyebrow" data-t="p0" style="color:var(--muted)">П'ять опор гри</span><ol><li><b data-t="p1">Жити в справжньому місті</b><span data-t="p2">Ходити, їздити трамваєм і маршруткою, купувати хліб, сидіти на лавці.</span></li><li><b data-t="p3">Місто живе без тебе</b><span data-t="p4">Мешканці мають дім, роботу й розпорядок. Двори живуть своїм ритмом залежно від часу доби й погоди.</span></li><li><b data-t="p5">Свобода з наслідками</b><span data-t="p6">Світ помічає вчинки через свідків, репутацію й міліцію та відповідає співмірно.</span></li><li><b data-t="p7">Пам'ять як відкриття</b><span data-t="p8">Реальні місця відкривають спогади. Досліджуючи місто, знаходиш особисту історію.</span></li><li><b data-t="p9">Маленькі людські ставки</b><span data-t="p10">Родина, друзі, сусіди, робота й район. Жодних кримінальних імперій.</span></li></ol></div>
+</div>
+</section>
+<section id="method">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>02</b><span data-t="t82">Метод</span></div><h2 data-t="t83">Нічого не вигадано</h2></div>
+<p class="lede" data-t="t84">Кожна деталь має клас доказовості. Якщо вікна не видно на панорамі, його немає в моделі. Якщо розмір оцінено на око, це записано поруч. Так реконструкція лишається чесною, навіть коли зростає до масштабу міста.</p>
+</div>
+<div class="classes">
+<div class="cls"><div class="sw" style="background:var(--moss)"></div><h3 data-t="t85">Спостережено у 2011</h3><p data-t="t86">Видно на панорамі жовтня 2011: матеріал, колір, форма, кількість вікон.</p><span class="ex" data-t="t87">90 опорних об'єктів · 419 елементів фасадів</span></div>
+<div class="cls"><div class="sw" style="background:var(--steel)"></div><h3 data-t="t88">Сучасний контур</h3><p data-t="t89">Контури будівель і осі вулиць з OpenStreetMap. Це опора для геометрії, а не доказ того, яким був стан у 2011 році.</p><span class="ex" data-t="t90">126 контурів · знімок 22.09.2026</span></div>
+<div class="cls"><div class="sw" style="background:var(--amber)"></div><h3 data-t="t91">Авторська оцінка</h3><p data-t="t92">Висоти, розміри вікон, розташування дерев. Позначені в даних і замінюються, щойно знайдеться джерело.</p><span class="ex" data-t="t93">71 дерево · 847 стовпчиків · 106 дахів</span></div>
+<div class="cls"><div class="sw" style="background:repeating-linear-gradient(90deg,var(--muted) 0 6px,transparent 6px 10px)"></div><h3 data-t="t94">Не відтворюється</h3><p data-t="t95">Приховані фасади, інтер'єри, ремонт асфальту, розташування яких не можна встановити за кадром.</p><span class="ex" data-t="t96">приховані вікна й двері не вигадуються</span></div>
+</div>
+<div aria-label="Шкала достовірності джерел" class="grades" data-ta="aria-label:a97">
+<div class="gr-head"><span class="eyebrow" data-t="t98" style="color:var(--muted)">Шкала достовірності в реєстрі джерел</span></div>
+<div class="gr-bar">
+<div class="g" style="--c:var(--moss)"><b>A</b><span data-t="t99">підтверджено для 2011</span></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 70%,var(--amber))"><b>B</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--moss) 40%,var(--amber))"><b>C</b></div>
+<div class="g" style="--c:var(--amber)"><b>D</b></div>
+<div class="g" style="--c:color-mix(in srgb,var(--amber) 60%,var(--steel))"><b>E</b></div>
+<div class="g" style="--c:var(--steel)"><b>F</b><span data-t="t100">лише сучасні дані</span></div>
+<div class="g x" style="--c:var(--muted)"><b>X</b><span data-t="t101">закриті джерела</span></div>
+</div>
+<p class="mono" data-t="t102" style="color:var(--muted)">Google і Яндекс використовуються лише як візуальна довідка. Їхні знімки не потрапляють у гру.</p>
+</div>
+<div class="pipeline">
+<div><b data-t="t103">Джерело</b><span>OSM API, SRTM3, Street View 10.2011</span></div>
+<div><b data-t="t104">Реєстр</b><span data-t="t105">JSON з датою, хешем і межами</span></div>
+<div><b>GIS</b><span data-t="t106">ENU-метри від точки Зарічна, 33</span></div>
+<div><b>Graybox</b><span data-t="t107">Blender, скрипти збирання</span></div>
+<div><b data-t="t108">Перевірка</b><span data-t="t109">аудит контурів, земля, колізії</span></div>
+<div><b data-t="t110">Арт</b><span data-t="t111">матеріали й деталі за спостереженнями</span></div>
+<div><b data-t="t112">Рушій</b><span>Unreal Engine 5.8</span></div>
+</div>
+<figure class="srccmp">
+<img alt="Порівняння планів OSM: сьогодні та липень 2011" data-ta="alt:m3" loading="lazy" src="img/ue/source_plan_comparison.jpg"/>
+<figcaption><span class="eyebrow" data-t="m1">Конфлікт C-04 відкритий</span><p data-t="m2">Білі лінії: сьогоднішня карта OSM. Помаранчеві: версії тієї самої бази, чинні в липні 2011 року. Розбіжність сягає 3,23 м на Зарічній і 7,92 м на Донецькій. Це не доводить, що дороги зсунулися: могла змінитися точність карти. Обидві версії збережено, доки суперечку не розв'яже датоване джерело.</p></figcaption>
+</figure>
+<article class="rules rules-wide">
+        <span class="eyebrow" data-t="d14">Правила розробки</span>
+        <ol>
+          <li data-t="d15">Нічого не вигадувати. Кожна деталь має джерело і клас достовірності від A до F або X.</li>
+          <li data-t="d16">Реальна геометрія важливіша за зручність левел-дизайну.</li>
+          <li data-t="d17">Знімки Google і Яндекса слугують лише довідкою й не потрапляють у гру.</li>
+          <li data-t="d18">Звук і музика створюються вручну, без ШІ.</li>
+          <li data-t="d19">Місто росте кільцями: Зарічна, Ворошиловський район, сусідні райони, увесь Донецьк. Зроблене не переробляється.</li>
+          <li data-t="d31">Невідоме лишається позначеним. Оцінку висоти не видають за факт, а номер будинку чи вивіска з'являються лише з джерелом класу C і вище.</li>
+        </ol>
+      </article>
+</div>
+</section>
+<section id="build">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>03</b><span data-t="t113">Рушій</span></div><h2 data-t="t114">Від прототипу до Unreal Engine 5.8</h2></div>
+<p class="lede" data-t="t115">Спершу Зарічну зібрали у швидкому Unity-прототипі. Тепер проєкт живе в Unreal Engine 5.8.3 на C++, а моделі лишаються редагованими в Blender. Координати, реєстр джерел і скрипти збирання перейшли без змін. Уся рання історія Unity та Blender збережена в архівній гілці.</p>
+</div>
+<div class="engines">
+<div class="eng now">
+<div class="eng-top"><span class="status wip" data-t="t116">поточний рушій</span><span class="mono">2026 →</span></div>
+<h3>Unreal Engine 5.8</h3>
+<p data-t="t117">Основна платформа Donetsk 2011. Під час відкриття проєкту стартує ігровий квартал L_ZarechnaQuarter, ним уже можна ходити. Системи міста (мешканці, трафік, машини, інтер'єри) обкатуються окремо, у синтетичному тестовому районі, і не потрапляють у реконструкцію, доки для них немає джерел.</p>
+<table>
+<tr><th data-t="t118">Версія</th><td class="mono">UE 5.8.3 · C++ · DX11</td></tr>
+<tr><th data-t="t119">Стартова карта</th><td class="mono">L_ZarechnaQuarter</td></tr>
+<tr><th data-t="t120">Робочий кадр</th><td data-t="t121">280 × 660 м, 189 об'ємів, коридор 412 м</td></tr>
+<tr><th data-t="t122">Перевірки</th><td data-t="t123">18 поверхонь, маршрути ≈ 564 м, 38 GIS-тестів</td></tr>
+<tr><th data-t="t124">Збірка</th><td data-t="t125">Windows-плеєр: пауза, збереження, завантаження</td></tr>
+</table>
+</div>
+<div class="eng past">
+<div class="eng-top"><span class="status done" data-t="t126">прототип завершено</span><span class="mono">09.2026</span></div>
+<h3 data-t="t127">Unity-прототип Зарічної</h3>
+<p data-t="t128">Перевірка методу на реальному кварталі. Дані, моделі Blender і висновки переносяться в Unreal.</p>
+<table>
+<tr><th data-t="t129">Сцена</th><td data-t="t130">квартал 400 м, коридор 210 м, 19 ділянок</td></tr>
+<tr><th data-t="t131">Геометрія</th><td data-t="t132">234 415 / 46 930 трикутників (LOD0 / LOD1)</td></tr>
+<tr><th data-t="t133">Колізії</th><td data-t="t134">198 колайдерів · 11 502 трикутники</td></tr>
+<tr><th data-t="t135">Матеріали</th><td data-t="t136">20 сімейств поверхонь, 10 ассетів ambientCG CC0</td></tr>
+</table>
+<ul class="checks">
+<li><span class="status done" data-t="t137">пройдено</span><span data-t="t138">6 маршрутів контролера, 1 200 м, 1 002 заміри землі</span></li>
+<li><span class="status done" data-t="t139">пройдено</span><span data-t="t140">Аудит 126 контурів: без перетинів і виходу дахів за межі</span></li>
+<li><span class="status done" data-t="t141">пройдено</span><span data-t="t142">Blender/FBX: метрика, UV, земля в 61 точці, колізія фасадів</span></li>
+<li><span class="status done" data-t="t143">пройдено</span><span data-t="t144">Тестові збірки Windows і Android</span></li>
+</ul>
+</div>
+</div>
+<div class="carry sys">
+<span class="eyebrow" data-t="b1" style="color:var(--muted)">Системи в коді · Source/Donetsk2011</span>
+<div class="carry-row mono"><span>Core</span><span>WorldState / Save</span><span>GIS</span><span>Player</span><span>Vehicles</span><span>Traffic</span><span>Population</span><span>Interaction</span><span>Interior</span><span>Memory</span><span>Narrative</span><span>Environment</span><span>Audio</span><span>UI</span></div>
+<p data-t="b2" style="color:var(--ink-2);font-size:14px">Дані гри зберігаються в JSON: місії, діалоги, відлуння пам'яті, мешканці, машини, інтер'єри, крамниці та речі. Рішення з архітектури записано в ADR-0001…0006: світ із бази даних, проста аркадна машина до Chaos, актори до Mass, інтер'єри в реальному місці.</p>
+</div>
+</div>
+</section>
+<section id="frames">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>04</b><span data-t="t57">Блокаут</span></div><h2 data-t="t58">Блокаут в Unreal Engine 5.8</h2></div>
+<p class="lede" data-t="t59">Робочі кадри з редактора Unreal Engine 5.8.3: вулиця складається за панорамами жовтня 2011 року — паркани, ворота, газові труби, опори, дерева й узбіччя. Матеріали поки прості, розміри й насадження залишаються оцінками класу E.</p>
+</div>
+<div class="ba" id="ba">
+<div class="ba-head"><span class="eyebrow" data-t="cm5">Було / стало</span><p data-t="cm6">Той самий кадр з Unreal: ранній блокаут і версія після проходу покриттями. Асфальт, ґрунт узбіч, трава, кущі й дерева звірені з панорамами жовтня 2011 року. Потягніть лінію.</p></div>
+<figure class="cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><img class="cmp-b" src="img/ue/southern_corridor.jpg" alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono" data-t="cm1">Було</span><span class="cmp-l r mono" data-t="cm2">Стало</span><input class="cmp-r" type="range" min="0" max="100" value="50" data-ta="aria-label:cm3" aria-label="Порівняти: було і стало"></div></figure>
+<div class="ba-tabs" role="group" data-ta="aria-label:cm5" aria-label="Було / стало">
+<button type="button" aria-pressed="true" data-k="southern_corridor"><img src="img/ue2/southern_corridor.jpg" alt="" loading="lazy"><span data-t="cm7">Південний коридор</span></button>
+<button type="button" aria-pressed="false" data-k="middle_corridor"><img src="img/ue2/middle_corridor.jpg" alt="" loading="lazy"><span data-t="cm8">Середина вулиці</span></button>
+<button type="button" aria-pressed="false" data-k="p19_west_frontages"><img src="img/ue2/p19_west_frontages.jpg" alt="" loading="lazy"><span data-t="cm9">Західні фасади, точка 19</span></button>
+<button type="button" aria-pressed="false" data-k="p5_east_frontages"><img src="img/ue2/p5_east_frontages.jpg" alt="" loading="lazy"><span data-t="cm10">Східні фасади, точка 5</span></button>
+</div>
+</div>
+<div class="gal">
+<figure><img alt="Ворота будинку 33 з точки панорами 2011: фігурні бетонні панелі" data-ta="alt:fa1" loading="lazy" src="img/ue2/z33_2011_gate_match.jpg"/><figcaption><span data-t="f1">Ворота будинку 33 з точки панорами 2011: фігурні бетонні панелі</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Північна частина Зарічної: насадження біля східного узбіччя" data-ta="alt:fa2" loading="lazy" src="img/ue2/northern_2011_road_match.jpg"/><figcaption><span data-t="f2">Північна частина Зарічної: насадження біля східного узбіччя</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Перші 67 м на північ: профлист, цегла, сади й газова труба" data-ta="alt:fa3" loading="lazy" src="img/ue2/p30_p27_north.jpg"/><figcaption><span data-t="f3">Перші 67 м на північ: профлист, цегла, сади й газова труба</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Східний бік біля позначок 30 і 27: чотирисхилі дахи й ворота" data-ta="alt:fa4" loading="lazy" src="img/ue2/p30_p27_east_frontages.jpg"/><figcaption><span data-t="f4">Східний бік біля позначок 30 і 27: чотирисхилі дахи й ворота</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Південний коридор: відкритий паркан, навіс, цегла й ґрунтові узбіччя" data-ta="alt:fa5" loading="lazy" src="img/ue2/southern_corridor.jpg"/><figcaption><span data-t="f5">Південний коридор: відкритий паркан, навіс, цегла й ґрунтові узбіччя</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Вид на північ від позначки 30: низький дощатий паркан і відкритий двір" data-ta="alt:fa6" loading="lazy" src="img/ue2/z30_2011_north_match.jpg"/><figcaption><span data-t="f6">Вид на північ від позначки 30: низький дощатий паркан і відкритий двір</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Середня Зарічна: темне дерево, цегла, сади й жовта газова труба" data-ta="alt:fa7" loading="lazy" src="img/ue2/middle_corridor.jpg"/><figcaption><span data-t="f7">Середня Зарічна: темне дерево, цегла, сади й жовта газова труба</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Позначка 19: газова труба, бетонні опори й ліхтарі" data-ta="alt:fa8" loading="lazy" src="img/ue2/p19_west_frontages.jpg"/><figcaption><span data-t="f8">Позначка 19: газова труба, бетонні опори й ліхтарі</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Позначка 5: світлий будинок, темний дах і засаджене узбіччя" data-ta="alt:fa9" loading="lazy" src="img/ue2/p5_east_frontages.jpg"/><figcaption><span data-t="f9">Позначка 5: світлий будинок, темний дах і засаджене узбіччя</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Підхід до Лагутенка: коричневий метал і сірі бетонні паркани" data-ta="alt:fa10" loading="lazy" src="img/ue2/lagutenko_approach.jpg"/><figcaption><span data-t="f10">Підхід до Лагутенка: коричневий метал і сірі бетонні паркани</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Північ: підпірна стінка, газон на терасі й ялини" data-ta="alt:fa11" loading="lazy" src="img/ue2/northern_terrace.jpg"/><figcaption><span data-t="f11">Північ: підпірна стінка, газон на терасі й ялини</span><span class="mono">UE 5.8</span></figcaption></figure>
+<figure><img alt="Службовий двір північної будівлі: двері, вентиляція, майданчик" data-ta="alt:fa12" loading="lazy" src="img/ue2/northern_service_court.jpg"/><figcaption><span data-t="f12">Службовий двір північної будівлі: двері, вентиляція, майданчик</span><span class="mono">UE 5.8</span></figcaption></figure>
+</div>
+<p class="mono gal-note" data-t="f13">Знято в самому Unreal 28–30 вересня 2026 року, DX11. Пікселі Google у сцену не потрапляють. Номери позначок означають камери панорам, а не ділянки. Насадження, панелі й розміри залишаються оцінками класу E.</p>
+</div>
+</section>
+<section id="roadmap">
+<div class="wrap">
+<div class="head">
+<div><div class="code"><b>05</b><span data-t="t153">План</span></div><h2 data-t="t154">Шлях до цілого міста</h2></div>
+<p class="lede" data-t="t155">Зараз триває короткий цілісний маршрут усередині кварталу з однією побутовою дією. Далі вертикальний зріз: ігрова міні-версія фінальної гри. Потім та сама технологія розходиться районом і містом.</p>
+</div>
+<div class="road-map" id="roadmapEl"></div>
+</div>
+</section>
+<section id="dev" class="dev">
+  <div class="wrap">
+    <div class="head">
+      <div><div class="code"><b>06</b><span data-t="dv4">Журнал</span></div><h2 data-t="d2">Як народжується місто</h2></div>
+      <p class="lede" data-t="d3">Тут я розповідаю, як іде робота: за якими правилами, що вже зроблено і що попереду. Цей розділ оновлюється разом із проєктом.</p>
+    </div>
+    <div class="dev-grid">
+      <article class="sound">
+        <canvas id="wave" aria-hidden="true"></canvas>
+        <span class="eyebrow" data-t="d7">Звук і музика</span>
+        <h3 data-t="d8">Лише мої почуття. Без ШІ.</h3>
+        <p data-t="d9">Звуковий дизайн і музику для Donetsk 2011 я створюю сам і спираюся лише на власні почуття. Жодного штучного інтелекту: ні згенерованої музики, ні згенерованих звуків.</p>
+        <p data-t="d10">Лише оригінальні експерименти. Кожен звук і кожна мелодія мають бути прожиті, а не згенеровані.</p>
+        <ul class="tags"><li data-t="d11">Звуковий дизайн: сам</li><li data-t="d12">Музика: сам</li><li data-t="d13">ШІ-генерація: немає</li></ul>
+      </article>
+<div class="shelf">
+<div><span class="eyebrow" data-t="g30">Звуковий щоденник</span><h3 data-t="g31">Полиця поки порожня</h3><p data-t="g32">Сюди ляжуть мої перші звукові начерки для Donetsk 2011. Кожен запис матиме дату й кілька слів про те, що я відчував, коли його робив. Без ШІ.</p></div>
+<ol class="slots"><li><span class="mono">01</span><i></i><em data-t="g33">незабаром</em></li><li><span class="mono">02</span><i></i><em data-t="g33">незабаром</em></li><li><span class="mono">03</span><i></i><em data-t="g33">незабаром</em></li></ol>
+</div>
+    </div>
+    <div class="devlog">
+      <span class="eyebrow" style="color:var(--muted)" data-t="d20">Журнал розробки</span>
+      <ol>
+        <li><time class="mono">13.09.2026</time><span data-t="d21">Знімок OpenStreetMap: 8 508 елементів, еталонна карта центру 4,37 × 2,84 км.</span></li>
+        <li><time class="mono">14.09.2026</time><span data-t="d22">Точку відліку підтверджено: Зарічна, 33, 47.9927461 N, 37.8183736 E.</span></li>
+        <li><time class="mono">21.09.2026</time><span data-t="d23">Панорами Street View жовтня 2011 пройдено Зарічною в обидва боки. Аудит 126 контурів минув без перетинів.</span></li>
+        <li><time class="mono">22.09.2026</time><span data-t="d24">Unity-прототип: 6 маршрутів на 1 200 м, 1 002 заміри землі, тестові збірки Windows і Android.</span></li>
+        <li><time class="mono">23.09.2026</time><span data-t="d25">Перехід на Unreal Engine 5.8.3: збірка Development Editor пройшла, гра запустилася на DX11. Рішення DEC-0001: починаю First Playable, дослідження триває паралельно.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d28">Перший Windows-плеєр із меню паузи, збереженням і завантаженням. Етюд фасаду 54 м біля будинку 33 і вісім кадрів просто з Unreal.</span></li>
+        <li><time class="mono">24.09.2026</time><span data-t="d26">Запущено сайт проєкту чотирма мовами.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d29">Робочий квартал Зарічної та Донецької 280 × 660 м: 189 об'ємів, рельєф SRTM і безперервний коридор 412 м за шістьма панорамами жовтня 2011 року. Пройдено 18 перевірок поверхонь, маршрути ≈ 564 м уздовж кожної вулиці та 38 GIS-тестів.</span></li>
+        <li><time class="mono">25.09.2026</time><span data-t="d30">Звірка OSM 2012 року із сьогоднішньою картою: 91 кандидат, 18 перевірено. Жоден не потрапив у канон 2011 року без датованих знімків.</span></li>
+        <li><time class="mono">26.09.2026</time><span data-t="d32">На сайті з'явилися 3D-квартал із режимом доказів, прогулянка Зарічною, гра «Вгадай місце» й полиця звукового щоденника.</span></li>
+        <li><time class="mono">28.09.2026</time><span data-t="d34">Північ кварталу: підпірна стінка з газоном і ялинами, вікна торця, службовий двір без зайвої прибудови. Перші 67 м вулиці отримали дерева, кущі, ґрунтові узбіччя й окремі покриття.</span></li>
+        <li><time class="mono">30.09.2026</time><span data-t="d35">Північну дорогу й ворота будинку 33 звірено з панорамами жовтня 2011: насадження біля східного узбіччя, фігурні бетонні панелі, профлист переходить у цеглу біля позначки 27. DX11: 27 перевірок поверхонь, 3 маршрути, 22 кадри.</span></li>
+        <li class="now"><time class="mono">30.09.2026</time><span data-t="d33">Сайт: рендери кварталу із сонцем жовтня й тінями, фотоархів із 22 знімків із фільтрами та переглядом, прогулянка 3D-моделлю й нова структура сторінок.</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+<section id="sources" style="border-bottom:0">
+<div class="wrap">
+<div class="head"><div><div class="code"><b>07</b><span data-t="t178">Джерела</span></div><h2 data-t="t179">Реєстр джерел</h2></div></div>
+<div class="srcs" id="srcs">
+<p data-t="t180"><b>OpenStreetMap.</b> Контури будівель, дороги, колії, вода. © учасники OpenStreetMap, ODbL 1.0. Знімок карти 13.09.2026, кварталу 22.09.2026. <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">openstreetmap.org/copyright</a></p>
+<p data-t="t181"><b>SRTM3 v2.1, аркуш N47E037.</b> Зйомка 11–22.02.2000, EGM96, дзеркало Kurviger архіву USGS. SHA-256 3c78466e…6d58. <a href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-non" rel="noopener" target="_blank">USGS EROS</a></p>
+<p data-t="t182"><b>Google Street View, жовтень 2011.</b> 8 панорам Зарічної, лише візуальні спостереження. Зображення Google не зберігаються й не поширюються.</p>
+<p data-t="t183"><b>Королівська вежа.</b> Краєзнавча стаття від 16.08.2012 підтверджує, що будівництво завершили до 2011 року. <a href="https://donjetsk.com/homes/1414-korolevskaya-bashnya.html" rel="noopener" target="_blank">donjetsk.com</a></p>
+<p data-t="t184"><b>ambientCG.</b> 10 CC0-матеріалів для 16 прив'язок поверхонь. <a href="https://docs.ambientcg.com/license/" rel="noopener" target="_blank">Ліцензія</a></p>
+<p data-t="t185"><b>Wikimedia Commons.</b> 22 фотографії Донецька 2008–2013 років у фотоархіві та грі «Вгадай місце». Автора й ліцензію вказано біля кожного знімка.</p>
+</div>
+</div>
+</section>
+</main>
+<div class="foot-nav wrap mono"><a href="uk/index.html" data-t="n1">Головна</a> · <a href="uk/city.html" data-t="n2">Місто</a> · <a href="uk/model.html" data-t="n3">Реконструкція</a> · <a href="uk/dev.html" data-t="n4">Розробка</a> · <a href="uk/updates.html" data-t="n5">Оновлення</a> · <a href="uk/press.html" data-t="n6">Преса</a> · <a href="uk/help.html" data-t="n7">Допомогти</a> · <a href="uk/sound.html" data-t="n8">Звуки</a> · <a class="rss" href="feed.xml" data-rss="1">RSS</a> <button type="button" class="pwa-inst" hidden data-t="pw0">Встановити як застосунок</button></div><div class="pwa-off mono" role="status" hidden data-t="pw1">Немає мережі. Це збережена копія сторінки.</div>
+<dialog class="srch" id="srch" aria-labelledby="srchT"><form method="dialog" class="srch-top" role="search"><h2 class="srch-t" id="srchT" data-t="sr0">Пошук по сайту</h2><button type="submit" class="srch-x" value="close" aria-label="Закрити" data-ta="aria-label:sr3">×</button><input type="search" id="srchQ" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-labelledby="srchT" aria-describedby="srchN" placeholder="Наприклад: Донбас Арена, панорами, 3D" data-ta="placeholder:sr1"></form><p class="srch-n mono" id="srchN" aria-live="polite"></p><ol class="srch-r" id="srchR"></ol><span hidden data-t="sr2">Нічого не знайшлося. Спробуйте інше слово.</span><span hidden data-t="sr4">Знайдено: {n}</span><span hidden data-t="sr8">Завантаження…</span><span hidden data-t="sr5">Фото</span><span hidden data-t="sr6">Оновлення</span><span hidden data-t="sr7">Тоді й потім</span></dialog>
+<footer><div class="wrap"><span data-t="t186">DONETSK 2011 · Stanislav · реконструкція за джерелами</span><span class="mono">47.9927461 N · 37.8183736 E</span></div></footer>
+
+
+
+<script src="photos/have.js"></script>
+<script src="assets/data-uk.js?v=505d693f"></script>
+<script src="assets/app.js?v=914f86ea"></script>
+
+</body></html>
