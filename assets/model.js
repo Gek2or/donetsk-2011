@@ -3,7 +3,7 @@ window.__D11Q3={"b":[-180,-500,100,160],"tb":[-200,-550,160,190],"o":[47.9925931
 const box=document.getElementById('q3dBox');if(!box)return;
 const D=window.__D11Q3;if(!D)return;
 const cv=document.getElementById('q3dc'),lab=document.getElementById('q3lab'),card=document.getElementById('q3card'),leg=document.getElementById('q3leg');
-let S={};const T=k=>S[k]||'';
+let S={},inited=false;const T=k=>S[k]||'';
 const gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:false});
 if(!gl){box.classList.add('nogl');return}
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -249,7 +249,7 @@ function walkTick(now){const dt=Math.min(.05,(now-(WK.last||now))/1000);WK.last=
   const st=streetAt(WK.x,WK.y);if(st!==WK.street){WK.street=st;const el=document.getElementById('q3wSt');if(el)el.textContent=st}
   dirty=true}
 let dirty=true,visible=false,auto=!reduce,showHist=false,evid=false,hover=null,sel=null;
-function draw(){
+function draw(){if(!inited)return;
   if(smDirty)shadowPass();
   gl.viewport(0,0,cv.width,cv.height);const nf0=evid?0:NF,gf0=evid?0:GF;let bg=mix(C.paper,C.dark?[.93,.62,.42]:[.96,.74,.55],gf0*(C.dark?.08:.22));bg=mix(bg,C.dark?[.045,.055,.085]:[.15,.17,.26],nf0*.94);bg=mix(bg,C.dark?[.2,.13,.2]:[.62,.47,.55],nf0*(1-nf0)*(C.dark?.9:1.2));gl.clearColor(bg[0],bg[1],bg[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
   if(WK.on){const g=H(WK.x,WK.y)+1.65+(reduce?0:Math.sin(WK.bob)*.035),cp=Math.cos(WK.pitch);EYE=W(WK.x,WK.y,g);MVP=mul(persp(1.05+WK.run*.06,W0/H0,.2,3000),look(EYE,W(WK.x+Math.sin(WK.yaw)*cp,WK.y+Math.cos(WK.yaw)*cp,g+Math.sin(WK.pitch)),[0,1,0]))}
@@ -375,13 +375,15 @@ function tick(now){requestAnimationFrame(tick);if(!visible)return;if(WK.on)walkT
   if(dirty){dirty=false;draw()}}
 new IntersectionObserver(es=>{visible=es[0].isIntersecting;if(visible)dirty=true},{rootMargin:'200px'}).observe(box);
 addEventListener('resize',resize);
-const retheme=()=>{palette();build(evid);dirty=true};
+const retheme=()=>{if(!inited)return;palette();build(evid);dirty=true};
 new MutationObserver(retheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',retheme);
 addEventListener('d11lang',e=>{S=e.detail.S;showCard();showLegend();fsLabel();if(sunIn)setSun(+sunIn.value);if(WK.on)hud();dirty=true});
 if(window.__d11S)S=window.__d11S;
-palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick();
-window.__q3d={walk:(o)=>{if(o===false){walkOff();return}walkOn();if(o)Object.assign(WK,o);dirty=true;draw()},wk:()=>WK,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
+/* v4.3.1: build the quarter only when the section comes near the screen, so the page itself loads without the 3D work */
+function init(){if(inited)return;inited=true;palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick()}
+if('IntersectionObserver' in window&&!/^#q3d/.test(location.hash)){new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();init()}},{rootMargin:'600px 0px'}).observe(box)}else init();
+window.__q3d={walk:(o)=>{init();if(o===false){walkOff();return}walkOn();if(o)Object.assign(WK,o);dirty=true;draw()},wk:()=>WK,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
 })();
 
 ;(()=>{

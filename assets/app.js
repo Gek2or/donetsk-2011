@@ -153,8 +153,8 @@ function render(){window.__UPD=L.UPD;window.__RMX={RM:L.RM,RMI};renderArch();ren
 
 function apply(lang){
   L=I[lang];S=L.S;
-  root.lang=L.meta.lang;{const pt=document.body.dataset.pt;document.title=L.meta.title+(pt&&S[pt]?' · '+String(S[pt]).replace(/<[^>]+>/g,''):'')}
-  const md=document.querySelector('meta[name="description"]');if(md)md.content=L.meta.desc;
+  root.lang=L.meta.lang;{const pt=document.body.dataset.pt;document.title=L.meta.title+(pt&&S[pt]?' · '+String(S[pt]).replace(/<[^>]+>/g,''):(S.mt0?' — '+S.mt0:''))}
+  const md=document.querySelector('meta[name="description"]');if(md&&!document.body.dataset.pt)md.content=L.meta.desc;
   document.querySelectorAll('[data-t]').forEach(el=>{const v=S[el.dataset.t];if(v!=null)el.innerHTML=v});
   document.querySelectorAll('[data-ta]').forEach(el=>el.dataset.ta.split(' ').forEach(pair=>{const [a,k]=pair.split(':');if(S[k]!=null)el.setAttribute(a,S[k])}));
   document.querySelectorAll('.langs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
@@ -177,16 +177,21 @@ if(PLANG!=='ru'){
 
 apply(pickLang());
 /* life: clock, counters, reveal, progress, ticker */
-function tickClock(){try{const d=new Date();const parts=new Intl.DateTimeFormat(L.meta.lang==='uk'?'uk-UA':L.meta.lang==='fi'?'fi-FI':L.meta.lang==='en'?'en-GB':'ru-RU',{timeZone:'Europe/Kyiv',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d);$('#clock').textContent=parts.replace(/(\d{1,2}\.?\s*\S+)/,'$1 2011')+(window.__dn?' · '+((S&&S[{night:'dn1',dawn:'dn2',day:'dn3',dusk:'dn4'}[window.__dn.phase()]])||''):'')}catch(e){}}
-setInterval(()=>L&&tickClock(),1000);
+let CLF=null,CLL='';
+function tickClock(){try{const d=new Date(),lc=L.meta.lang==='uk'?'uk-UA':L.meta.lang==='fi'?'fi-FI':L.meta.lang==='en'?'en-GB':'ru-RU';if(lc!==CLL){CLF=new Intl.DateTimeFormat(lc,{timeZone:'Europe/Kyiv',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'});CLL=lc}const parts=CLF.format(d);$('#clock').textContent=parts.replace(/(\d{1,2}\.?\s*\S+)/,'$1 2011')+(window.__dn?' · '+((S&&S[{night:'dn1',dawn:'dn2',day:'dn3',dusk:'dn4'}[window.__dn.phase()]])||''):'')}catch(e){}}
+setInterval(()=>L&&!document.hidden&&tickClock(),1000);
 function renderTicker(){const s=L.STREETS.map((n,i)=>`<span class="${i===0?'me':''}">${esc(n)}</span>`).join('');$('#tk').innerHTML=s+s}
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function countUp(el){if(el.dataset.done||el.hasAttribute('data-nocount'))return;el.dataset.done=1;const txt=el.textContent;const target=parseInt(txt.replace(/\D/g,''),10);if(!target||reduce)return;const sep=txt.match(/\d(\D)\d{3}/)?.[1]||'';const t0=performance.now();const dur=1400;const f=t=>{const k=Math.min(1,(t-t0)/dur);const v=Math.round(target*(1-Math.pow(1-k,3)));el.textContent=sep?v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,sep):v;if(k<1)requestAnimationFrame(f);else el.textContent=txt};requestAnimationFrame(f)}
 if('IntersectionObserver' in window&&!reduce){
-  const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)return;const t=en.target;t.classList.remove('pre');if(t.matches('.stat b,.away b,.why-stats b'))countUp(t);if(t.classList.contains('tline')){[...t.children].forEach((li,i)=>li.style.transitionDelay=(i*140)+'ms')}io.unobserve(t)}),{threshold:.15});
-  {const els=[...document.querySelectorAll('section .head,.ladder,.atlas-main,.street,.plan,.gal,.arch,.classes,.engines,.road-map,.layers,.story-text,.manifesto,.dev-grid,.devlog,.why-stats,.player,.pillars,.north,.srccmp')],below=els.map(el=>el.getBoundingClientRect().top>innerHeight);els.forEach((el,i)=>{el.classList.add('rv');if(below[i])el.classList.add('pre');io.observe(el)})}
+  /* v4.3.1: no forced layout at start-up. The observer's first report says where each block is;
+     blocks that start below the fold are hidden then (they are off-screen, so nothing flickers) */
+  const io=new IntersectionObserver(es=>es.forEach(en=>{const t=en.target,first=!t.dataset.rvs;t.dataset.rvs=1;
+    if(!en.isIntersecting){if(first&&(t.classList.contains('rv')||t.classList.contains('tline'))&&en.boundingClientRect.top>(en.rootBounds?en.rootBounds.height:innerHeight))t.classList.add('pre');return}
+    t.classList.remove('pre');if(t.matches('.stat b,.away b,.why-stats b'))countUp(t);if(t.classList.contains('tline')){[...t.children].forEach((li,i)=>li.style.transitionDelay=(i*140)+'ms')}io.unobserve(t)}),{threshold:.15});
+  document.querySelectorAll('section .head,.ladder,.atlas-main,.street,.plan,.gal,.arch,.classes,.engines,.road-map,.layers,.story-text,.manifesto,.dev-grid,.devlog,.why-stats,.player,.pillars,.north,.srccmp').forEach(el=>{el.classList.add('rv');io.observe(el)});
   document.querySelectorAll('.stat b,.away b,.why-stats b').forEach(el=>io.observe(el));
-  const tl=document.querySelector('.tline');if(tl){if(tl.getBoundingClientRect().top>innerHeight)tl.classList.add('pre');io.observe(tl)}
+  const tl=document.querySelector('.tline');if(tl)io.observe(tl);
 }
 
 /* waveform sketch (decorative) */
@@ -277,20 +282,24 @@ all();
   b.addEventListener('click',()=>{log.classList.toggle('all');lab()});lab();addEventListener('d11lang',lab)}}}
 })();
 
-/* headings: never split a word mid-letter on phones; shrink the font until the longest word fits */
+/* headings: never split a word mid-letter on phones; shrink the font until the longest word fits.
+   v4.3.1: one read pass, words measured on a canvas, then one write pass (no layout per word) */
 (function(){
+  const cx=document.createElement('canvas').getContext('2d');
   function fit(){
-    document.querySelectorAll('h1,h2,h3').forEach(h=>{
-      h.style.fontSize='';
-      if(!h.offsetParent)return;
-      const w=h.clientWidth;if(!w)return;
-      const probe=document.createElement('span');probe.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0;width:max-content;max-width:none';
-      h.appendChild(probe);
-      let fs=parseFloat(getComputedStyle(h).fontSize),words=(h.innerText||'').split(/[\s ]+/).filter(Boolean),n=0;
-      const longest=()=>Math.max(0,...words.map(t=>{probe.textContent=t;return probe.getBoundingClientRect().width}));
-      while(longest()>w-3&&fs>14&&n++<40){fs-=1;h.style.fontSize=fs+'px'}
-      probe.remove();
-    });
+    const hs=[...document.querySelectorAll('h1,h2,h3')];
+    hs.forEach(h=>{if(h.dataset.fit){h.style.fontSize='';delete h.dataset.fit}});
+    const jobs=[];
+    for(const h of hs){if(!h.offsetParent)continue;const w=h.clientWidth;if(!w)continue;const cs=getComputedStyle(h);
+      const txt=h.innerText||'';if(!txt.trim())continue;jobs.push([h,w,cs,txt])}
+    const out=[];
+    for(const [h,w,cs,txt] of jobs){
+      const fs=parseFloat(cs.fontSize);if(!(fs>14))continue;
+      const ls=parseFloat(cs.letterSpacing)||0,up=cs.textTransform==='uppercase';
+      cx.font=`${cs.fontStyle} ${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+      let max=0;for(let t of txt.split(/[\s\u00a0]+/)){if(!t)continue;if(up)t=t.toUpperCase();const x=cx.measureText(t).width+ls*t.length;if(x>max)max=x}
+      if(max>w-3)out.push([h,Math.max(14,Math.floor(fs*(w-3)/max))])}
+    out.forEach(([h,f])=>{h.style.fontSize=f+'px';h.dataset.fit=1});
   }
   let t;const run=()=>{clearTimeout(t);t=setTimeout(fit,60)};
   addEventListener('resize',run);addEventListener('d11lang',run);
@@ -459,7 +468,7 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   const PK={night:'dn1',dawn:'dn2',day:'dn3',dusk:'dn4'},ICO={night:'☾',dawn:'◒',day:'☀',dusk:'◓'},MI={auto:'◷',light:'☀',dark:'☾'},MK={auto:'dn6',light:'dn7',dark:'dn8'};
   const T=k=>S()[k]||(document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
   function tick(){const was=root.dataset.phase,p=dn.apply();
-    let hm='';try{hm=new Intl.DateTimeFormat(lang()==='uk'?'uk-UA':lang()==='en'?'en-GB':lang(),{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit'}).format(new Date())}catch(e){}
+    let hm='';try{const lc=lang()==='uk'?'uk-UA':lang()==='en'?'en-GB':lang();if(lc!==tick.l){tick.f=new Intl.DateTimeFormat(lc,{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit'});tick.l=lc}hm=tick.f.format(new Date())}catch(e){}
     document.querySelectorAll('.dn-chip').forEach(c=>{c.querySelector('i').textContent=ICO[p];c.querySelector('b').textContent=hm;const sm=c.querySelector('small');if(sm)sm.textContent=T(PK[p]);
       c.title=T('dn5')+' · '+hm+' · '+T(PK[p])+'. '+T('dn9')});
     const m=dn.mode();document.querySelectorAll('#themeBtn,#themeBtn2').forEach(b=>{b.textContent=MI[m];b.title=T(MK[m]);b.setAttribute('aria-label',T(MK[m]))});
@@ -596,7 +605,7 @@ dlg.addEventListener('click',e=>{if(e.target===dlg){dlg.close();return}
   const a=e.target.closest('#srchR a');if(!a)return;
   const here=new URL(a.href,document.baseURI),same=here.pathname===location.pathname;dlg.close();
   if(a.dataset.ph!=null&&same){const o=document.querySelector(`#arch .arch-open[data-i="${a.dataset.ph}"]`);if(o){e.preventDefault();const s=document.getElementById('archive');if(s)s.scrollIntoView();setTimeout(()=>o.click(),60)}}});
-dlg.addEventListener('keydown',e=>{const items=[...R.querySelectorAll('a')];if(!items.length)return;const i=items.indexOf(document.activeElement);
+dlg.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();dlg.close();return}const items=[...R.querySelectorAll('a')];if(!items.length)return;const i=items.indexOf(document.activeElement);
   if(e.key==='ArrowDown'){e.preventDefault();(items[i+1]||items[0]).focus()}
   else if(e.key==='ArrowUp'){e.preventDefault();if(i<=0)q.focus();else items[i-1].focus()}
   else if(e.key==='Enter'&&document.activeElement===q){e.preventDefault();items[0].click()}});
@@ -702,6 +711,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-12-v431',d:'2026-10-12',ty:'site',v:'v4.3.1'},
  {id:'2026-10-12-v43',d:'2026-10-12',ty:'site',v:'v4.3',cta:['model.html#q3d','q74']},
  {id:'2026-10-11-v42',d:'2026-10-11',ty:'site',v:'v4.2',cta:['city.html#oct','oc0']},
  {id:'2026-10-09-v41',d:'2026-10-09',ty:'site',v:'v4.1',cta:['model.html#q3d','q70']},
