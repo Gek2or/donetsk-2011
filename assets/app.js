@@ -165,7 +165,7 @@ document.querySelectorAll('.langs button').forEach(b=>b.addEventListener('click'
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(LANGS.includes(h)&&h!==PLANG)location.replace(new URL(langURL(h,''),document.baseURI).href)});
 /* pages in /uk/ /en/ /fi/ use <base href="../">: keep in-page anchors on this page and page links in this language */
 if(PLANG!=='ru'){
-  const PG=/^(index|city|model|dev|updates|press|help|sound)\.html/;
+  const PG=/^(index|city|model|dev|updates|press|help|sound|postcard)\.html/;
   const fix=root=>{(root.querySelectorAll?root:document).querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(PG.test(h))a.setAttribute('href',PLANG+'/'+h)})};
   fix(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.tagName==='A'&&PG.test(n.getAttribute('href')||''))n.setAttribute('href',PLANG+'/'+n.getAttribute('href'));fix(n)}}))).observe(document.body,{childList:true,subtree:true});
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey)return;const id=a.getAttribute('href').slice(1);e.preventDefault();
@@ -702,6 +702,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-12-v43',d:'2026-10-12',ty:'site',v:'v4.3',cta:['model.html#q3d','q74']},
  {id:'2026-10-11-v42',d:'2026-10-11',ty:'site',v:'v4.2',cta:['city.html#oct','oc0']},
  {id:'2026-10-09-v41',d:'2026-10-09',ty:'site',v:'v4.1',cta:['model.html#q3d','q70']},
  {id:'2026-10-09-v40',d:'2026-10-09',ty:'site',v:'v4.0',cta:['city.html#atlas','at0']},
@@ -1004,7 +1005,7 @@ function show(i){act=i;draw();const p=spots[i];if(!p){card.innerHTML=`<p class="
     const r=card.querySelector('input'),b=card.querySelector('.at-tn');r.addEventListener('input',()=>b.style.setProperty('--k',r.value/100));
     card.querySelector('.at-go').addEventListener('click',()=>{const tb=document.querySelector(`#tnTabs button[data-i="${p.idx}"]`);if(tb)tb.click()})}
   else{const name=sn(p),fig=x=>{const d=x.ar!=null?cap(x.ar):x.d,img=`<img src="${ph(x.src,true)}" alt="${esc(x.ar!=null?d:name+', '+d)}" loading="lazy">`;
-      return `<figure class="at-shot">${x.ar!=null?`<button type="button" class="at-ar" data-ar="${x.ar}" aria-label="${esc(S().ar11||'')}: ${esc(d)}">${img}</button>`:img}<figcaption>${esc(d)} · <a href="${x.pg}" target="_blank" rel="noopener">© ${esc(x.au)} · ${esc(x.li)} ↗</a></figcaption></figure>`};
+      return `<figure class="at-shot">${x.ar!=null?`<button type="button" class="at-ar" data-ar="${x.ar}" aria-label="${esc(S().ar11||'')}: ${esc(d)}">${img}</button>`:img}<figcaption>${esc(d)} · <a href="${x.pg}" target="_blank" rel="noopener">© ${esc(x.au)} · ${esc(x.li)} ↗</a>${x.ar!=null?` · <a class="at-pc" href="postcard.html#i=${x.ar}">✉ ${esc(T('pc9'))}</a>`:''}</figcaption></figure>`};
     card.innerHTML=`<h3>${esc(name)}</h3>${p.ap?`<p class="at-ap mono">${esc(T('at12'))}</p>`:''}<p class="mono" style="margin:0;font-size:12px;color:#655a4b">${esc(T('at7').replace('{n}',p.items.length).replace(p.items.length===1&&lang()==='en'?'photos':'\u0000','photo'))}</p><div class="at-shots">${p.items.map(fig).join('')}</div><div class="at-acts">${p.items.some(x=>x.ar==null)?`<a class="at-go" href="#guessing">${esc(T('at10'))}</a>`:''}${p.k?shareBtn(p.k):''}</div>`;
     card.querySelectorAll('.at-ar').forEach(b=>b.addEventListener('click',()=>{const o=document.querySelector(`#arch .arch-open[data-i="${b.dataset.ar}"]`);if(o)o.click()}))}
   const sb=card.querySelector('.at-share');if(sb)sb.addEventListener('click',()=>share(sb,p));
@@ -1039,4 +1040,214 @@ if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(e
 new ResizeObserver(()=>{if(inited)apply()}).observe(map);
 if(/^#at=/.test(location.hash))setTimeout(deep,0);
 addEventListener('d11lang',()=>setTimeout(()=>{if(inited){draw();if(act>=0)show(act)}},0));
+})();
+
+;(()=>{
+/* ---------- v4.3: a ride on tram route 1 ---------- */
+const sec=document.getElementById('tram');if(!sec)return;
+const box=sec.querySelector('.tr-box');let ST=[];try{ST=JSON.parse(box.dataset.stops)}catch(e){return}
+const svg=sec.querySelector('.tr-map svg'),car=sec.querySelector('.tr-car'),done=sec.querySelector('.tr-done'),now=sec.querySelector('.tr-now'),nxt=sec.querySelector('.tr-next');
+const glass=sec.querySelector('.tr-glass'),img=glass.querySelector('img'),cap=sec.querySelector('.tr-cap'),play=sec.querySelector('.tr-play'),snd=sec.querySelector('.tr-snd'),range=sec.querySelector('.tr-range');
+const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+const lang=()=>document.documentElement.dataset.plang||(document.documentElement.lang||'ru').slice(0,2);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nm=s=>s.n[lang()]||s.n.ru;
+/* distances along the line, in map units (1 unit = 10 m) */
+const cum=[0];for(let i=1;i<ST.length;i++)cum.push(cum[i-1]+Math.hypot(ST[i].x-ST[i-1].x,ST[i].y-ST[i-1].y));
+const L=cum[cum.length-1];done.style.strokeDasharray=L;done.style.strokeDashoffset=L;
+const VMAX=L/70,ACC=14,DWELL=1.9;
+let t=0,v=0,playing=false,dwell=0,at=0,last=0,shown=-1,inView=false;
+const posAt=d=>{let i=1;while(i<cum.length-1&&cum[i]<d)i++;const a=ST[i-1],b=ST[i],k=(d-cum[i-1])/((cum[i]-cum[i-1])||1);return[a.x+(b.x-a.x)*k,a.y+(b.y-a.y)*k,i-1]};
+function render(){const [x,y]=posAt(t);car.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)})`);done.style.strokeDashoffset=(L-t).toFixed(1);
+  range.value=Math.round(t/L*1000);box.classList.toggle('moving',playing&&dwell<=0&&v>VMAX*.08);
+  sec.querySelectorAll('.tr-stop').forEach((c,i)=>c.classList.toggle('past',cum[i]<=t+.01))}
+function board(i,arrived){const s=ST[i],n=ST[i+1];
+  now.innerHTML=arrived?`<small>${esc(T('tr7'))}</small>${esc(nm(s))}`:`<small>→</small>${esc(nm(n||s))}`;
+  nxt.innerHTML=n?`${esc(T('tr6'))} ${esc(nm(arrived?n:(ST[i+2]||n)))}`:esc(T('tr13'));
+  if(!n&&arrived)nxt.textContent=T('tr13')}
+function view(i){if(i===shown)return;shown=i;const s=ST[i];
+  if(s.img){glass.classList.remove('none');glass.classList.add('fade');setTimeout(()=>{img.src=s.img;img.alt=T(s.k)||nm(s)},180);img.onload=()=>glass.classList.remove('fade');
+    cap.innerHTML=`${esc(T(s.k))} · ${esc(T('tr10'))}, ~${s.d} ${/^(ru|uk)$/.test(lang())?'м':'m'} · <a href="${esc(s.pg)}" target="_blank" rel="noopener">© ${esc(s.au)} · ${esc(s.li)} ↗</a>`}
+  else{glass.classList.add('none');img.removeAttribute('src');cap.textContent=nm(s)}}
+/* sound: everything is synthesised here, no recordings */
+let AC=null,rum=null,whine=null,clackAt=0;
+function audio(){if(AC)return AC;try{AC=new (window.AudioContext||window.webkitAudioContext)();const sr=AC.sampleRate,b=AC.createBuffer(1,sr*2,sr),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.5}
+  const n=AC.createBufferSource();n.buffer=b;n.loop=true;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=160;rum=AC.createGain();rum.gain.value=0;n.connect(f).connect(rum).connect(AC.destination);n.start();
+  const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=90;const bp=AC.createBiquadFilter();bp.type='bandpass';bp.frequency.value=600;bp.Q.value=6;whine=AC.createGain();whine.gain.value=0;o.connect(bp).connect(whine).connect(AC.destination);o.start();whine.osc=o}catch(e){AC=null}return AC}
+function burst(dur,freq,type,vol,delay=0){if(!AC)return;const sr=AC.sampleRate,len=dur*sr|0,b=AC.createBuffer(1,len,sr),d=b.getChannelData(0);for(let i=0;i<len;i++){const e=1-i/len;d[i]=(Math.random()*2-1)*e*e}
+  const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=AC.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(AC.destination);s.start(AC.currentTime+delay)}
+function bell(){if(!AC)return;[0,.32].forEach(dl=>{[[1180,1],[3260,.45],[5400,.2]].forEach(([fr,a])=>{const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime+dl;o.frequency.value=fr;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.18*a,t0+.005);g.gain.exponentialRampToValueAtTime(.0001,t0+.9);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+1)})})}
+const soundOn=()=>snd.getAttribute('aria-pressed')==='true'&&AC;
+function sound(){if(!soundOn()){if(rum){rum.gain.value=0;whine.gain.value=0}return}const k=Math.min(1,v/VMAX),tt=AC.currentTime;
+  rum.gain.setTargetAtTime(playing&&inView?.05+.25*k:0,tt,.15);whine.gain.setTargetAtTime(playing&&inView&&dwell<=0?.025*Math.sin(Math.PI*Math.min(1,k*1.2)):0,tt,.2);whine.osc.frequency.setTargetAtTime(90+260*k,tt,.2);
+  if(playing&&dwell<=0&&t-clackAt>3.2&&v>VMAX*.15){clackAt=t;burst(.03,2200,'bandpass',.5);burst(.03,1900,'bandpass',.4,.11)}}
+/* motion */
+function step(ts){requestAnimationFrame(step);const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;if(!playing||!inView){sound();return}
+  if(dwell>0){dwell-=dt;if(dwell<=0&&at>=ST.length-1){playing=false;play.textContent=T('tr3');play.setAttribute('aria-pressed','false')}sound();render();return}
+  const ni=Math.min(ST.length-1,at+1),toNext=cum[ni]-t,fromPrev=t-cum[at];
+  const target=Math.max(VMAX*.12,Math.min(VMAX,Math.sqrt(2*ACC*Math.max(0,toNext)),Math.sqrt(2*ACC*Math.max(.5,fromPrev))+VMAX*.12));
+  v+=(target-v)*Math.min(1,dt*3);t=Math.min(cum[ni],t+v*dt);
+  if(t>=cum[ni]-.01){t=cum[ni];at=ni;v=0;dwell=DWELL;board(at,true);view(at);if(soundOn()){bell();burst(.45,3500,'highpass',.12,.5)}}
+  else if(shown!==at||now.dataset.m!==String(at)){now.dataset.m=at;board(at,false)}
+  sound();render()}
+function jump(i){i=Math.max(0,Math.min(ST.length-1,i));at=i;t=cum[i];v=0;dwell=playing?DWELL:0;board(i,true);view(i);render()}
+play.addEventListener('click',()=>{playing=!playing;if(playing){if(at>=ST.length-1){jump(0)}dwell=Math.min(dwell,.4)}play.textContent=T(playing?'tr4':'tr3');play.setAttribute('aria-pressed',String(playing));if(soundOn()&&AC.state==='suspended')AC.resume()});
+snd.addEventListener('click',()=>{const on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));if(on){audio();if(AC&&AC.state==='suspended')AC.resume();if(AC&&!playing)bell()}sound()});
+sec.querySelector('.tr-prev').addEventListener('click',()=>jump(t>cum[at]+.5?at:at-1));
+sec.querySelector('.tr-next-b').addEventListener('click',()=>jump(at+1));
+range.addEventListener('input',()=>{t=range.value/1000*L;let i=0;while(i<ST.length-1&&cum[i+1]<=t)i++;at=i;v=0;dwell=0;if(Math.abs(cum[i]-t)<1){board(i,true);view(i)}else{board(i,false);view(i)}render()});
+sec.querySelectorAll('.tr-stop').forEach((c,i)=>{c.style.cursor='pointer';c.addEventListener('click',()=>jump(i))});
+const base=svg.querySelector('.tr-base'),loadBase=()=>{if(base&&base.dataset.href&&!base.getAttribute('href'))base.setAttribute('href',new URL(base.dataset.href,document.baseURI).href)};
+if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].isIntersecting;if(!inView)sound()},{threshold:.15}).observe(box);new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){loadBase();o.disconnect()}},{rootMargin:'600px'}).observe(box)}else{inView=true;loadBase()}
+addEventListener('d11lang',()=>setTimeout(()=>{shown=-1;board(at,dwell>0||t===cum[at]);view(at);play.textContent=T(playing?'tr4':'tr3')},0));
+board(0,true);view(0);render();requestAnimationFrame(step);
+window.__tram={jump,state:()=>({t,at,playing,L})};
+})();
+
+;(()=>{
+/* ---------- v4.3: radio "Donetsk 2011" — six stations synthesised in the browser ---------- */
+const sec=document.getElementById('radio');if(!sec)return;
+const $=s=>sec.querySelector(s);
+const tune=$('#rdTune'),vol=$('#rdVol'),pow=$('#rdPow'),knob=$('#rdKnob'),needle=$('.rd-needle'),freqEl=$('#rdFreq'),card=$('.rd-card'),nowEl=$('#rdNow'),nameEl=$('#rdName'),textEl=$('#rdText'),link=$('#rdLink'),rd=$('#rd');
+const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+const MIN=87.5,MAX=108;
+const ST=[{f:88.4,k:1},{f:91.2,k:2},{f:95.7,k:3},{f:100.1,k:4},{f:104.3,k:5},{f:107.0,k:6}];
+const fx=f=>(f-MIN)/(MAX-MIN)*100;
+/* dial */
+$('.rd-marks').innerHTML=Array.from({length:21},(_,i)=>{const f=88+i;return `<span style="left:${fx(f)}%" class="${f%2?'':'big'}${f===108?' end':''}">${f%2?'':f}</span>`}).join('');
+const names=$('.rd-names');
+function drawNames(){names.innerHTML=ST.map(s=>`<button type="button" style="left:${fx(s.f)}%" data-f="${s.f}" tabindex="-1">${T('rs'+s.k)}</button>`).join('');
+  names.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setF(+b.dataset.f,true)))}
+drawNames();
+let f=+tune.value/10,on=false,AC=null,master=null,staticG=null,an=null,lvl=new Uint8Array(256);
+const G={};/* station gains */
+const sig=s=>Math.exp(-Math.pow((f-s.f)/.32,2));
+function station(){let best=null,b=0;for(const s of ST){const v=sig(s);if(v>b){b=v;best=s}}return[best,b]}
+function setF(v,anim){f=Math.max(MIN,Math.min(MAX,Math.round(v*10)/10));tune.value=Math.round(f*10);ui();mix()}
+function ui(){needle.style.left=fx(f)+'%';knob.style.setProperty('--r',((f-MIN)/(MAX-MIN)*540-270)+'deg');freqEl.textContent=f.toFixed(1);
+  const [s,b]=station();rd.style.setProperty('--sig',on?b.toFixed(2):0);
+  tune.setAttribute('aria-valuetext',`${f.toFixed(1)} FM${b>.5?' — '+T('rs'+s.k):''}`);
+  if(!on){nowEl.textContent='';nameEl.textContent=T('rd0')+' · '+f.toFixed(1)+' FM';textEl.textContent=T('rd9');link.hidden=true;card.classList.remove('tuned');return}
+  if(b>.45){nowEl.textContent=s.f.toFixed(1)+' FM';nameEl.textContent=T('rs'+s.k);textEl.textContent=T('rc'+s.k);const a=sec.querySelector(`[data-st="${s.k}"]`);link.href=a?a.getAttribute('href'):'#';link.hidden=false;card.classList.add('tuned')}
+  else{nowEl.textContent=f.toFixed(1)+' FM';nameEl.textContent='· · ·';textEl.textContent=T('rd7');link.hidden=true;card.classList.remove('tuned')}}
+/* ---------- audio ---------- */
+function noiseBuf(sec_,brown){const sr=AC.sampleRate,b=AC.createBuffer(1,sr*sec_,sr),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b}
+function loop(buf,dest){const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.connect(dest);s.start(AC.currentTime+Math.random()*.1);return s}
+function filt(type,fr,q,dest){const b=AC.createBiquadFilter();b.type=type;b.frequency.value=fr;if(q!=null)b.Q.value=q;b.connect(dest);return b}
+function gain(v,dest){const g=AC.createGain();g.gain.value=v;g.connect(dest);return g}
+function burst(dest,dur,type,fr,v,at=0,q){const sr=AC.sampleRate,len=Math.max(1,dur*sr|0),b=AC.createBuffer(1,len,sr),d=b.getChannelData(0);for(let i=0;i<len;i++){const e=1-i/len;d[i]=(Math.random()*2-1)*e*e}
+  const s=AC.createBufferSource();s.buffer=b;const fl=AC.createBiquadFilter();fl.type=type;fl.frequency.value=fr;if(q)fl.Q.value=q;const g=AC.createGain();g.gain.value=v;s.connect(fl).connect(g).connect(dest);s.start(AC.currentTime+at)}
+function tone(dest,fr,dur,v,at=0,type='sine'){const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime+at;o.type=type;o.frequency.value=fr;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.01);g.gain.setValueAtTime(v,t0+Math.max(.012,dur-.02));g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g).connect(dest);o.start(t0);o.stop(t0+dur+.05)}
+const EV={};/* per-station event schedulers, run only when audible */
+function build(){AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=0;an=AC.createAnalyser();an.fftSize=512;master.connect(an);an.connect(AC.destination);
+  const white=noiseBuf(2,false),brown=noiseBuf(3,true);
+  staticG=gain(0,master);const sb=filt('bandpass',2600,.6,staticG);loop(white,sb);const crackle=gain(1,staticG);EV.static=()=>{if(Math.random()<.5)burst(crackle,.004,'highpass',3000,.6,Math.random()*.1)};
+  for(const s of ST)G[s.k]=gain(0,master);
+  /* 1 rain: hiss + drops + gutter drips */
+  {const g=G[1];loop(white,filt('lowpass',5200,null,filt('highpass',700,null,gain(.22,g))));loop(brown,filt('lowpass',400,null,gain(.25,g)));
+   EV[1]=()=>{for(let i=0;i<5;i++)burst(g,.012+Math.random()*.02,'bandpass',1800+Math.random()*3200,.5+Math.random()*.6,Math.random()*.1,3);if(Math.random()<.15)tone(g,900+Math.random()*500,.08,.08,Math.random()*.1)}}
+  /* 2 tram: rumble, motor, joints, bell */
+  {const g=G[2];loop(brown,filt('lowpass',150,null,gain(.6,g)));const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=180;o.connect(filt('bandpass',520,7,gain(.05,g)));o.start();let n=0;
+   EV[2]=()=>{n++;o.frequency.setTargetAtTime(160+60*Math.sin(n/40),AC.currentTime,.4);if(n%7===0){burst(g,.03,'bandpass',2100,.7,0,4);burst(g,.03,'bandpass',1900,.6,.12,4)}if(n%90===45){[[1180,1],[3260,.45]].forEach(([fr,a])=>{tone(g,fr,.8,.12*a);tone(g,fr,.8,.12*a,.32)})}}}
+  /* 3 stadium: crowd bed, swells, claps */
+  {const g=G[3];const bed=gain(.35,g);loop(brown,filt('bandpass',500,.7,bed));const mid=gain(.14,g);loop(white,filt('bandpass',1100,1.2,mid));let n=0;
+   EV[3]=()=>{n++;const t=AC.currentTime;if(n%60===0){mid.gain.cancelScheduledValues(t);mid.gain.setTargetAtTime(.55,t,.4);mid.gain.setTargetAtTime(.14,t+2.4,.8)}
+     if(n%16<9&&n%2===0){for(let i=0;i<14;i++)burst(g,.02,'bandpass',1500+Math.random()*1500,.12,Math.random()*.06,1.5)}}}
+  /* 4 time signal: carrier hum + six pips each minute window (every 10 s here) */
+  {const g=G[4];const h=AC.createOscillator();h.frequency.value=50;h.connect(gain(.03,g));h.start();let n=0;
+   EV[4]=()=>{n++;if(n%100===1){for(let i=0;i<5;i++)tone(g,1000,.1,.25,i);tone(g,1000,.5,.25,5)}}}
+  /* 5 night on Zarichna: wind in trees, far traffic, distant train */
+  {const g=G[5];const w=gain(.2,g);const wf=filt('bandpass',650,.5,w);loop(white,wf);loop(brown,filt('lowpass',90,null,gain(.25,g)));let n=0;
+   EV[5]=()=>{n++;const t=AC.currentTime;wf.frequency.setTargetAtTime(500+300*Math.sin(n/23)+120*Math.sin(n/7),t,.5);w.gain.setTargetAtTime(.12+.1*(1+Math.sin(n/17))/2,t,.6);
+     if(n%220===110){[311,370].forEach(fr=>{const o=AC.createOscillator(),gg=AC.createGain(),lp=AC.createBiquadFilter();o.type='sawtooth';o.frequency.value=fr;lp.type='lowpass';lp.frequency.value=700;gg.gain.setValueAtTime(.0001,t);gg.gain.exponentialRampToValueAtTime(.05,t+.3);gg.gain.setValueAtTime(.05,t+1.4);gg.gain.exponentialRampToValueAtTime(.0001,t+2.6);o.connect(lp).connect(gg).connect(g);o.start(t);o.stop(t+2.7)})}}}
+  /* 6 wind on a slag heap: strong gusts */
+  {const g=G[6];const w=gain(.3,g);const wf=filt('bandpass',420,.9,w);loop(white,wf);const lo=gain(.3,g);loop(brown,filt('lowpass',220,null,lo));let n=0;
+   EV[6]=()=>{n++;const t=AC.currentTime,gust=(1+Math.sin(n/11)*Math.sin(n/29))/2;wf.frequency.setTargetAtTime(300+700*gust,t,.35);w.gain.setTargetAtTime(.08+.4*gust,t,.4);lo.gain.setTargetAtTime(.15+.3*gust,t,.5)}}
+  setInterval(()=>{if(!on||!AC)return;for(const s of ST)if(sig(s)>.05&&EV[s.k])EV[s.k]();if(EV.static&&staticG.gain.value>.02)EV.static()},100)}
+function mix(){if(!AC)return;const t=AC.currentTime;let best=0;for(const s of ST){const v=sig(s);best=Math.max(best,v);G[s.k].gain.setTargetAtTime(on?v:0,t,.06)}
+  staticG.gain.setTargetAtTime(on?.03+.22*(1-best):0,t,.05);master.gain.setTargetAtTime(on?(+vol.value/100)*.9:0,t,.08)}
+/* level meter for the speaker and the magic eye */
+(function meter(){requestAnimationFrame(meter);if(!an||!on)return;an.getByteTimeDomainData(lvl);let m=0;for(let i=0;i<lvl.length;i+=4){const v=Math.abs(lvl[i]-128);if(v>m)m=v}rd.style.setProperty('--lvl',Math.min(1,m/60).toFixed(2))})();
+pow.addEventListener('click',()=>{on=!on;pow.setAttribute('aria-pressed',String(on));pow.querySelector('span').textContent=T(on?'rd4':'rd3');rd.classList.toggle('on',on);
+  if(on){try{if(!AC)build();if(AC.state==='suspended')AC.resume()}catch(e){}}mix();ui()});
+tune.addEventListener('input',()=>{f=+tune.value/10;ui();mix()});
+vol.addEventListener('input',mix);
+/* dragging the knob */
+let drag=null;knob.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,f];knob.setPointerCapture(e.pointerId);e.preventDefault()});
+knob.addEventListener('pointermove',e=>{if(!drag)return;const d=(e.clientX-drag[0])-(e.clientY-drag[1]);setF(drag[2]+d*.04)});
+knob.addEventListener('pointerup',()=>drag=null);knob.addEventListener('pointercancel',()=>drag=null);
+knob.addEventListener('wheel',e=>{e.preventDefault();setF(f+(e.deltaY<0?.1:-.1))},{passive:false});
+tune.addEventListener('keydown',e=>{if(e.key==='PageUp'||e.key==='PageDown'){e.preventDefault();const up=e.key==='PageUp';const s=up?ST.find(s=>s.f>f+.05):[...ST].reverse().find(s=>s.f<f-.05);if(s)setF(s.f)}});
+if('IntersectionObserver' in window)new IntersectionObserver(es=>{if(!es[0].isIntersecting&&on){pow.click()}},{threshold:0}).observe(sec);
+addEventListener('d11lang',()=>setTimeout(()=>{drawNames();pow.querySelector('span').textContent=T(on?'rd4':'rd3');ui()},0));
+ui();
+window.__radio={set:setF,state:()=>({f,on,st:station()[0].k,sig:station()[1]})};
+})();
+
+;(()=>{
+/* ---------- v4.3: a postcard from 2011. Everything lives in the link; nothing is stored. ---------- */
+const sec=document.getElementById('postcard');if(!sec)return;
+const $=s=>sec.querySelector(s);
+const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
+const lang=()=>document.documentElement.dataset.plang||(document.documentElement.lang||'ru').slice(0,2);
+const PH=window.__PHOTOS||[],CAP=()=>window.__PHCAP||[];
+const src=(i,sm)=>{const x=PH[i];if(!x)return '';const u=x[0].replace(/\/\d+px-/,'/960px-');return window.__ph?__ph(u,sm):u};
+const clean=(s,n,ml)=>String(s||'').replace(/[\u0000-\u0009\u000B-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g,'').replace(ml?/\n{3,}/g:/\n/g,ml?'\n\n':' ').slice(0,n).trim();
+/* encode / decode: JSON -> UTF-8 -> base64url */
+const enc=o=>{const b=new TextEncoder().encode(JSON.stringify(o));let s='';b.forEach(c=>s+=String.fromCharCode(c));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const dec=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),b=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return JSON.parse(new TextDecoder().decode(b))};
+function valid(o){if(!o||typeof o!=='object')return null;const i=Number.isInteger(o.i)&&o.i>=0&&o.i<PH.length?o.i:0,s=Number.isInteger(o.s)&&o.s>=0&&o.s<4?o.s:0;
+  return{i,s,to:clean(o.to,40),t:clean(o.t,220,true),f:clean(o.f,40)}}
+/* the card itself: front (photo) and back (message, stamp, postmark) */
+function card(o,cls){const el=document.createElement('div');el.className='pc-card '+(cls||'');
+  el.innerHTML=`<div class="pc-face pc-front"><img alt="" decoding="async"><span class="pc-greet"></span></div>
+  <div class="pc-face pc-back"><div class="pc-msg"><p class="pc-text"></p><p class="pc-sign"></p></div><div class="pc-addr"><span class="pc-stamp"><img alt="" width="60" height="75"></span><span class="pc-mark" aria-hidden="true">DONETSK · 15.10.2011</span><p class="pc-to"><small></small><b></b></p><i></i><i></i></div><p class="pc-credit mono"></p></div>`;
+  fill(el,o);return el}
+function fill(el,o){const cap=CAP()[o.i]||'',x=PH[o.i]||[];
+  const im=el.querySelector('.pc-front img');if(im.dataset.i!==String(o.i)){im.dataset.i=o.i;im.src=src(o.i,false);}im.alt=cap;
+  el.querySelector('.pc-greet').textContent=T('pc20');
+  el.querySelector('.pc-text').textContent=o.t||'';el.querySelector('.pc-sign').textContent=o.f?'— '+o.f:'';
+  el.querySelector('.pc-stamp img').src=`assets/stamps/s${o.s}.svg`;el.querySelector('.pc-stamp img').alt=T('pc'+(24+o.s));
+  el.querySelector('.pc-to small').textContent=T('pc29');el.querySelector('.pc-to b').textContent=o.to||'';
+  el.querySelector('.pc-credit').textContent=`${cap}${x[2]?' · © '+x[2]+' · '+x[3]:''}`}
+/* ---------- maker ---------- */
+const make=$('#pcMake'),holder=$('#pcHolder'),photos=$('#pcPhotos'),to=$('#pcTo'),text=$('#pcText'),from=$('#pcFrom'),left=$('#pcLeft'),out=$('#pcOut'),url=$('#pcUrl');
+const st={i:5,s:0};
+photos.innerHTML=PH.map((x,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===st.i}" aria-label=""><img src="assets/pc/t${i}.webp" data-fb="${src(i,true)}" alt="" loading="lazy" decoding="async" width="260" height="195"></button>`).join('');
+photos.querySelectorAll('img').forEach(im=>im.addEventListener('error',()=>{if(im.dataset.fb&&im.src!==im.dataset.fb){im.src=im.dataset.fb;im.removeAttribute('data-fb')}},{once:true}));
+const labelPhotos=()=>photos.querySelectorAll('button').forEach(b=>b.setAttribute('aria-label',CAP()[+b.dataset.i]||''));labelPhotos();
+const cur=()=>valid({i:st.i,s:st.s,to:to.value,t:text.value||T('pc12'),f:from.value});
+const prev=card(cur(),'');holder.appendChild(prev);
+const upd=()=>{fill(prev,cur());left.textContent=T('pc28').replace('{n}',220-text.value.length);out.hidden=true};
+photos.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.i=+b.dataset.i;photos.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));prev.classList.remove('flip');upd()});
+$('#pcStamps').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.s=+b.dataset.s;sec.querySelectorAll('#pcStamps button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));prev.classList.add('flip');upd()});
+[to,text,from].forEach(x=>x.addEventListener('input',()=>{if(x!==to||true)prev.classList.add('flip');upd()}));
+$('#pcFlip').addEventListener('click',()=>prev.classList.toggle('flip'));
+$('#pcForm').addEventListener('submit',async e=>{e.preventDefault();const o=cur();const l=lang();
+  const link=new URL((l==='ru'?'':l+'/')+'postcard.html#p='+enc({i:o.i,s:o.s,to:o.to,t:o.t,f:o.f}),document.baseURI).href;
+  url.value=link;out.hidden=false;
+  if(navigator.share){try{await navigator.share({title:T('pc30'),url:link});return}catch(err){if(err&&err.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(link)}catch(_){url.select()}});
+$('#pcCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url.value)}catch(_){url.select();try{document.execCommand('copy')}catch(__){}}$('#pcCopy').textContent='✓';setTimeout(()=>$('#pcCopy').textContent=T('pc11'),1600)});
+upd();
+/* ---------- receiver ---------- */
+const recv=$('#pcRecv'),env=$('#pcEnv');let got=null,rc=null,fly=null;
+function typeOut(el,s){if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=s;return}el.textContent='';let i=0;const step=()=>{i+=1+(Math.random()<.3?1:0);el.textContent=s.slice(0,i);if(i<s.length)setTimeout(step,28+Math.random()*40)};setTimeout(step,500)}
+function showRecv(o){recv.hidden=false;make.hidden=true;rc=card(o,'');fly=document.createElement('div');fly.className='pc-fly';fly.appendChild(rc);env.querySelector('.pc-slot').appendChild(fly);
+  $('#pcOpen').onclick=open;env.onclick=open;sec.classList.add('receiving')}
+function open(){if(env.classList.contains('open'))return;env.classList.add('open');$('#pcOpen').hidden=true;
+  setTimeout(()=>{fly.classList.add('out')},650);
+  setTimeout(()=>{rc.classList.add('flip');typeOut(rc.querySelector('.pc-text'),got.t);$('#pcFlipR').hidden=false;$('#pcReply').hidden=!got.f},2300)}
+$('#pcFlipR').addEventListener('click',()=>rc&&rc.classList.toggle('flip'));
+$('#pcOwn').addEventListener('click',()=>{history.replaceState(null,'',location.pathname+location.search);recv.hidden=true;make.hidden=false;sec.classList.remove('receiving');make.scrollIntoView({behavior:'smooth',block:'start'})});
+$('#pcReply').addEventListener('click',()=>{to.value=got.f||'';$('#pcOwn').click();upd();text.focus({preventScroll:true})});
+function route(){const m=/[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash);if(!m)return;try{got=valid(dec(m[1]))}catch(e){got=null}
+  if(!got){recv.hidden=false;make.hidden=false;$('#pcBad').hidden=false;env.parentElement.hidden=true;$('#pcOpen').hidden=true;return}
+  if(fly){fly.remove();fly=null;env.classList.remove('open');$('#pcOpen').hidden=false;$('#pcFlipR').hidden=true;$('#pcReply').hidden=true}
+  $('#pcBad').hidden=true;env.parentElement.hidden=false;
+  showRecv(got);requestAnimationFrame(()=>sec.scrollIntoView({block:'start'}))}
+const pre=/[#&]i=(\d+)/.exec(location.hash);if(pre&&+pre[1]<PH.length){st.i=+pre[1];photos.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.i===st.i)));upd()}
+route();addEventListener('hashchange',route);
+addEventListener('d11lang',()=>setTimeout(()=>{labelPhotos();upd();if(rc&&got)fill(rc,got)},0));
+window.__pc={enc,dec,valid};
 })();
