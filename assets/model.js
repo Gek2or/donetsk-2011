@@ -45,7 +45,7 @@ function tri(p){const n=p.length;if(n<3)return[];let idx=[...Array(n).keys()];if
 /* ---------- geometry ---------- */
 let G={};
 const W=(x,y,z)=>[x,z,-y]; /* data x east, y north, z up -> GL x, y up, -z north */
-function build(evid){
+function build(evid){FEN=[];
   const P=[],N=[],Cl=[],I=[],Lp=[],Lc=[],F=[];
   const push=(v,n,c,id,f)=>{P.push(...v);N.push(...n);Cl.push(...c);I.push(id);F.push(...(f||F0))};
   const quad=(a,b,c,d,col,id,cb,fk)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);const k=[col,cb||col,col,col,col,col];const fu=fk?[[0,0],[fk.L,0],[fk.L,fk.h],[0,0],[fk.L,fk.h],[0,fk.h]]:null;[a,b,c,a,c,d].forEach((q,i)=>push(q,n,(cb&&(i===0||i===1||i===3))?cb:col,id,fu?[fu[i][0],fu[i][1],fk.z,fk.L]:null))};
@@ -100,7 +100,57 @@ function build(evid){
       if(k<.28){const h=12+rnd()*6;prism(x,y,g-.2,g+h*.45,.22,tc,4);crown(x,y,g+h*.62,1.5+rnd()*.6,h*.42,mix(col,[.25,.4,.2],.4))}
       else{const h=5+rnd()*4;prism(x,y,g-.2,g+h*.45,.18,tc,4);crown(x,y,g+h*.68,2.2+rnd()*1.4,h*.34,col)}};
     const free=(x,y,c)=>{for(const b of BB){if(x<b.x0-c||x>b.x1+c||y<b.y0-c||y>b.y1+c)continue;if(inPoly(b.fp,x,y))return false;for(let i=0;i<b.fp.length;i++)if(segD(x,y,b.fp[i],b.fp[(i+1)%b.fp.length])<c)return false}
-      for(const [,kind,w,segs] of D.R)for(const [p,q] of segs)if(segD(x,y,p,q)<w/2+1.6)return false;const [x0,y0,x1,y1]=D.tb;return x>x0+4&&x<x1-4&&y>y0+4&&y<y1-4};
+      for(const [,kind,w,segs] of D.R)for(const [p,q] of segs)if(segD(x,y,p,q)<w/2+1.6)return false;for(const [fa,fb] of FEN)if(segD(x,y,fa,fb)<c*.5)return false;const [x0,y0,x1,y1]=D.tb;return x>x0+4&&x<x1-4&&y>y0+4&&y<y1-4};
+    /* v4.5: street fences, gates, a gas pipe and kerbs. On Zarichna 25-38 the fence type comes from the October 2011 panoramas
+       (the research table); everywhere else it is picked by house type and is illustrative */
+    {const PRF={};((window.__D11&&window.__D11.D&&window.__D11.D.props)||[]).forEach(q=>PRF[q.a]=q.prof);
+     const FC={sheet_mixed:[.55,.36,.3],sheet_green:[.3,.47,.33],sheet_brown:[.43,.29,.2],sheet_blue:[.36,.53,.66],sheet_grey:[.5,.53,.56],timber:[.6,.47,.31],concrete_lattice:[.7,.71,.67],concrete_ornamental:[.78,.79,.74],hedge_timber:[.26,.4,.2],retaining_landscape:[.62,.62,.58]};
+     const POOL=['sheet_brown','sheet_brown','sheet_green','sheet_grey','sheet_mixed','sheet_blue','timber','timber','concrete_lattice','concrete_ornamental'];
+     const area=fp=>{let a=0;for(let i=0;i<fp.length;i++){const p=fp[i],q=fp[(i+1)%fp.length];a+=p[0]*q[1]-q[0]*p[1]}return Math.abs(a/2)};
+     const jit=(c,k)=>c.map(v=>Math.max(0,Math.min(1,v*(1+k))));
+     const nearRoad=(x,y,skip)=>{for(const [,kind,w,segs] of D.R)for(const sg of segs){if(sg===skip)continue;if(segD(x,y,sg[0],sg[1])<w/2+1.2)return true}return false};
+     const inB=(x,y,c)=>{for(const b of BB){if(x<b.x0-c||x>b.x1+c||y<b.y0-c||y>b.y1+c)continue;if(inPoly(b.fp,x,y))return true;for(let i=0;i<b.fp.length;i++)if(segD(x,y,b.fp[i],b.fp[(i+1)%b.fp.length])<c)return true}return false};
+     const post=(x,y,g,h,r,col)=>prism(x,y,g-.1,g+h,r,col,4);
+     const panel=(ax,ay,bx,by,z0,z1,col)=>quad(W(ax,ay,H(ax,ay)+z0),W(bx,by,H(bx,by)+z0),W(bx,by,H(bx,by)+z1),W(ax,ay,H(ax,ay)+z1),col,0);
+     const piece=(ax,ay,bx,by,ty,col,nx,ny)=>{const L=Math.hypot(bx-ax,by-ay);
+       if(ty.startsWith('sheet')){panel(ax,ay,bx,by,0,1.85,col);panel(ax,ay,bx,by,1.85,1.95,mix(col,[0,0,0],.35));post(ax,ay,H(ax,ay),1.98,.03,mix(col,[0,0,0],.3))}
+       else if(ty==='timber'){panel(ax,ay,bx,by,.35,.45,mix(col,[0,0,0],.25));panel(ax,ay,bx,by,1.15,1.25,mix(col,[0,0,0],.25));
+         const n=Math.max(1,Math.round(L/.24));for(let k=0;k<n;k++){const t0=(k+.2)/n,t1=(k+.62)/n,h=1.45+((k%2)?.04:0);panel(ax+(bx-ax)*t0,ay+(by-ay)*t0,ax+(bx-ax)*t1,ay+(by-ay)*t1,.08,h,jit(col,(rnd()-.5)*.12))}
+         post(ax,ay,H(ax,ay),1.5,.04,[.38,.32,.24])}
+       else if(ty==='concrete_lattice'||ty==='concrete_ornamental'){const orn=ty==='concrete_ornamental';panel(ax,ay,bx,by,0,orn?1.7:1.9,col);
+         if(orn){const mx=(ax+bx)/2,my=(ay+by)/2,g=H(mx,my);quad(W(ax+(bx-ax)*.15,ay+(by-ay)*.15,H(ax,ay)+1.7),W(ax+(bx-ax)*.85,ay+(by-ay)*.85,H(bx,by)+1.7),W(ax+(bx-ax)*.7,ay+(by-ay)*.7,g+1.86),W(ax+(bx-ax)*.3,ay+(by-ay)*.3,g+1.86),col,0)}
+         else for(let k=1;k<4;k++){const t=k/4;panel(ax+(bx-ax)*(t-.07),ay+(by-ay)*(t-.07),ax+(bx-ax)*(t+.07),ay+(by-ay)*(t+.07),.5,1.4,mix(col,[0,0,0],.28))}
+         post(ax,ay,H(ax,ay),1.95,.08,mix(col,[0,0,0],.06))}
+       else if(ty==='hedge_timber'){const o=.45;const g=(x,y)=>H(x,y);
+         quad(W(ax,ay,g(ax,ay)+1.35),W(bx,by,g(bx,by)+1.35),W(bx+nx*o,by+ny*o,g(bx,by)+1.3),W(ax+nx*o,ay+ny*o,g(ax,ay)+1.3),jit(col,.1),0);
+         panel(ax,ay,bx,by,0,1.35,col);panel(ax+nx*o,ay+ny*o,bx+nx*o,by+ny*o,0,1.3,mix(col,[0,0,0],.15))}
+       else{panel(ax,ay,bx,by,0,.7,col);panel(ax,ay,bx,by,.7,.78,mix(col,[1,1,1],.1))}};
+     const gate=(cx,cy,dx,dy,ty,col)=>{const hw=1.6,g0=[cx-dx*hw,cy-dy*hw],g1=[cx+dx*hw,cy+dy*hw];const gc=ty.startsWith('sheet')?mix(col,[0,0,0],.2):ty==='timber'?[.42,.33,.22]:[.33,.3,.28];
+       panel(g0[0],g0[1],g1[0],g1[1],.05,1.9,gc);post(g0[0],g0[1],H(g0[0],g0[1]),2.1,.09,[.3,.3,.31]);post(g1[0],g1[1],H(g1[0],g1[1]),2.1,.09,[.3,.3,.31]);
+       const w0=[g1[0]+dx*.25,g1[1]+dy*.25],w1=[g1[0]+dx*1.2,g1[1]+dy*1.2];panel(w0[0],w0[1],w1[0],w1[1],.05,1.85,mix(gc,[1,1,1],.08));post(w1[0],w1[1],H(w1[0],w1[1]),2.1,.07,[.3,.3,.31])};
+     for(const [nm,kind,w,segs] of D.R){if(!nm||kind==='footway'||kind==='primary')continue;const zar=/Зарічна/.test(nm);
+       for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<8)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
+         /* kerbs */
+         for(const sd of [-1,1]){const o=w/2+.12,nx=-dy*sd,ny=dx*sd;const n=Math.ceil(L/10);for(let k=0;k<n;k++){const t0=k/n*L,t1=(k+1)/n*L;const ax=p[0]+dx*t0+nx*o,ay=p[1]+dy*t0+ny*o,bx=p[0]+dx*t1+nx*o,by=p[1]+dy*t1+ny*o;if(nearRoad((ax+bx)/2,(ay+by)/2,sg))continue;
+           const kc=[.7,.69,.65];quad(W(ax,ay,H(ax,ay)+.46),W(bx,by,H(bx,by)+.46),W(bx+nx*.22,by+ny*.22,H(bx,by)+.46),W(ax+nx*.22,ay+ny*.22,H(ax,ay)+.46),kc,0);panel(ax,ay,bx,by,.28,.46,mix(kc,[0,0,0],.2))}}
+         for(const sd of [-1,1]){const nx=-dy*sd,ny=dx*sd;const hs=[];
+           [...D.B,...D.DF].forEach((b,bi)=>{const fp=b[2];if(area(fp)>320)return;let tmin=1e9,tmax=-1e9,dmin=1e9;for(const [x,y] of fp){const rx=x-p[0],ry=y-p[1],t=rx*dx+ry*dy,d=rx*nx+ry*ny;tmin=Math.min(tmin,t);tmax=Math.max(tmax,t);dmin=Math.min(dmin,d)}
+             if(dmin<w/2+1.5||dmin>w/2+26||tmax<0||tmin>L)return;const num=((b[0]||'').match(/(\d+[а-яa-z]?)\s*$/)||[])[1]||'';hs.push({t0:Math.max(2,tmin-3),t1:Math.min(L-2,tmax+3),d:dmin,c:(tmin+tmax)/2,num,bi})});
+           hs.sort((a,b)=>a.t0-b.t0);
+           const runs=[];for(const h of hs){const r=runs[runs.length-1];if(r&&h.t0-r.t1<9){r.t1=Math.max(r.t1,h.t1);r.d=Math.min(r.d,h.d);r.h.push(h)}else runs.push({t0:h.t0,t1:h.t1,d:h.d,h:[h]})}
+           for(const r of runs){const off=Math.max(w/2+2.4,Math.min(w/2+5.2,r.d-1.2));
+             r.h.forEach((h,hi)=>{const known=zar&&PRF[h.num];const ty=known||POOL[(h.bi*7+(sd>0?3:0))%POOL.length];const col=jit(FC[ty],((h.bi*37)%11-5)/60);
+               const a0=hi===0?r.t0:(r.h[hi-1].c+h.c)/2,a1=hi===r.h.length-1?r.t1:(h.c+r.h[hi+1].c)/2;
+               const gc=Math.max(a0+2.2,Math.min(a1-3,h.c+((h.bi%3)-1)*2));let gateDone=a1-a0<6;
+               for(let t=a0;t<a1-.2;t+=2){const te=Math.min(a1,t+2);if(!gateDone&&te>gc-1.6&&t<gc+3){gateDone=true;const gx=p[0]+dx*gc+nx*off,gy=p[1]+dy*gc+ny*off;if(!inB(gx,gy,.5)&&!nearRoad(gx,gy,sg)){gate(gx,gy,dx,dy,ty,col);FEN.push([[gx-dx*1.6,gy-dy*1.6],[gx+dx*1.2,gy+dy*1.2]])}t=gc+1.2-2;continue}
+                 const ax=p[0]+dx*t+nx*off,ay=p[1]+dy*t+ny*off,bx=p[0]+dx*te+nx*off,by=p[1]+dy*te+ny*off;const mx=(ax+bx)/2,my=(ay+by)/2;
+                 if(inB(mx,my,.45)||nearRoad(mx,my,sg))continue;piece(ax,ay,bx,by,ty,col,nx,ny);FEN.push([[ax,ay],[bx,by]])}});
+             /* gas pipe on the west side of Zarichna: yellow, on posts, lifted over the gates */
+             if(zar&&(p[0]+nx*off)<(p[0]-nx*off)){const po=off-.6;let lastPost=-9;
+               for(let t=r.t0;t<r.t1-.5;t+=1.5){const te=Math.min(r.t1,t+1.5);const ax=p[0]+dx*t+nx*po,ay=p[1]+dy*t+ny*po,bx=p[0]+dx*te+nx*po,by=p[1]+dy*te+ny*po;if(nearRoad((ax+bx)/2,(ay+by)/2,sg))continue;
+                 const za=H(ax,ay)+2.35,zb=H(bx,by)+2.35,yc=[.86,.68,.14];const A=W(ax,ay,za),B=W(bx,by,zb),r2=.07;
+                 quad(W(ax,ay,za-r2),W(bx,by,zb-r2),W(bx,by,zb+r2),W(ax,ay,za+r2),yc,0);quad(W(ax-nx*r2,ay-ny*r2,za),W(bx-nx*r2,by-ny*r2,zb),W(bx+nx*r2,by+ny*r2,zb),W(ax+nx*r2,ay+ny*r2,za),mix(yc,[0,0,0],.15),0);
+                 if(t-lastPost>=6){lastPost=t;post(ax,ay,H(ax,ay),2.3,.05,[.3,.3,.3])}}}}}}}}
     for(const [nm,kind,w,segs] of D.R){if(kind==='footway')continue;for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<1)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
       for(let t=3+rnd()*6;t<L;t+=9+rnd()*9)for(const sd of [-1,1]){if(rnd()<.35)continue;const o=w/2+2.6+rnd()*1.4,x=p[0]+dx*t-dy*o*sd,y=p[1]+dy*t+dx*o*sd;if(free(x,y,2.2))tree(x,y)}}}
     const [x0,y0,x1,y1]=D.tb;for(let i=0;i<520;i++){const x=x0+rnd()*(x1-x0),y=y0+rnd()*(y1-y0);if(free(x,y,2.6))tree(x,y)}
@@ -196,11 +246,13 @@ function resize(){dpr=Math.min(2,devicePixelRatio||1);W0=cv.clientWidth;H0=cv.cl
 /* ---------- v4.3: walk the quarter at eye level ---------- */
 const WK={on:false,x:-17,y:24,yaw:Math.PI,pitch:-.04,keys:new Set(),jx:0,jy:0,acc:0,last:0,snd:true,street:'',vx:0,vy:0,bob:0,run:0,found:new Set(),aim:null,aimT:0};
 try{JSON.parse(localStorage.getItem('d11-pano-found')||'[]').forEach(n=>WK.found.add(String(n)))}catch(e){}
+let FEN=[];
 const BB=[...D.B.map(b=>b[2]),...D.DF.map(b=>b[2])].map(fp=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of fp){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}return{fp,x0,y0,x1,y1}});
 const inPoly=(fp,x,y)=>{let c=false;for(let i=0,j=fp.length-1;i<fp.length;j=i++){const a=fp[i],b=fp[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/((b[1]-a[1])||1e-9)+a[0])c=!c}return c};
 const segD=(x,y,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy||1e-9;let t=((x-a[0])*dx+(y-a[1])*dy)/l;t=Math.max(0,Math.min(1,t));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy)};
 function blocked(x,y){const R=.35,[bx0,by0,bx1,by1]=D.tb;if(x<bx0+2||x>bx1-2||y<by0+2||y>by1-2)return true;
-  for(const b of BB){if(x<b.x0-R||x>b.x1+R||y<b.y0-R||y>b.y1+R)continue;if(inPoly(b.fp,x,y))return true;for(let i=0;i<b.fp.length;i++)if(segD(x,y,b.fp[i],b.fp[(i+1)%b.fp.length])<R)return true}return false}
+  for(const b of BB){if(x<b.x0-R||x>b.x1+R||y<b.y0-R||y>b.y1+R)continue;if(inPoly(b.fp,x,y))return true;for(let i=0;i<b.fp.length;i++)if(segD(x,y,b.fp[i],b.fp[(i+1)%b.fp.length])<R)return true}
+  for(const [fa,fb] of FEN)if(Math.abs(x-fa[0])<3&&Math.abs(y-fa[1])<3&&segD(x,y,fa,fb)<.3)return true;return false}
 function streetAt(x,y){let best='',bd=16;for(const [nm,kind,w,segs] of D.R){if(!nm)continue;for(const [p,q] of segs){const d=segD(x,y,p,q)-w/2;if(d<bd){bd=d;best=nm}}}return best}
 let AC=null;
 function stepSound(){if(!WK.snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
