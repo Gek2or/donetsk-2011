@@ -637,6 +637,19 @@ document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest
 addEventListener('hashchange',off);
 })();
 
+/* ---------- v4.4: tab groups (related blocks share one place on the page) ---------- */
+(function(){const G=[...document.querySelectorAll('.sgroup')];if(!G.length)return;
+  function show(g,id){const bs=[...g.querySelectorAll('[data-sg]')];bs.forEach(b=>{const on=b.dataset.sg===id;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;const p=document.getElementById(b.dataset.sg);if(p)p.hidden=!on});
+    requestAnimationFrame(()=>dispatchEvent(new Event('resize')))}
+  G.forEach(g=>{const bs=[...g.querySelectorAll('[data-sg]')];
+    bs.forEach((b,i)=>{b.addEventListener('click',()=>{show(g,b.dataset.sg);try{history.replaceState(null,'','#'+b.dataset.sg)}catch(e){}});
+      b.addEventListener('keydown',e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const n=bs[(i+d+bs.length)%bs.length];n.focus();n.click()})})});
+  function route(){let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}if(!h||/[=&]/.test(h))return;const el=document.getElementById(h);if(!el)return;
+    const p=el.matches('[data-sgp]')?el:el.closest('[data-sgp]');if(!p)return;const g=p.closest('.sgroup');if(p.hidden)show(g,p.id);
+    document.documentElement.classList.add('cv-off');const go=()=>{const t=p===el?g.querySelector('.sg-tabs'):el;scrollTo(0,t.getBoundingClientRect().top+scrollY-70)};requestAnimationFrame(go);setTimeout(go,120);if(document.readyState!=='complete')addEventListener('load',()=>setTimeout(go,30),{once:true})}
+  route();addEventListener('hashchange',route);
+})();
+
 ;(()=>{
 const sec=document.getElementById('memory');if(!sec)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';

@@ -89,6 +89,16 @@ section{padding-block:clamp(64px,9vw,120px);border-bottom:1px solid var(--rule)}
 @media (max-width:820px){.head{grid-template-columns:minmax(0,1fr)}}
 
 /* scale ladder */
+.sgroup{border-bottom:1px solid var(--rule);padding-top:clamp(40px,6vw,72px)}
+.sgroup>section{border-bottom:0;padding-top:clamp(28px,4vw,44px);scroll-margin-top:112px}
+.sgroup>section[hidden]{display:none!important}
+.sg-tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}
+.sg-tabs::-webkit-scrollbar{display:none}
+.sg-tabs button{all:unset;cursor:pointer;white-space:nowrap;font:600 15.5px/1.2 var(--f-body);color:var(--muted);padding:12px 16px 11px;border-bottom:3px solid transparent;margin-bottom:-1px}
+.sg-tabs button:hover{color:var(--ink)}
+.sg-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--rose)}
+.sg-tabs button:focus-visible{outline:2px solid var(--rose);outline-offset:-2px}
+.guess-sec .guess-wrap{margin-top:0}
 .ladder{border:1px solid var(--rule);background:var(--card);margin-bottom:18px}
 .steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-bottom:1px solid var(--rule)}
 .step{all:unset;cursor:pointer;padding:12px 14px;border-right:1px solid var(--rule);display:grid;gap:1px;align-content:start}
