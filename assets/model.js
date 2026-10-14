@@ -69,19 +69,86 @@ function build(evid){FEN=[];
     const cb=col.map(v=>v*.86);
     for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);quad(W(a[0],a[1],base),W(b[0],b[1],base),W(b[0],b[1],top),W(a[0],a[1],top),col,id,cb,kind&&L>1.2?{L,h:top-base,z:kind*100+Math.min(99,top-base)}:null);line(W(a[0],a[1],top),W(b[0],b[1],top),edge);if(h>4)line(W(a[0],a[1],base+.4),W(a[0],a[1],top),edge);if(!evid)skirt(a,b)}
     const hip=pitch&&h<=7?obb(ccw):null;
-    if(hip){/* hipped roof: estimated (class E), pitch 24 deg over the minimum-area rectangle of a near-rectangular house */
+    if(hip&&RT==='gable'){/* v4.6 gable roof with eaves (class E) */
+      const {c,u,v,a:la,b:lb}=hip;const e=.42,rh=lb*Math.tan(30*Math.PI/180),de=e*Math.tan(30*Math.PI/180);const P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z);
+      const A=P2(-la-e,-lb-e,top-de),B2=P2(la+e,-lb-e,top-de),C2=P2(la+e,lb+e,top-de),D2=P2(-la-e,lb+e,top-de),R1=P2(-la-e,0,top+rh),R2=P2(la+e,0,top+rh);
+      quad(A,B2,R2,R1,roofCol,id);quad(D2,C2,R2,R1,roofCol,id);line(R1,R2,edge);
+      tri3(P2(-la,-lb,top),P2(-la,lb,top),P2(-la,0,top+rh),col,id);tri3(P2(la,-lb,top),P2(la,lb,top),P2(la,0,top+rh),col,id);
+      const t=tri(ccw);for(let k=0;k<t.length;k+=3)for(const m of [t[k],t[k+1],t[k+2]])push(W(ccw[m][0],ccw[m][1],top-.05),[0,1,0],col,id);
+      return{ccw,base,top,o:hip,rh,gable:true}}
+    if(hip){/* hipped roof: estimated (class E), pitch 24 deg over the minimum-area rectangle of a near-rectangular house; v4.6 with eaves */
       const {c,u,v,a:la,b:lb}=hip;const rh=Math.min(la,lb)*Math.tan(24*Math.PI/180);const P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z);
-      const r=Math.max(0,la-lb);const A=P2(-la,-lb,top),B2=P2(la,-lb,top),C2=P2(la,lb,top),D2=P2(-la,lb,top),E1=P2(-r,0,top+rh),E2=P2(r,0,top+rh);
+      const e=.42,de=e*Math.tan(24*Math.PI/180);
+      const r=Math.max(0,la-lb);const A=P2(-la-e,-lb-e,top-de),B2=P2(la+e,-lb-e,top-de),C2=P2(la+e,lb+e,top-de),D2=P2(-la-e,lb+e,top-de),E1=P2(-r,0,top+rh),E2=P2(r,0,top+rh);
       tri3(A,B2,E2,roofCol,id);tri3(A,E2,E1,roofCol,id);tri3(C2,D2,E1,roofCol,id);tri3(C2,E1,E2,roofCol,id);tri3(B2,C2,E2,roofCol,id);tri3(D2,A,E1,roofCol,id);
-      line(E1,E2,edge);for(const [q,e] of [[A,E1],[D2,E1],[B2,E2],[C2,E2]])line(q,e,edge);
-      const t=tri(ccw);for(let k=0;k<t.length;k+=3)for(const m of [t[k],t[k+1],t[k+2]])push(W(ccw[m][0],ccw[m][1],top-.05),[0,1,0],roofCol,id)}
-    else{const t=tri(ccw);for(let k=0;k<t.length;k+=3)for(const m of [t[k],t[k+1],t[k+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roofCol,id)}};
+      line(E1,E2,edge);for(const [q,e2] of [[A,E1],[D2,E1],[B2,E2],[C2,E2]])line(q,e2,edge);
+      const t=tri(ccw);for(let k=0;k<t.length;k+=3)for(const m of [t[k],t[k+1],t[k+2]])push(W(ccw[m][0],ccw[m][1],top-.05),[0,1,0],roofCol,id);return{ccw,base,top,o:hip,rh}}
+    else{const t=tri(ccw);for(let k=0;k<t.length;k+=3)for(const m of [t[k],t[k+1],t[k+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roofCol,id)}
+    return{ccw,base,top,o:null,rh:0}};
   /* minimum-area bounding rectangle; null if the footprint is not close to a rectangle */
   function obb(pts){let best=null;const ar=Math.abs(area(pts));for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];let dx=b[0]-a[0],dy=b[1]-a[1];const L=Math.hypot(dx,dy);if(L<.5)continue;const u=[dx/L,dy/L],v=[-u[1],u[0]];let s0=1e9,s1=-1e9,t0=1e9,t1=-1e9;for(const q of pts){const s=q[0]*u[0]+q[1]*u[1],t=q[0]*v[0]+q[1]*v[1];s0=Math.min(s0,s);s1=Math.max(s1,s);t0=Math.min(t0,t);t1=Math.max(t1,t)}const A=(s1-s0)*(t1-t0);if(!best||A<best.A){const cs=(s0+s1)/2,ct=(t0+t1)/2;best={A,c:[u[0]*cs+v[0]*ct,u[1]*cs+v[1]*ct],u,v,a:(s1-s0)/2,b:(t1-t0)/2}}}
     if(!best||ar/best.A<.86||best.A>320)return null;if(best.b>best.a){const {u,v,a,b}=best;best.u=v;best.v=u.map(x=>-x);best.a=b;best.b=a}return best}
-  let pitch=false;
-  D.B.forEach((b,i)=>{const lvl=b[4]===1;let col=lvl?C.lvl:C.est,roof=lvl?col:C.roof,kind=0;if(evid){col=C.gF;roof=C.gE}else if(fac){const m=matOf(b);col=m.c;roof=m.r;kind=m.k}pitch=!lvl;addB(b[2],b[3],col,roof,i+1,kind)});pitch=false;
-  D.DF.forEach((b,i)=>{const col=evid?C.gE:mix(C.rose,[1,1,1],.12);pitch=!evid;addB(b[2],3.2,col,evid?col:mix(C.rose,[0,0,0],.08),1000+i,!evid&&fac?2:0)});pitch=false;
+  let pitch=false,RT='hip';
+  /* v4.6: house details. Zarichna 25-38 take wall, roof colour and roof type from the panorama research table; elsewhere they are picked per house and are illustrative */
+  const HD=[],BKD=[];const PRP={};((window.__D11&&window.__D11.D&&window.__D11.D.props)||[]).forEach(q=>PRP[q.a]=q);
+  const WALLC={Plaster_white:[.9,.89,.85],Wall_pale:[.85,.83,.72],Wall_cream:[.9,.82,.64],Brick_muted:[.6,.4,.32]},ROOFC={Metal_green:[.33,.46,.36],Roof_brown:[.45,.3,.22],Roof_grey:[.52,.54,.55],Roof_red:[.6,.28,.22],Roof_slate:[.4,.43,.46]};
+  const tone=c=>C.dark?c.map(v=>v*.62):mix(c,C.paper,.12);
+  const prism4=(x,y,z0,z1,r,col,id)=>{for(let i=0;i<4;i++){const a0=i/4*6.2832+.785,a1=(i+1)/4*6.2832+.785;quad(W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z0),W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z0),W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z1),W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z1),col,id)}quad(W(x-r*.7,y-r*.7,z1),W(x+r*.7,y-r*.7,z1),W(x+r*.7,y+r*.7,z1),W(x-r*.7,y+r*.7,z1),mix(col,[0,0,0],.25),id)};
+  const box=(cx,cy,ux,uy,hl,hw,z0,z1,col,id)=>{const vx=-uy,vy=ux,P=(s,t,z)=>W(cx+ux*s+vx*t,cy+uy*s+vy*t,z);const c=[[-hl,-hw],[hl,-hw],[hl,hw],[-hl,hw]];
+    for(let i=0;i<4;i++){const [s0,t0]=c[i],[s1,t1]=c[(i+1)%4];quad(P(s0,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s0,t0,z1),col,id)}quad(P(-hl,-hw,z1),P(hl,-hw,z1),P(hl,hw,z1),P(-hl,hw,z1),mix(col,[1,1,1],.06),id)};
+  const outN=(fp,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;let nx=dy/L,ny=-dx/L;const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;if(inPoly(fp,mx+nx*.3,my+ny*.3)){nx=-nx;ny=-ny}return[nx,ny,dx/L,dy/L,L]};
+  function detailHouse(info,col,roofCol,id,seed){const {ccw,base,top,o,rh}=info;if(!o)return;HD.push([ccw,base,top]);const g0=base+.4,wh=top-base;
+    const sill=mix(col,[1,1,1],.55),dark=[.24,.2,.17],pipe=mix(roofCol,[.5,.5,.5],.5);
+    /* plinth */
+    for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const [nx,ny,ux,uy,L]=outN(ccw,a,b);if(L<.3)continue;const A=[a[0]+nx*.05,a[1]+ny*.05],B=[b[0]+nx*.05,b[1]+ny*.05];
+      quad(W(A[0],A[1],base),W(B[0],B[1],base),W(B[0],B[1],g0+.5),W(A[0],A[1],g0+.5),mix(col,[0,0,0],.3),id);
+      /* window sills where the facade shader draws windows */
+      if(L>1.2&&wh>=3){const sp=3.6,ww=1.15,n=Math.max(1,Math.floor((L-.8)/sp)),of=(L-n*sp)/2,z=base+1.45;
+        for(let k=0;k<n;k++){const uc=of+sp*(k+.5),cx=a[0]+ux*uc,cy=a[1]+uy*uc;const s0=[cx-ux*(ww/2+.08),cy-uy*(ww/2+.08)],s1=[cx+ux*(ww/2+.08),cy+uy*(ww/2+.08)];
+          quad(W(s0[0],s0[1],z),W(s1[0],s1[1],z),W(s1[0]+nx*.13,s1[1]+ny*.13,z-.03),W(s0[0]+nx*.13,s0[1]+ny*.13,z-.03),sill,id);
+          quad(W(s0[0]+nx*.13,s0[1]+ny*.13,z-.03),W(s1[0]+nx*.13,s1[1]+ny*.13,z-.03),W(s1[0]+nx*.13,s1[1]+ny*.13,z-.09),W(s0[0]+nx*.13,s0[1]+ny*.13,z-.09),mix(sill,[0,0,0],.15),id);
+          quad(W(s0[0]+nx*.03,s0[1]+ny*.03,z+1.32),W(s1[0]+nx*.03,s1[1]+ny*.03,z+1.32),W(s1[0]+nx*.03,s1[1]+ny*.03,z+1.42),W(s0[0]+nx*.03,s0[1]+ny*.03,z+1.42),mix(col,[1,1,1],.25),id)}}}
+    const {c,u,v,a:la,b:lb}=o;const P=(s,t)=>[c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t];
+    /* downpipes at the corners */
+    for(const [s1,t1] of [[-la,-lb],[la,-lb],[la,lb],[-la,lb]]){if((seed+s1>0)%2&&t1>0)continue;const q=P(s1+(s1>0?-.12:.12),t1+(t1>0?.1:-.1));prism4(q[0],q[1],g0,top,.05,pipe,id)}
+    /* chimney */
+    {const q=P(la*.35*((seed&1)?1:-1),lb*.25*((seed&2)?1:-1));prism4(q[0],q[1],top,top+rh+.7,.26,[.52,.3,.24],id);prism4(q[0],q[1],top+rh+.7,top+rh+.82,.32,[.4,.4,.4],id)}
+    /* door with a small canopy and a step on a short wall */
+    {const sd=(seed&4)?1:-1,ux=u[0]*sd,uy=u[1]*sd,off=lb-1.15,cx=c[0]+u[0]*sd*(la+.04)+v[0]*off,cy=c[1]+u[1]*sd*(la+.04)+v[1]*off,vx=v[0],vy=v[1];
+      quad(W(cx-vx*.45,cy-vy*.45,g0+.15),W(cx+vx*.45,cy+vy*.45,g0+.15),W(cx+vx*.45,cy+vy*.45,g0+2.1),W(cx-vx*.45,cy-vy*.45,g0+2.1),(seed&8)?[.36,.24,.16]:[.42,.47,.5],id);
+      quad(W(cx-vx*.7,cy-vy*.7,g0+2.35),W(cx+vx*.7,cy+vy*.7,g0+2.35),W(cx+vx*.7+ux*.85,cy+vy*.7+uy*.85,g0+2.15),W(cx-vx*.7+ux*.85,cy-vy*.7+uy*.85,g0+2.15),mix(roofCol,[0,0,0],.1),id);
+      box(cx+ux*.45,cy+uy*.45,vx,vy,.7,.42,base,g0+.15,[.6,.6,.58],id)}
+    /* TV aerial (common in 2011) */
+    if(seed%3===0){const q=P(-la*.3*((seed&1)?-1:1),0),z0=top+rh*.85;prism4(q[0],q[1],z0,z0+2.4,.02,[.55,.55,.55],id);
+      for(let k=0;k<3;k++){const z=z0+1.6+k*.28,hw=.55-k*.12;quad(W(q[0]-v[0]*hw,q[1]-v[1]*hw,z),W(q[0]+v[0]*hw,q[1]+v[1]*hw,z),W(q[0]+v[0]*hw,q[1]+v[1]*hw,z+.03),W(q[0]-v[0]*hw,q[1]-v[1]*hw,z+.03),[.55,.55,.55],id)}}
+    /* satellite dish on a long wall */
+    if(seed%5===1){const sd=(seed&16)?1:-1,q=P(la*.55,sd*(lb+.12)),z=top-.55,R=.32,nx=v[0]*sd,ny=v[1]*sd;const ctr=W(q[0]+nx*.1,q[1]+ny*.1,z);const dc=[.82,.82,.8];
+      for(let k=0;k<8;k++){const a0=k/8*6.2832,a1=(k+1)/8*6.2832;tri3(ctr,W(q[0]+u[0]*Math.cos(a0)*R,q[1]+u[1]*Math.cos(a0)*R,z+Math.sin(a0)*R),W(q[0]+u[0]*Math.cos(a1)*R,q[1]+u[1]*Math.cos(a1)*R,z+Math.sin(a1)*R),dc,id)}}}
+  function detailBlock(info,col,id,seed){const {ccw,base,top}=info;const wh=top-base;if(wh<7)return;BKD.push([ccw,base]);
+    const par=mix(col,[0,0,0],.12),slab=mix(col,[1,1,1],.15),PAR=[[.86,.88,.9],[.62,.72,.78],mix(col,[0,0,0],.08),[.78,.74,.62]];
+    const edges=[];for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const [nx,ny,ux,uy,L]=outN(ccw,a,b);edges.push({a,b,nx,ny,ux,uy,L});
+      /* parapet */quad(W(a[0],a[1],top),W(b[0],b[1],top),W(b[0],b[1],top+.55),W(a[0],a[1],top+.55),par,id)}
+    const long=edges.filter(e=>e.L>8).sort((p,q)=>q.L-p.L).slice(0,2);
+    long.forEach((e,ei)=>{const sp=3.1,fh=2.8,n=Math.max(1,Math.floor((e.L-.8)/sp)),of=(e.L-n*sp)/2;
+      for(let k=0;k<n;k++){if((k+ei)%2)continue;const uc=of+sp*(k+.5),cx=e.a[0]+e.ux*uc,cy=e.a[1]+e.uy*uc,pc=PAR[(seed+k)%PAR.length];
+        for(let fi=1;.6+fi*fh+.95+1.5<=wh-.5;fi++){const z=base+.6+fi*fh+.05,hw=1.3,d=1.05;
+          const A=[cx-e.ux*hw,cy-e.uy*hw],B=[cx+e.ux*hw,cy+e.uy*hw],A2=[A[0]+e.nx*d,A[1]+e.ny*d],B2=[B[0]+e.nx*d,B[1]+e.ny*d];
+          quad(W(A[0],A[1],z),W(B[0],B[1],z),W(B2[0],B2[1],z),W(A2[0],A2[1],z),slab,id);quad(W(A2[0],A2[1],z-.14),W(B2[0],B2[1],z-.14),W(B2[0],B2[1],z),W(A2[0],A2[1],z),mix(slab,[0,0,0],.2),id);
+          quad(W(A2[0],A2[1],z),W(B2[0],B2[1],z),W(B2[0],B2[1],z+1.0),W(A2[0],A2[1],z+1.0),pc,id);if((seed*3+k*5+fi*7)%11===0){const dx2=(A2[0]+B2[0])/2+e.ux*.7,dy2=(A2[1]+B2[1])/2+e.uy*.7;box(dx2+e.nx*.12,dy2+e.ny*.12,e.ux,e.uy,.32,.03,z+1.05,z+1.65,[.86,.86,.83],id);box(dx2+e.nx*.3,dy2+e.ny*.3,e.ux,e.uy,.03,.18,z+1.32,z+1.36,[.4,.4,.4],id)}
+          quad(W(A[0],A[1],z),W(A2[0],A2[1],z),W(A2[0],A2[1],z+1.0),W(A[0],A[1],z+1.0),mix(pc,[0,0,0],.1),id);quad(W(B[0],B[1],z),W(B2[0],B2[1],z),W(B2[0],B2[1],z+1.0),W(B[0],B[1],z+1.0),mix(pc,[0,0,0],.1),id)}}
+      /* entrance canopies on one long side */
+      if(ei===1){const m=Math.max(1,Math.round(e.L/22));for(let k=0;k<m;k++){const uc=e.L*(k+.5)/m+1.55,cx=e.a[0]+e.ux*uc,cy=e.a[1]+e.uy*uc,z=base+.4+2.6;
+        quad(W(cx-e.ux*.6+e.nx*.04,cy-e.uy*.6+e.ny*.04,base+.45),W(cx+e.ux*.6+e.nx*.04,cy+e.uy*.6+e.ny*.04,base+.45),W(cx+e.ux*.6+e.nx*.04,cy+e.uy*.6+e.ny*.04,base+2.6),W(cx-e.ux*.6+e.nx*.04,cy-e.uy*.6+e.ny*.04,base+2.6),[.35,.27,.2],id);
+        box(cx+e.nx*.65,cy+e.ny*.65,e.ux,e.uy,1.3,.65,z,z+.15,[.66,.66,.64],id);box(cx+e.nx*.7,cy+e.ny*.7,e.ux,e.uy,1.0,.7,base,base+.55,[.6,.6,.58],id);/* v4.7: a bench beside each entrance */for(const sd of [-1,1]){if((seed+k+(sd>0?1:0))%2)continue;const bx=cx+e.ux*2.7*sd+e.nx*2.1,by=cy+e.uy*2.7*sd+e.ny*2.1,g=H(bx,by),bc=[.42,.3,.2],mc=[.26,.27,.28];box(bx,by,e.ux,e.uy,.85,.2,g+.42,g+.48,bc,0);box(bx-e.nx*.22,by-e.ny*.22,e.ux,e.uy,.85,.04,g+.55,g+.9,bc,0);for(const u of [-.7,.7])box(bx+e.ux*u,by+e.uy*u,e.ux,e.uy,.04,.18,g-.05,g+.42,mc,0);FEN.push([[bx-e.ux*.9,by-e.uy*.9],[bx+e.ux*.9,by+e.uy*.9]])}}}});
+    /* lift room on the roof */
+    {let sx=0,sy=0;for(const p of ccw){sx+=p[0];sy+=p[1]}sx/=ccw.length;sy/=ccw.length;const e=long[0];if(e)box(sx,sy,e.ux,e.uy,2.2,1.6,top,top+2.4,par,id)}}
+  D.B.forEach((b,i)=>{const lvl=b[4]===1;let col=lvl?C.lvl:C.est,roof=lvl?col:C.roof,kind=0;const det=fac&&!evid;
+    const num=((b[0]||'').match(/(\d+[а-яa-z]?)\s*$/)||[])[1]||'',pr=/Зарічна|Заречна/.test(b[0]||'')?PRP[num]:null;const sd=hash(b[1]);
+    if(evid){col=C.gF;roof=C.gE}else if(fac){const m=matOf(b);col=m.c;roof=m.r;kind=m.k;if(pr){col=tone(WALLC[pr.wall]||m.c);roof=tone(ROOFC[pr.roof]||m.r)}}
+    pitch=!lvl;RT=det?(pr?pr.roof_type:((sd>>>3)%2?'gable':'hip')):'hip';const info=addB(b[2],b[3],col,roof,i+1,kind);
+    if(det){if(kind===2&&info.o)detailHouse(info,col,roof,i+1,sd);else if(kind===1)detailBlock(info,col,i+1,sd)}});pitch=false;RT='hip';
+  D.DF.forEach((b,i)=>{const col=evid?C.gE:mix(C.rose,[1,1,1],.12),rc=evid?col:mix(C.rose,[0,0,0],.08),det=fac&&!evid;const num=((b[0]||'').match(/(\d+[а-яa-z]?)\s*$/)||[])[1]||'',pr=PRP[num];pitch=!evid;RT=det&&pr?pr.roof_type:'hip';
+    const info=addB(b[2],3.2,col,rc,1000+i,det?2:0);if(det&&info.o)detailHouse(info,col,rc,1000+i,hash(b[1]||String(i)))});pitch=false;RT='hip';
   /* 2011 centerlines */
   const Hc=[];if(showHist)for(const [,segs] of D.HC)for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);const n=Math.max(1,Math.ceil(L/10));const ox=-(q[1]-p[1])/L*1.8,oy=(q[0]-p[0])/L*1.8;for(let k=0;k<n;k++){const t0=k/n,t1=(k+1)/n;const ax=p[0]+(q[0]-p[0])*t0,ay=p[1]+(q[1]-p[1])*t0,bx=p[0]+(q[0]-p[0])*t1,by=p[1]+(q[1]-p[1])*t1;const A=W(ax-ox,ay-oy,H(ax,ay)+.9),B2=W(bx-ox,by-oy,H(bx,by)+.9),C2=W(bx+ox,by+oy,H(bx,by)+.9),D2=W(ax+ox,ay+oy,H(ax,ay)+.9);Hc.push(...A,...B2,...C2,...A,...C2,...D2)}}
   /* v4.2: street lamps (illustrative: one every ~32 m along the carriageways) */
@@ -127,7 +194,7 @@ function build(evid){FEN=[];
        else{panel(ax,ay,bx,by,0,.7,col);panel(ax,ay,bx,by,.7,.78,mix(col,[1,1,1],.1))}};
      const gate=(cx,cy,dx,dy,ty,col)=>{const hw=1.6,g0=[cx-dx*hw,cy-dy*hw],g1=[cx+dx*hw,cy+dy*hw];const gc=ty.startsWith('sheet')?mix(col,[0,0,0],.2):ty==='timber'?[.42,.33,.22]:[.33,.3,.28];
        panel(g0[0],g0[1],g1[0],g1[1],.05,1.9,gc);post(g0[0],g0[1],H(g0[0],g0[1]),2.1,.09,[.3,.3,.31]);post(g1[0],g1[1],H(g1[0],g1[1]),2.1,.09,[.3,.3,.31]);
-       const w0=[g1[0]+dx*.25,g1[1]+dy*.25],w1=[g1[0]+dx*1.2,g1[1]+dy*1.2];panel(w0[0],w0[1],w1[0],w1[1],.05,1.85,mix(gc,[1,1,1],.08));post(w1[0],w1[1],H(w1[0],w1[1]),2.1,.07,[.3,.3,.31])};
+       const w0=[g1[0]+dx*.25,g1[1]+dy*.25],w1=[g1[0]+dx*1.2,g1[1]+dy*1.2];panel(w0[0],w0[1],w1[0],w1[1],.05,1.85,mix(gc,[1,1,1],.08));post(w1[0],w1[1],H(w1[0],w1[1]),2.1,.07,[.3,.3,.31]);/* v4.7: mailbox on about half of the gates */if(rnd()<.5){const mx=g0[0]-dx*.05,my=g0[1]-dy*.05,g=H(mx,my);box(mx,my,dx,dy,.2,.16,g+1.15,g+1.55,rnd()<.6?[.24,.38,.62]:[.3,.42,.3],0)}};
      for(const [nm,kind,w,segs] of D.R){if(!nm||kind==='footway'||kind==='primary')continue;const zar=/Зарічна/.test(nm);
        for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<8)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
          /* kerbs */
@@ -151,6 +218,109 @@ function build(evid){FEN=[];
                  const za=H(ax,ay)+2.35,zb=H(bx,by)+2.35,yc=[.86,.68,.14];const A=W(ax,ay,za),B=W(bx,by,zb),r2=.07;
                  quad(W(ax,ay,za-r2),W(bx,by,zb-r2),W(bx,by,zb+r2),W(ax,ay,za+r2),yc,0);quad(W(ax-nx*r2,ay-ny*r2,za),W(bx-nx*r2,by-ny*r2,zb),W(bx+nx*r2,by+ny*r2,zb),W(ax+nx*r2,ay+ny*r2,za),mix(yc,[0,0,0],.15),0);
                  if(t-lastPost>=6){lastPost=t;post(ax,ay,H(ax,ay),2.3,.05,[.3,.3,.3])}}}}}}}}
+    /* v4.7: street life (illustrative): concrete utility poles with sagging wires and drops to the houses, centre lines on the bigger roads,
+       bushes in the yards and along the blocks */
+    {const WC=C.dark?[.08,.08,.09]:[.14,.14,.15],PC=[.62,.62,.6];
+     const nearR=(x,y,skip,c)=>{for(const [,kind,w,segs] of D.R)for(const sg of segs){if(sg===skip)continue;if(segD(x,y,sg[0],sg[1])<w/2+c)return true}return false};
+     const wire=(A,B,sag)=>{const n=6;let pa=null;for(let k=0;k<=n;k++){const t=k/n,x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t,z=A[2]+(B[2]-A[2])*t-sag*4*t*(1-t);
+        if(pa){const r=.022;quad(W(pa[0],pa[1],pa[2]-r),W(x,y,z-r),W(x,y,z+r),W(pa[0],pa[1],pa[2]+r),WC,0);const L=Math.hypot(x-pa[0],y-pa[1])||1,ox=-(y-pa[1])/L*r,oy=(x-pa[0])/L*r;quad(W(pa[0]-ox,pa[1]-oy,pa[2]),W(x-ox,y-oy,z),W(x+ox,y+oy,z),W(pa[0]+ox,pa[1]+oy,pa[2]),WC,0)}pa=[x,y,z]}};
+     const POLES=[];
+     for(const [nm,kind,w,segs] of D.R){if(kind==='footway')continue;
+       /* centre line: faded paint on the bigger roads */
+       if(kind==='primary'||kind==='tertiary'){const lc=mix(C.road,[1,1,1],kind==='primary'?.6:.4);for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<4)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L,r=.07;
+         for(let t=1;t<L-3;t+=6){const ax=p[0]+dx*t,ay=p[1]+dy*t,bx=ax+dx*3,by=ay+dy*3;if(nearR((ax+bx)/2,(ay+by)/2,sg,.5))continue;quad(W(ax+dy*r,ay-dx*r,H(ax,ay)+.32),W(bx+dy*r,by-dx*r,H(bx,by)+.32),W(bx-dy*r,by+dx*r,H(bx,by)+.32),W(ax-dy*r,ay+dx*r,H(ax,ay)+.32),lc,0)}}}
+       if(kind==='primary'||(kind==='service'&&!nm))continue;
+       const chain=[];let acc=12;const sd=kind==='tertiary'?-1:1;
+       for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<.01)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L,nx=-dy*sd,ny=dx*sd,o=w/2+1.05;
+         for(let t=acc;t<L;t+=34){let x=p[0]+dx*t+nx*o,y=p[1]+dy*t+ny*o;let ok=!nearR(x,y,sg,.6);for(let i=0;i<LP.length&&ok;i+=3)if(Math.hypot(LP[i]-x,-LP[i+2]-y)<2.5){x+=dx*3;y+=dy*3}
+           if(ok)for(const b of BB){if(x<b.x0-1||x>b.x1+1||y<b.y0-1||y>b.y1+1)continue;if(inPoly(b.fp,x,y)){ok=false;break}}
+           if(!ok){chain.push(null);continue}const g=H(x,y);chain.push({x,y,g,nx,ny});POLES.push([x,y,g]);
+           prism(x,y,g-.2,g+8.6,.13,PC,4);box(x,y,nx,ny,.75,.06,g+7.85,g+7.97,[.3,.3,.3],0);FEN.push([[x-.15,y],[x+.15,y]])}
+         acc=((acc-L)%34+34)%34}
+       for(let i=1;i<chain.length;i++){const a=chain[i-1],b=chain[i];if(!a||!b)continue;if(Math.hypot(b.x-a.x,b.y-a.y)>48)continue;
+         for(const u of [-.6,0,.6])wire([a.x+a.nx*u,a.y+a.ny*u,a.g+(u?7.97:8.6)],[b.x+b.nx*u,b.y+b.ny*u,b.g+(u?7.97:8.6)],.55)}}
+     /* drops: one wire from the nearest pole to the eave of each house within reach */
+     for(const [ccw,base,top] of HD){let best=null,bd=26;for(const P of POLES){for(const v of ccw){const d=Math.hypot(v[0]-P[0],v[1]-P[1]);if(d<bd){bd=d;best=[P,v]}}}
+       if(best){const [P,v]=best;wire([P[0],P[1],P[2]+7.6],[v[0],v[1],top-.25],.35)}}
+     /* bushes */
+     const BUSH=[[.3,.42,.22],[.36,.46,.2],[.5,.5,.2],[.42,.36,.3],[.26,.38,.24]];
+     const bush=(x,y,s)=>{const g=H(x,y);crown(x,y,g+.55*s,(.7+rnd()*.4)*s,.62*s,BUSH[(rnd()*BUSH.length)|0])};
+     for(const [ccw] of HD){const n=ccw.length;for(let k=0;k<3;k++){const i=(rnd()*n)|0,a=ccw[i],b=ccw[(i+1)%n];const [nx,ny,ux,uy,L]=outN(ccw,a,b);const t=rnd()*L,o=1.4+rnd()*2.2,x=a[0]+ux*t+nx*o,y=a[1]+uy*t+ny*o;if(free(x,y,.9))bush(x,y,1)}}
+     for(const [ccw] of BKD){for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const [nx,ny,ux,uy,L]=outN(ccw,a,b);if(L<8)continue;
+       for(let t=2;t<L-2;t+=2.6){if(rnd()<.45)continue;const x=a[0]+ux*t+nx*3.2,y=a[1]+uy*t+ny*3.2;if(free(x,y,1.1))bush(x,y,.9+rnd()*.3)}}}
+     /* v4.8 (illustrative): parked cars, rows of metal garages, a bus stop with a kiosk on the avenue, washing lines in the yards */
+     const okSpot=(x,y,c,skip)=>{const [x0,y0,x1,y1]=D.tb;if(x<x0+3||x>x1-3||y<y0+3||y>y1-3)return false;
+       for(const b of BB){if(x<b.x0-c||x>b.x1+c||y<b.y0-c||y>b.y1+c)continue;if(inPoly(b.fp,x,y))return false;for(let i=0;i<b.fp.length;i++)if(segD(x,y,b.fp[i],b.fp[(i+1)%b.fp.length])<c)return false}
+       for(const [,kind,w,segs] of D.R)for(const sg of segs){if(sg===skip)continue;if(segD(x,y,sg[0],sg[1])<w/2+.4)return false}
+       for(const [fa,fb] of FEN)if(segD(x,y,fa,fb)<c*.6)return false;return true};
+     const CARS=[[.92,.92,.9],[.86,.8,.66],[.62,.16,.16],[.22,.4,.46],[.3,.12,.14],[.5,.55,.58],[.2,.24,.36],[.88,.86,.78],[.36,.44,.3]];
+     const car=(x,y,ux,uy)=>{const g=H(x,y),col=CARS[(rnd()*CARS.length)|0],gl=C.dark?[.1,.12,.15]:[.22,.27,.32];
+       box(x,y,ux,uy,2.0,.8,g+.3,g+.9,col,0);box(x,y,ux,uy,1.95,.62,g+.12,g+.3,[.12,.12,.12],0);box(x-ux*.25,y-uy*.25,ux,uy,1.05,.72,g+.92,g+1.38,gl,0);box(x-ux*.25,y-uy*.25,ux,uy,1.0,.74,g+1.36,g+1.42,col,0);
+       const vx=-uy,vy=ux;for(const s2 of [-1.3,1.3])for(const t2 of [-.66,.66])box(x+ux*s2+vx*t2,y+uy*s2+vy*t2,ux,uy,.3,.1,g-.02,g+.48,[.1,.1,.1],0);
+       box(x+ux*2.0,y+uy*2.0,ux,uy,.03,.62,g+.55,g+.8,[.8,.8,.74],0);FEN.push([[x-ux*2.1,y-uy*2.1],[x+ux*2.1,y+uy*2.1]])};
+     /* cars: along the service roads by the blocks and now and then by a house */
+     for(const [nm,kind,w,segs] of D.R){if(kind==='footway'||kind==='primary')continue;const pr=kind==='service'?.32:.08;
+       for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<8)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
+         for(let t=4;t<L-4;t+=6.5)for(const sd of [-1,1]){if(rnd()>pr)continue;const o=w/2+1.25,x=p[0]+dx*t-dy*o*sd,y=p[1]+dy*t+dx*o*sd;if(okSpot(x,y,1.3,sg)&&okSpot(x+dx*1.8,y+dy*1.8,1.1,sg)&&okSpot(x-dx*1.8,y-dy*1.8,1.1,sg))car(x,y,dx,dy)}}}
+     /* garages: a row beside the bigger blocks, doors facing the block */
+     let rows=0;const GD=[[.42,.3,.24],[.3,.42,.34],[.5,.52,.54],[.34,.38,.5],[.55,.38,.22]];
+     for(const [ccw] of BKD){if(rows>=3)break;const ed=[];for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];ed.push([a,b,...outN(ccw,a,b)])}ed.sort((m,n)=>n[6]-m[6]);
+       for(const [a,b,nx,ny,ux,uy,L] of ed.slice(0,2)){if(rows>=3)break;let done=false;
+         for(const off of [16,20,24,28]){const n=Math.min(10,Math.floor(L/3.4));if(n<4)break;const t0=(L-n*3.4)/2,cells=[];
+           for(let k=0;k<n;k++){const t=t0+3.4*(k+.5),cx=a[0]+ux*t+nx*(off+3),cy=a[1]+uy*t+ny*(off+3);let ok=true;for(const [s2,d2] of [[0,0],[-1.6,-2.9],[1.6,-2.9],[-1.6,2.9],[1.6,2.9]]){if(!okSpot(cx+ux*s2+nx*d2,cy+uy*s2+ny*d2,.8,null)){ok=false;break}}cells.push(ok?[cx,cy]:null)}
+           let run=[],best=[];for(const c of cells){if(c)run.push(c);else run=[];if(run.length>best.length)best=[...run]}
+           if(best.length<4)continue;const g0=Math.min(...best.map(c=>H(c[0],c[1])));
+           best.forEach(([cx,cy],k)=>{const wall=[.6,.6,.58],dc=GD[(rnd()*GD.length)|0];box(cx,cy,ux,uy,1.65,3,g0-.3,g0+2.45,wall,0);box(cx,cy,ux,uy,1.72,3.12,g0+2.45,g0+2.6,[.32,.32,.3],0);
+             const fx=cx-nx*3.02,fy=cy-ny*3.02;quad(W(fx-ux*1.3,fy-uy*1.3,g0),W(fx+ux*1.3,fy+uy*1.3,g0),W(fx+ux*1.3,fy+uy*1.3,g0+2.15),W(fx-ux*1.3,fy-uy*1.3,g0+2.15),dc,0);
+             quad(W(fx+ux*.02,fy+uy*.02,g0),W(fx+ux*.06,fy+uy*.06,g0),W(fx+ux*.06,fy+uy*.06,g0+2.15),W(fx+ux*.02,fy+uy*.02,g0+2.15),mix(dc,[0,0,0],.4),0)});
+           const A=best[0],B=best[best.length-1];for(const d2 of [-3,3])FEN.push([[A[0]-ux*1.7+nx*d2,A[1]-uy*1.7+ny*d2],[B[0]+ux*1.7+nx*d2,B[1]+uy*1.7+ny*d2]]);
+           rows++;done=true;break}
+         if(done)break}}
+     /* bus stop and kiosk on the avenue */
+     {let bestS=null,bl=0;for(const [nm,kind,w,segs] of D.R){if(kind!=='primary')continue;for(const sg of segs){const L=Math.hypot(sg[1][0]-sg[0][0],sg[1][1]-sg[0][1]);if(L>bl){bl=L;bestS=[sg,w]}}}
+      if(bestS){const [[p,q],w]=bestS,L=bl,dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
+        for(const sd of [1,-1]){const nx=-dy*sd,ny=dx*sd;let placed=false;
+          for(let t=L*.5;t<L-8&&!placed;t+=4){const o=w/2+2.4,x=p[0]+dx*t+nx*o,y=p[1]+dy*t+ny*o;if(!okSpot(x,y,2.2,bestS[0])||!okSpot(x+dx*6,y+dy*6,1.6,bestS[0]))continue;
+            const g=H(x,y),fr=[.36,.38,.4],rf=[.3,.45,.52],gls=C.dark?[.2,.26,.3]:[.62,.72,.76];
+            box(x,y,dx,dy,2.4,.15,g+2.5,g+2.62,rf,0);box(x+nx*1.05,y+ny*1.05,dx,dy,2.3,.03,g+.3,g+2.5,gls,0);
+            for(const s2 of [-2.3,2.3]){box(x+dx*s2+nx*.4,y+dy*s2+ny*.4,dx,dy,.03,.62,g+.3,g+2.5,gls,0);for(const d2 of [-.9,.9])prism(x+dx*s2+nx*d2*.6,y+dy*s2+ny*d2*.6,g-.1,g+2.5,.05,fr,4)}
+            box(x+nx*.7,y+ny*.7,dx,dy,1.6,.2,g+.42,g+.5,[.42,.3,.2],0);prism(x-dx*3.2-nx*.6,y-dy*3.2-ny*.6,g-.1,g+2.6,.05,fr,4);box(x-dx*3.2-nx*.6,y-dy*3.2-ny*.6,nx,ny,.03,.25,g+2.2,g+2.7,[.85,.75,.2],0);
+            FEN.push([[x-dx*2.4+nx*1.05,y-dy*2.4+ny*1.05],[x+dx*2.4+nx*1.05,y+dy*2.4+ny*1.05]]);for(const s2 of [-2.3,2.3])FEN.push([[x+dx*s2,y+dy*s2],[x+dx*s2+nx*1.1,y+dy*s2+ny*1.1]]);
+            const kx=x+dx*6+nx*.6,ky=y+dy*6+ny*.6,kg=H(kx,ky);box(kx,ky,dx,dy,1.4,1.1,kg-.2,kg+2.5,[.82,.8,.74],0);box(kx,ky,dx,dy,1.55,1.25,kg+2.5,kg+2.65,[.62,.16,.16],0);
+            quad(W(kx-dx*1.1-nx*1.12,ky-dy*1.1-ny*1.12,kg+1),W(kx+dx*1.1-nx*1.12,ky+dy*1.1-ny*1.12,kg+1),W(kx+dx*1.1-nx*1.12,ky+dy*1.1-ny*1.12,kg+2.1),W(kx-dx*1.1-nx*1.12,ky-dy*1.1-ny*1.12,kg+2.1),gls,0);
+            FEN.push([[kx-dx*1.4,ky-dy*1.4],[kx+dx*1.4,ky+dy*1.4]]);placed=true}
+          if(placed)break}}}
+     /* washing lines in some yards */
+     const CL=[[.9,.9,.88],[.72,.3,.3],[.3,.46,.7],[.86,.76,.36],[.5,.66,.5],[.8,.6,.7]];
+     for(const [ccw] of HD){if(rnd()>.4)continue;for(let tr=0;tr<4;tr++){const n=ccw.length,i=(rnd()*n)|0,a=ccw[i],b=ccw[(i+1)%n];const [nx,ny,ux,uy,L]=outN(ccw,a,b);if(L<4)continue;
+       const o=3+rnd()*2.5,t=rnd()*(L-2)+1,x0=a[0]+ux*t+nx*o,y0=a[1]+uy*t+ny*o,x1=x0+ux*4.5,y1=y0+uy*4.5;if(!okSpot(x0,y0,.9,null)||!okSpot(x1,y1,.9,null)||!okSpot((x0+x1)/2,(y0+y1)/2,.9,null))continue;
+       const pc=[.4,.38,.34];for(const [px,py] of [[x0,y0],[x1,y1]]){const g=H(px,py);prism(px,py,g-.1,g+1.9,.04,pc,4);box(px,py,nx,ny,.5,.03,g+1.84,g+1.9,pc,0)}
+       for(const u of [-.35,.35])wire([x0+nx*u,y0+ny*u,H(x0,y0)+1.88],[x1+nx*u,y1+ny*u,H(x1,y1)+1.88],.08);
+       for(let k=0;k<3;k++){if(rnd()<.3)continue;const t2=.15+k*.28+rnd()*.06,sw=rnd()<.5?-.35:.35,cx=x0+(x1-x0)*t2+nx*sw,cy=y0+(y1-y0)*t2+ny*sw,g=H(cx,cy)+1.82,hw=.3+rnd()*.25,hh=.5+rnd()*.35,cc=CL[(rnd()*CL.length)|0];
+         quad(W(cx-ux*hw,cy-uy*hw,g-hh),W(cx+ux*hw,cy+uy*hw,g-hh),W(cx+ux*hw,cy+uy*hw,g),W(cx-ux*hw,cy-uy*hw,g),cc,0);quad(W(cx+ux*hw,cy+uy*hw,g-hh),W(cx-ux*hw,cy-uy*hw,g-hh),W(cx-ux*hw,cy-uy*hw,g),W(cx+ux*hw,cy+uy*hw,g),mix(cc,[0,0,0],.15),0)}
+       FEN.push([[x0,y0],[x1,y1]]);break}}
+     /* v4.9 (illustrative): playgrounds and rubbish containers by the blocks */
+     let pgs=0;const PNT=[[.78,.22,.2],[.9,.72,.2],[.24,.44,.7],[.3,.58,.36]];
+     for(const [ccw] of BKD){if(pgs>=3)break;const ed=[];for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];ed.push([a,b,...outN(ccw,a,b)])}ed.sort((m,n)=>n[6]-m[6]);
+       let done=false;for(const [a,b,nx,ny,ux,uy,L] of ed.slice(0,2)){if(done||L<14)continue;
+         for(const off of [9,12,15]){for(const tf of [.5,.3,.7]){const t=L*tf,cx=a[0]+ux*t+nx*off,cy=a[1]+uy*t+ny*off;let ok=true;
+             for(const [s2,d2] of [[0,0],[-5,-3.5],[5,-3.5],[-5,3.5],[5,3.5]])if(!okSpot(cx+ux*s2+nx*d2,cy+uy*s2+ny*d2,1,null)){ok=false;break}
+             if(!ok)continue;const g=H(cx,cy),P=(s2,d2)=>[cx+ux*s2+nx*d2,cy+uy*s2+ny*d2];
+             /* sandbox */{const [sx,sy]=P(-3,1.2);box(sx,sy,ux,uy,1.3,1.3,g-.1,g+.12,[.86,.78,.56],0);for(const [s2,d2,l2,w2] of [[0,1.25,1.35,.06],[0,-1.25,1.35,.06]])box(sx+ux*s2+nx*d2,sy+uy*s2+ny*d2,ux,uy,l2,w2,g-.05,g+.3,PNT[0],0);for(const s2 of [1.25,-1.25])box(sx+ux*s2,sy+uy*s2,ux,uy,.06,1.3,g-.05,g+.3,PNT[0],0);FEN.push([P(-4.3,1.2),P(-1.7,1.2)])}
+             /* swings */{const [wx,wy]=P(1.5,1.8);for(const s2 of [-1.2,1.2])for(const d2 of [-.5,.5]){const [px,py]=[wx+ux*s2+nx*d2,wy+uy*s2+ny*d2];quad(W(px,py,g),W(px+nx*.06,py+ny*.06,g),W(wx+ux*s2+nx*.03,wy+uy*s2+ny*.03,g+2.3),W(wx+ux*s2,wy+uy*s2,g+2.3),PNT[2],0);quad(W(px+nx*.06,py+ny*.06,g),W(px,py,g),W(wx+ux*s2,wy+uy*s2,g+2.3),W(wx+ux*s2+nx*.03,wy+uy*s2+ny*.03,g+2.3),PNT[2],0)}
+               box(wx,wy,ux,uy,1.25,.05,g+2.25,g+2.35,PNT[2],0);for(const s2 of [-.5,.5]){const [qx,qy]=[wx+ux*s2,wy+uy*s2];for(const u2 of [-.22,.22])box(qx+ux*u2,qy+uy*u2,ux,uy,.015,.015,g+.5,g+2.28,[.3,.3,.3],0);box(qx,qy,ux,uy,.25,.14,g+.45,g+.52,PNT[1],0)}FEN.push([P(.2,1.8),P(2.8,1.8)])}
+             /* slide */{const [lx,ly]=P(3.5,-1.8);box(lx,ly,ux,uy,.4,.4,g+1.3,g+1.4,PNT[3],0);for(const [s2,d2] of [[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]])prism(lx+ux*s2+nx*d2,ly+uy*s2+ny*d2,g-.1,g+1.35,.04,PNT[3],4);
+               const A=[lx+ux*.4,ly+uy*.4],B=[lx+ux*2.6,ly+uy*2.6];quad(W(A[0]-nx*.3,A[1]-ny*.3,g+1.4),W(A[0]+nx*.3,A[1]+ny*.3,g+1.4),W(B[0]+nx*.3,B[1]+ny*.3,g+.15),W(B[0]-nx*.3,B[1]-ny*.3,g+.15),[.75,.76,.74],0);
+               for(let k=1;k<5;k++)box(lx-ux*(.4+k*.18),ly-uy*(.4+k*.18),ux,uy,.03,.3,g+k*.27,g+k*.27+.04,PNT[1],0);FEN.push([P(2.6,-1.8),P(6.1,-1.8)])}
+             /* horizontal bar */{const [hx,hy]=P(-2.5,-2.2);for(const s2 of [-.9,.9])prism(hx+ux*s2,hy+uy*s2,g-.1,g+2.1,.04,[.4,.4,.42],4);box(hx,hy,ux,uy,.9,.02,g+2.0,g+2.04,[.4,.4,.42],0);FEN.push([P(-3.4,-2.2),P(-1.6,-2.2)])}
+             /* bench */{const [bx,by]=P(0,-3.2);box(bx,by,ux,uy,.85,.2,g+.42,g+.48,[.42,.3,.2],0);for(const u of [-.7,.7])box(bx+ux*u,by+uy*u,ux,uy,.04,.18,g-.05,g+.42,[.26,.27,.28],0);FEN.push([P(-.9,-3.2),P(.9,-3.2)])}
+             pgs++;done=true;break}if(done)break}}
+       /* containers by a short wall */
+       const sh=ed.filter(e=>e[6]>6).pop();if(sh){const [a,b,nx,ny,ux,uy,L]=sh;const t=L/2,cx=a[0]+ux*t+nx*5,cy=a[1]+uy*t+ny*5;
+         if(okSpot(cx,cy,1.2,null)&&okSpot(cx+ux*2.2,cy+uy*2.2,.8,null)&&okSpot(cx-ux*2.2,cy-uy*2.2,.8,null)){const g=H(cx,cy);box(cx,cy,ux,uy,2.6,1.1,g-.1,g+.08,[.66,.66,.63],0);
+           for(const s2 of [-1.5,0,1.5]){const bc=rnd()<.7?[.26,.4,.28]:[.5,.45,.32];box(cx+ux*s2,cy+uy*s2,ux,uy,.6,.45,g+.08,g+1.15,bc,0);box(cx+ux*s2,cy+uy*s2,ux,uy,.64,.49,g+1.15,g+1.22,mix(bc,[0,0,0],.25),0)}
+           FEN.push([[cx-ux*2.3,cy-uy*2.3],[cx+ux*2.3,cy+uy*2.3]])}}}
+}
     for(const [nm,kind,w,segs] of D.R){if(kind==='footway')continue;for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<1)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
       for(let t=3+rnd()*6;t<L;t+=9+rnd()*9)for(const sd of [-1,1]){if(rnd()<.35)continue;const o=w/2+2.6+rnd()*1.4,x=p[0]+dx*t-dy*o*sd,y=p[1]+dy*t+dx*o*sd;if(free(x,y,2.2))tree(x,y)}}}
     const [x0,y0,x1,y1]=D.tb;for(let i=0;i<520;i++){const x=x0+rnd()*(x1-x0),y=y0+rnd()*(y1-y0);if(free(x,y,2.6))tree(x,y)}
