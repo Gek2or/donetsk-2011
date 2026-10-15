@@ -80,10 +80,52 @@ const VM=(()=>{const BODY=[-1,-1,-1],GL=[.16,.19,.23],TY=[.09,.09,.1],HUB=[.55,.
     m.bx(5.25,5.4,-BW,BW,.4,.6,BLK);m.bx(-5.4,-5.25,-BW,BW,.4,.6,BLK);
     for(const x of [3.4,-2.9])for(const y of [-1.05,1.05])m.wheel(x,y,.5,.28);
     return m};
+  /* Tatra T3SU in the factory red-and-cream scheme: one cab at the front, three doors on the right, pantograph on the roof */
+  const tram=()=>{const m=mk(),RED=[.68,.15,.13],CR=[.92,.85,.67],GLs=[.14,.17,.21],RF=[.7,.7,.68],DK=[.12,.12,.13];
+    const PL=[[7,.6],[6.75,1.05],[6.1,1.25],[-6.4,1.25],[-6.9,1],[-7,.5],[-7,-.5],[-6.9,-1],[-6.4,-1.25],[6.1,-1.25],[6.75,-1.05],[7,-.6]];
+    const band=(z0,z1,col,sc)=>{const ctr=[0,0,(z0+z1)/2];for(let i=0;i<PL.length;i++){const a=PL[i],b=PL[(i+1)%PL.length];m.oq([a[0],a[1],z0],[b[0],b[1],z0],[b[0],b[1],z1],[a[0],a[1],z1],col,ctr)}};
+    band(.45,1.12,RED);band(1.12,1.32,CR);band(1.32,2.32,GLs);band(2.32,2.78,CR);
+    for(let i=1;i<PL.length-1;i++)m.tri([PL[0][0],PL[0][1],2.78],[PL[i][0],PL[i][1],2.78],[PL[i+1][0],PL[i+1][1],2.78],RF);
+    for(let i=1;i<PL.length-1;i++)m.tri([PL[0][0],PL[0][1],.45],[PL[i+1][0],PL[i+1][1],.45],[PL[i][0],PL[i][1],.45],DK);
+    /* window pillars */for(const y of [-1.256,1.256])for(let x=-6.1;x<=5.6;x+=1.17)m.q4([x,y,1.32],[x+.12,y,1.32],[x+.12,y,2.32],[x,y,2.32],CR);
+    /* doors, right side */for(const x of [5.2,0,-5.0]){const y=-1.262;m.q4([x-.62,y,.5],[x+.62,y,.5],[x+.62,y,1.3],[x-.62,y,1.3],[.5,.12,.11]);m.q4([x-.62,y,1.3],[x+.62,y,1.3],[x+.62,y,2.28],[x-.62,y,2.28],[.1,.12,.15]);m.q4([x-.02,y-.002,.5],[x+.02,y-.002,.5],[x+.02,y-.002,2.28],[x-.02,y-.002,2.28],CR)}
+    /* front: route board, headlights; rear lights */m.q4([7.004,-.45,2.36],[7.004,.45,2.36],[7.004,.45,2.66],[7.004,-.45,2.66],DK);
+    for(const y of [-.42,.42]){m.q4([7.004,y-.1,.8],[7.004,y+.1,.8],[7.004,y+.1,.95],[7.004,y-.1,.95],HL);m.q4([-7.004,y+.1,.95],[-7.004,y-.1,.95],[-7.004,y-.1,1.08],[-7.004,y+.1,1.08],TL)}
+    m.bx(-4.2,1.6,-.7,.7,2.78,3.0,[.5,.5,.5]);for(const x of [3.4,-3.4])m.bx(x-1.15,x+1.15,-1.08,1.08,.06,.56,DK);
+    /* rhombus pantograph raised to the wire (5.6 m above the rail) */{const px=1.2;m.bx(px-.5,px+.5,-.5,.5,3,3.08,DK);
+      const bar=(x0,z0,x1,z1,y)=>{m.q4([x0,y,z0],[x0+.05,y,z0],[x1+.05,y,z1],[x1,y,z1],DK);m.q4([x0,y-.025,z0],[x0,y+.025,z0],[x1,y+.025,z1],[x1,y-.025,z1],DK)};
+      for(const y of [-.38,.38]){bar(px-.75,3.08,px,4.4,y);bar(px+.75,3.08,px,4.4,y);bar(px,4.4,px-.45,5.55,y);bar(px,4.4,px+.45,5.55,y)}
+      m.bx(px-.08,px+.08,-.95,.95,5.55,5.6,[.35,.35,.35])}
+    return m};
   const pack=m=>({p:new Float32Array(m.p),n:new Float32Array(m.n),c:new Float32Array(m.c),cnt:m.p.length/3,src:m});
-  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus())}})();
+  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram())}})();
 /* period paint: white, beige, cherry, the bright and dark blues, faded green, sand, red and grey seen on Lada and Moskvich cars of the time */
 const VPAINT=[[.9,.9,.87],[.84,.79,.66],[.45,.1,.12],[.22,.38,.55],[.15,.2,.33],[.36,.45,.33],[.78,.7,.5],[.62,.14,.13],[.55,.57,.58],[.85,.85,.82],[.3,.32,.34]];
+/* v5.2: the tramway on Dzerzhinsky Avenue. OpenStreetMap ways 233652257 and 233652260: a double track, 1524 mm gauge,
+   600 V overhead line, on its own bed between the two carriageways, crossing the Kalmius on its own bridge just east of the quarter.
+   In 2011 routes 9 (Gorkoho St - PKTI) and 10 (Gorkoho St - Vostochnyi) ran here from depot No. 3 with Tatra T3SU cars
+   (photos of car 927 on routes 9 and 10 on this avenue, 2006-2013). The OSM track line is up to 3 m off the carriageways
+   of this model, so the tracks are laid on the median between them. No stop lies inside the quarter in the sources used. */
+const TW=(()=>{const cw=D.R.filter(r=>/Дзержинського/.test(r[0]||'')&&r[1]!=='footway');if(cw.length<2)return null;
+  const yAt=(segs,x)=>{for(const [p,q] of segs){const a=Math.min(p[0],q[0]),b=Math.max(p[0],q[0]);if(x>=a-.01&&x<=b+.01){const u=(x-p[0])/((q[0]-p[0])||1);return p[1]+(q[1]-p[1])*u}}
+    const all=segs.flat();const e=all.reduce((m,p)=>Math.abs(p[0]-x)<Math.abs(m[0]-x)?p:m);return e[1]};
+  const ys=x=>{const a=yAt(cw[0][3],x),b=yAt(cw[1][3],x);return[Math.min(a,b),Math.max(a,b)]};
+  const [X0,,X1]=D.tb;const mc=x=>{const [s,n]=ys(x);return(s+n)/2};
+  const G=2.05,track=(sgn)=>{const pts=[];for(let x=X0;x<=X1+.01;x+=10)pts.push([x,mc(x)+sgn*G]);return pts};
+  const E=track(-1),Wt=track(1).reverse();/* right-hand running: the southern track runs east */
+  const inMedian=(x,y,m=3.4)=>x>X0-5&&x<X1+5&&Math.abs(y-mc(x))<m;
+  return {mc,E,W:Wt,inMedian,G}})();
+const TRAMS=(()=>{if(!TW)return null;const tracks=[TW.E,TW.W].map(pts=>{const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return{pts,cum,len:cum[cum.length-1]}});
+  const at=(t,s)=>{let i=1;while(i<t.cum.length-1&&t.cum[i]<s)i++;const a=t.pts[i-1],b=t.pts[i],sl=(t.cum[i]-t.cum[i-1])||1,u=Math.max(0,Math.min(1,(s-t.cum[i-1])/sl));return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,(b[0]-a[0])/sl,(b[1]-a[1])/sl]};
+  let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  /* routes 9 and 10 together: a car every few minutes each way; here the gaps are shortened so a tram is usually in view */
+  const cars=[];tracks.forEach((t,k)=>{cars.push({t,s:t.len*(k?.25:.6),v:8,wait:0,x:0,y:0,hx:1,hy:0,on:true});cars.push({t,s:-60,v:8,wait:20+rnd()*20,x:0,y:0,hx:1,hy:0,on:false})});
+  const place=c=>{const [x,y,dx,dy]=at(c.t,Math.max(0,Math.min(c.t.len,c.s)));c.x=x;c.y=y;c.hx=dx;c.hy=dy};cars.forEach(place);
+  const step=dt=>{dt=Math.min(dt,.1);for(const c of cars){if(!c.on){c.wait-=dt;if(c.wait<=0){/* enter from the edge of the quarter, keeping 80 m behind the car ahead */
+        const ahead=cars.filter(o=>o!==c&&o.on&&o.t===c.t).map(o=>o.s);if(!ahead.length||Math.min(...ahead)>80){c.on=true;c.s=-8;c.v=8}else c.wait=4}continue}
+      const nxt=cars.filter(o=>o!==c&&o.on&&o.t===c.t&&o.s>c.s).map(o=>o.s-c.s);const gap=nxt.length?Math.min(...nxt):1e9;const vt=Math.min(8.3,Math.max(0,(gap-22)*.6));c.v+=Math.max(-2*dt,Math.min(1*dt,vt-c.v));
+      c.s+=c.v*dt;if(c.s>c.t.len+8){c.on=false;c.wait=25+rnd()*45;c.s=-60}place(c)}};
+  return {cars,step}})();
 function build(evid){FEN=[];
   const P=[],N=[],Cl=[],I=[],Lp=[],Lc=[],F=[];
   const push=(v,n,c,id,f)=>{P.push(...v);N.push(...n);Cl.push(...c);I.push(id);F.push(...(f||F0))};
@@ -191,7 +233,7 @@ function build(evid){FEN=[];
   /* v4.2: street lamps (illustrative: one every ~32 m along the carriageways) */
   const LP=[],LG=[];for(const [nm,kind,w,segs] of D.R){if(kind==='footway'||kind==='service')continue;let acc=16,side=1;
     for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<.01)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
-      for(let t=acc;t<L;t+=32){const ox=-dy*(w/2+1.6)*side,oy=dx*(w/2+1.6)*side,x=p[0]+dx*t+ox,y=p[1]+dy*t+oy,g=H(x,y);LP.push(...W(x,y,g+7.2));
+      for(let t=acc;t<L;t+=32){const ox=-dy*(w/2+1.6)*side,oy=dx*(w/2+1.6)*side,x=p[0]+dx*t+ox,y=p[1]+dy*t+oy,g=H(x,y);if(TW&&TW.inMedian(x,y)){side=-side;continue}LP.push(...W(x,y,g+7.2));
         const R=11;const c=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];for(const [u,v] of c)LG.push(...W(x+u*R,y+v*R,H(x+u*R,y+v*R)+.36),u,v);side=-side}
       acc=((acc-L)%32+32)%32}}
   /* v4.3: illustrative trees along the streets and in yards, and lamp poles (only with "Facades" on) */
@@ -288,7 +330,7 @@ function build(evid){FEN=[];
          hq(F.P(0,.45,0),F.P(te-t,.45,0),F.P(te-t,.45,.16),F.P(0,.45,.16),kc);pq(F,0,te-t,.26,.45,mix(kc,[0,0,0],.18),0);
          if(walk){hq(F.P(0,.42,.16),F.P(te-t,.42,.16),F.P(te-t,.42,2.4),F.P(0,.42,2.4),[.6,.59,.56]);pq(F,0,te-t,.25,.42,[.5,.49,.46],2.4)}}};
      /* avenues: kerbs and pavements */
-     D.R.forEach(([nm,kind,w,segs])=>{if(!/проспект/.test(nm||''))return;for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<4)continue;const S={w,sg,p,L,dx:(q[0]-p[0])/L,dy:(q[1]-p[1])/L};for(const sd of [-1,1])kerbAt(S,sd,0,L,true)}});
+     D.R.forEach(([nm,kind,w,segs])=>{if(!/проспект/.test(nm||''))return;for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<4)continue;const S={w,sg,p,L,dx:(q[0]-p[0])/L,dy:(q[1]-p[1])/L};for(const sd of [-1,1]){const mx=p[0]+S.dx*L/2-S.dy*sd*(w/2+1),my=p[1]+S.dy*L/2+S.dx*sd*(w/2+1);if(TW&&TW.inMedian(mx,my))continue;kerbAt(S,sd,0,L,true)}}});
      /* plots: every private house gets a convex plot. Neighbours split the ground halfway across the gap between their walls,
         streets cut the plot at the front fence line, and an open side ends 12 m behind the house. */
      const SEGS=[];D.R.forEach(([nm,kind,w,segs])=>{if(kind==='footway')return;for(const sg of segs){const [p,q]=sg,L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<3)continue;SEGS.push({nm:nm||'',kind,w,sg,p,L,dx:(q[0]-p[0])/L,dy:(q[1]-p[1])/L,zar:/Зарічна/.test(nm||'')})}});
@@ -366,15 +408,34 @@ function build(evid){FEN=[];
      for(const [ccw,base,top] of HD){let best=null,bd=26;for(const P of POLES){for(const v of ccw){const d=Math.hypot(v[0]-P[0],v[1]-P[1]);if(d<bd){bd=d;best=[P,v]}}}
        if(best){const [P,v]=best;wire([P[0],P[1],P[2]+7.6],[v[0],v[1],top-.25],.35)}}
 }
+    /* v5.2: the tramway on Dzerzhinsky Avenue: ballast bed with sleepers and two tracks between the carriageways, low kerbs,
+       centre poles every 32 m with arms to both tracks and the lamps of the avenue, and one contact wire over each track */
+    const TWL=[];
+    if(TW){const BED=[.5,.48,.44],SLP=[.36,.33,.29],RL=[.6,.6,.62],RLs=[.32,.3,.28],KB=[.68,.67,.63],PO=[.46,.48,.46];const [TX0,,TX1]=D.tb;
+      const P=(x,y,z)=>W(x,y,H(x,y)+z),hq2=(a,b,c,d,col)=>{tri3(a,b,c,col,0);tri3(a,c,d,col,0)};
+      for(let x=TX0;x<TX1-.05;x+=4){const xe=Math.min(TX1,x+4),m0=TW.mc(x),m1=TW.mc(xe);
+        hq2(P(x,m0-3.1,.335),P(xe,m1-3.1,.335),P(xe,m1+3.1,.335),P(x,m0+3.1,.335),BED);
+        for(const sd of [-1,1]){const a=P(x,m0+sd*3.1,.3),b=P(xe,m1+sd*3.1,.3);quad(a,b,P(xe,m1+sd*3.1,.45),P(x,m0+sd*3.1,.45),mix(KB,[0,0,0],.15),0);hq2(P(x,m0+sd*3.1,.45),P(xe,m1+sd*3.1,.45),P(xe,m1+sd*3.25,.45),P(x,m0+sd*3.25,.45),KB)}}
+      for(const tr of [TW.E,TW.W])for(let i=1;i<tr.length;i++){const [ax,ay]=tr[i-1],[bx,by]=tr[i],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,nx=-uy,ny=ux;
+        for(let t=.4;t<L;t+=1.4){const cx=ax+ux*t,cy=ay+uy*t;hq2(P(cx-ux*.11-nx*1.3,cy-uy*.11-ny*1.3,.36),P(cx+ux*.11-nx*1.3,cy+uy*.11-ny*1.3,.36),P(cx+ux*.11+nx*1.3,cy+uy*.11+ny*1.3,.36),P(cx-ux*.11+nx*1.3,cy-uy*.11+ny*1.3,.36),SLP)}
+        for(const g of [-.762,.762]){const a0=[ax+nx*g,ay+ny*g],b0=[bx+nx*g,by+ny*g];hq2(P(a0[0]-nx*.035,a0[1]-ny*.035,.43),P(b0[0]-nx*.035,b0[1]-ny*.035,.43),P(b0[0]+nx*.035,b0[1]+ny*.035,.43),P(a0[0]+nx*.035,a0[1]+ny*.035,.43),RL);quad(P(a0[0],a0[1],.35),P(b0[0],b0[1],.35),P(b0[0],b0[1],.43),P(a0[0],a0[1],.43),RLs,0)}}
+      /* centre poles: arms to both wires, a lamp on each */
+      const poles=[];for(let x=TX0+12;x<TX1-4;x+=32){const y=TW.mc(x),g=H(x,y);poles.push([x,y]);prism(x,y,g+.3,g+8.2,.14,PO,6);
+        box(x,y,0,1,TW.G+.5,.04,g+6.55,g+6.65,PO,0);for(const sd of [-1,1]){const wy=y+sd*TW.G;box(x,wy,1,0,.03,.03,g+6.05,g+6.6,[.25,.25,.25],0)}
+        box(x,y,1,0,.06,1.1,g+8.0,g+8.1,PO,0);for(const sd of [-1,1]){const ly=y+sd*1.1;box(x,ly,1,0,.25,.12,g+7.85,g+8.0,[.3,.3,.3],0);TWL.push(W(x,ly,g+7.2));const R=11,c=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];for(const [u,v] of c)LG.push(...W(x+u*R,ly+v*R,H(x+u*R,ly+v*R)+.36),u,v)}}
+      const WC2=C.dark?[.08,.08,.09]:[.15,.15,.16];
+      for(const tr of [TW.E,TW.W])for(let i=1;i<tr.length;i++){const [ax,ay]=tr[i-1],[bx,by]=tr[i];const za=H(ax,ay)+6.02,zb=H(bx,by)+6.02,r=.02;
+        quad(W(ax,ay,za-r),W(bx,by,zb-r),W(bx,by,zb+r),W(ax,ay,za+r),WC2,0);quad(W(ax,ay-r,za),W(bx,by-r,zb),W(bx,by+r,zb),W(ax,ay+r,za),WC2,0)}}
     /* street trees: poplars on the avenues, a mature tree now and then on the verges of the residential streets */
     for(const [nm,kind,w,segs] of D.R){if(kind==='footway'||kind==='service')continue;const av=/проспект/.test(nm||'');for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);if(L<1)continue;const dx=(q[0]-p[0])/L,dy=(q[1]-p[1])/L;
-      for(let t=4;t<L-2;t+=av?9:15)for(const sd of [-1,1]){if(!av&&rnd()<.6)continue;const o=av?w/2+3.3:w/2+1.75,x=p[0]+dx*t-dy*o*sd,y=p[1]+dy*t+dx*o*sd;if(av){if(free(x,y,1.2))tree(x,y,'poplar')}else{const ok=!FEN.some(([fa,fb])=>segD(x,y,fa,fb)<1.4)&&!BB.some(b=>inPoly(b.fp,x,y));if(ok)tree(x,y,'big')}}}}
+      for(let t=4;t<L-2;t+=av?9:15)for(const sd of [-1,1]){if(!av&&rnd()<.6)continue;const o=av?w/2+3.3:w/2+1.75,x=p[0]+dx*t-dy*o*sd,y=p[1]+dy*t+dx*o*sd;if(av){if(!(TW&&TW.inMedian(x,y,4.5))&&free(x,y,1.2))tree(x,y,'poplar')}else{const ok=!FEN.some(([fa,fb])=>segD(x,y,fa,fb)<1.4)&&!BB.some(b=>inPoly(b.fp,x,y));if(ok)tree(x,y,'big')}}}}
     /* yards: a fruit tree behind each private house, sometimes a big walnut or acacia too */
     for(const [ccw] of HD){let best=null;for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const [nx,ny,ux,uy,L]=outN(ccw,a,b);if(L<3)continue;const mx=(a[0]+b[0])/2+nx*5,my=(a[1]+b[1])/2+ny*5;let dr=1e9;for(const [,kind,w,segs] of D.R)for(const [p,q] of segs)dr=Math.min(dr,segD(mx,my,p,q));if(!best||dr>best[0])best=[dr,mx,my,ux,uy]}
       if(!best)continue;const [,mx,my,ux,uy]=best;const sh=(rnd()-.5)*4,x=mx+ux*sh,y=my+uy*sh;if(free(x,y,1.6))tree(x,y,'fruit');if(rnd()<.3){const x2=x+ux*5,y2=y+uy*5;if(free(x2,y2,2.4))tree(x2,y2,'big')}}
     /* the yards of the apartment blocks */
     for(const [ccw] of BKD)for(let i=0;i<ccw.length;i++){const a=ccw[i],b=ccw[(i+1)%ccw.length];const [nx,ny,ux,uy,L]=outN(ccw,a,b);if(L<10)continue;for(let t=4;t<L-3;t+=11){if(rnd()<.35)continue;const o=7+rnd()*4,x=a[0]+ux*t+nx*o,y=a[1]+uy*t+ny*o;if(free(x,y,2.6))tree(x,y,'big')}}
-    for(let i=0;i<LP.length;i+=3){const gx=LP[i],gy=-LP[i+2],gz=LP[i+1]-7.2;prism(gx,gy,gz-.2,gz+7.4,.09,[.36,.37,.38],4);quad(W(gx-.05,gy-.05,gz+7.1),W(gx+.05,gy+.05,gz+7.1),W(gx+.05,gy+.05,gz+7.3),W(gx-.05,gy-.05,gz+7.3),[.3,.3,.3],0)}}
+    for(let i=0;i<LP.length;i+=3){const gx=LP[i],gy=-LP[i+2],gz=LP[i+1]-7.2;prism(gx,gy,gz-.2,gz+7.4,.09,[.36,.37,.38],4);quad(W(gx-.05,gy-.05,gz+7.1),W(gx+.05,gy+.05,gz+7.1),W(gx+.05,gy+.05,gz+7.3),W(gx-.05,gy-.05,gz+7.3),[.3,.3,.3],0)}
+    for(const q of TWL)LP.push(...q);}
   /* panorama pins */
   const pin=[];for(const p of D.P){const g=H(p[5],p[6]);pin.push(...W(p[5],p[6],g+.3),...W(p[5],p[6],g+14))}
   G={LP:new Float32Array(LP),lpn:LP.length/3,LG:new Float32Array(LG),lgn:LG.length/5,F:new Float32Array(F),SK:new Float32Array(SK),sk:SK.length/4,P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(Cl),I:new Float32Array(I),n:P.length/3,L:new Float32Array(Lp),LC:new Float32Array(Lc),ln:Lp.length/3,H:new Float32Array(Hc),hn:Hc.length/3,pin:new Float32Array(pin),pn:pin.length/3};
@@ -440,6 +501,7 @@ const off=pr=>{for(let i=0;i<8;i++)gl.disableVertexAttribArray(i)};
 const TRF=(()=>{const lanes=[];
   D.R.forEach(([nm,kind,w,segs])=>{if(kind==='footway'||kind==='service')return;let cur=null;
     for(const [p,q] of segs){if(cur&&Math.hypot(cur[cur.length-1][0]-p[0],cur[cur.length-1][1]-p[1])<.6)cur.push(q);else{if(cur)lanes.push({pts:cur,kind,w,nm:nm||''});cur=[p,q]}}if(cur)lanes.push({pts:cur,kind,w,nm:nm||''})});
+  lanes.forEach(l=>{if(TW&&/Дзержинського/.test(l.nm)){const a=l.pts[0],b=l.pts[l.pts.length-1],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;l.ow=Math.sign(b[0]-a[0])*(my<TW.mc(mx)?1:-1)}});
   lanes.forEach(l=>{l.cum=[0];for(let i=1;i<l.pts.length;i++)l.cum.push(l.cum[i-1]+Math.hypot(l.pts[i][0]-l.pts[i-1][0],l.pts[i][1]-l.pts[i-1][1]));l.len=l.cum[l.cum.length-1];
     l.v=l.kind==='primary'?13:l.kind==='tertiary'?10:/Зарічна/.test(l.nm)?6:7.5});
   const at=(l,s)=>{s=Math.max(0,Math.min(l.len,s));let i=1;while(i<l.cum.length-1&&l.cum[i]<s)i++;const a=l.pts[i-1],b=l.pts[i],sl=(l.cum[i]-l.cum[i-1])||1,u=(s-l.cum[i-1])/sl;return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,(b[0]-a[0])/sl,(b[1]-a[1])/sl]};
@@ -448,7 +510,7 @@ const TRF=(()=>{const lanes=[];
   let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   const cars=[];const add=(l,dir,s,bus)=>cars.push({l,dir,s,v:l.v*.8,m:bus?VM.bus:(rnd()<.65?VM.sedan:VM.hatch),col:bus?[.93,.77,.18]:VPAINT[(rnd()*VPAINT.length)|0],bus:!!bus,half:bus?5.4:2.1,x:0,y:0,hx:1,hy:0});
   lanes.forEach(l=>{const per=l.kind==='primary'?65:l.kind==='tertiary'?130:300;const n=Math.max(l.kind==='residential'?0:1,Math.round(l.len/per));
-    for(const dir of [1,-1])for(let k=0;k<n;k++)add(l,dir,(k+.3+rnd()*.4)/n*l.len);
+    for(const dir of [1,-1]){if(l.ow&&dir!==l.ow)continue;for(let k=0;k<n;k++)add(l,dir,(k+.3+rnd()*.4)/n*l.len)}
     if(l.kind==='residential'&&n===0&&l.len>150)add(l,rnd()<.5?1:-1,l.len*rnd())});
   {const pl=lanes.filter(l=>l.kind==='primary').sort((a,b)=>b.len-a.len)[0];if(pl)add(pl,1,pl.len*.15,true)}
   const place=c=>{const [x,y,dx,dy]=at(c.l,c.s),o=c.l.w/4;if(c.dir>0){c.x=x+dy*o;c.y=y-dx*o;c.hx=dx;c.hy=dy}else{c.x=x-dy*o;c.y=y+dx*o;c.hx=-dx;c.hy=-dy}};
@@ -457,9 +519,10 @@ const TRF=(()=>{const lanes=[];
   const next=c=>{const E=c.dir>0?c.l.pts[c.l.pts.length-1]:c.l.pts[0];const opts=[];
     for(const l of lanes){if(l===c.l)continue;const a=l.pts[0],b=l.pts[l.pts.length-1];if(Math.hypot(a[0]-E[0],a[1]-E[1])<5)opts.push([l,1,0]);else if(Math.hypot(b[0]-E[0],b[1]-E[1])<5)opts.push([l,-1,l.len]);
       else for(let i=1;i<l.pts.length;i++){const p=l.pts[i-1],q=l.pts[i];if(segD(E[0],E[1],p,q)<6){const L=Math.hypot(q[0]-p[0],q[1]-p[1])||1,u=((E[0]-p[0])*(q[0]-p[0])+(E[1]-p[1])*(q[1]-p[1]))/(L*L),s=l.cum[i-1]+Math.max(0,Math.min(1,u))*L;if(s>8)opts.push([l,-1,s]);if(s<l.len-8)opts.push([l,1,s]);break}}}
+    for(let i=opts.length-1;i>=0;i--)if(opts[i][0].ow&&opts[i][1]!==opts[i][0].ow)opts.splice(i,1);
     if(c.bus){const keep=opts.filter(o=>o[0].kind==='primary');if(keep.length){const o=keep[0];c.l=o[0];c.dir=o[1];c.s=o[2];return}}
     if(opts.length&&!edge(E)){const o=opts[(rnd()*opts.length)|0];c.l=o[0];c.dir=o[1];c.s=o[2];return}
-    const pool=c.bus?entries.filter(e=>e[0].kind==='primary'):entries;const e=pool[(rnd()*pool.length)|0]||[c.l,-c.dir];c.l=e[0];c.dir=e[1];c.s=e[1]>0?0:c.l.len;c.v=c.l.v*.7};
+    const pool=(c.bus?entries.filter(e=>e[0].kind==='primary'):entries).filter(e=>!e[0].ow||e[1]===e[0].ow);const e=pool[(rnd()*pool.length)|0]||[c.l,-c.dir];c.l=e[0];c.dir=e[1];c.s=e[1]>0?0:c.l.len;c.v=c.l.v*.7};
   const step=dt=>{dt=Math.min(dt,.1);
     for(let i=0;i<cars.length;i++){const c=cars[i];let d=1e9;
       for(let j=0;j<cars.length;j++){if(j===i)continue;const o=cars[j],rx=o.x-c.x,ry=o.y-c.y,al=rx*c.hx+ry*c.hy;if(al<=0||al>c.half+o.half+16)continue;const lat=Math.abs(rx*c.hy-ry*c.hx);if(lat>2.1)continue;
@@ -477,13 +540,14 @@ void main(){float wx=o.x+r.x*p.x-r.y*p.y,wy=o.y+r.y*p.x+r.x*p.y;vec3 wp=vec3(wx,
 HP+`varying vec3 vn,vc;varying float vd;uniform vec3 ld,fog,body;uniform vec2 fr;uniform float nf;
 void main(){vec3 N=normalize(vn);vec3 col=vc.x<0.?body:min(vc,vec3(1.));float df=max(dot(N,ld),0.);vec3 c=col*(.5+.2*(.55+.45*N.y)+.5*df*(1.-nf))*mix(1.,.38,nf);
 if(vc.x>1.2)c=mix(c,min(vc,vec3(1.)),nf);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(c,fog,f*.85),1.);}`);
-    for(const k of ['sedan','hatch','bus']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
+    for(const k of ['sedan','hatch','bus','tram']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
   gl.useProgram(PCar);const u=nm=>gl.getUniformLocation(PCar,nm);gl.uniformMatrix4fv(u('m'),false,MVP);gl.uniform3fv(u('eye'),EYE);gl.uniform3fv(u('ld'),sunDir());gl.uniform3fv(u('fog'),fogc);gl.uniform2f(u('fr'),fr[0],fr[1]);gl.uniform1f(u('nf'),NF);
   const uo=u('o'),ur=u('r'),ub=u('body');
   for(const k of ['sedan','hatch','bus']){const M=VM[k];let bound=false;
     for(const c of TRF.cars){if(c.m!==M)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
       gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.3);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
-    if(bound)off()}}
+    if(bound)off()}
+  if(TRAMS){attr(PCar,'p','vmtramp',3);attr(PCar,'n','vmtramn',3);attr(PCar,'c','vmtramc',3);for(const c of TRAMS.cars){if(!c.on)continue;gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.43);gl.uniform2f(ur,c.hx,c.hy);gl.drawArrays(gl.TRIANGLES,0,VM.tram.cnt)}off()}}
 
 /* ---------- math ---------- */
 function persp(f,a,n,fa){const t=1/Math.tan(f/2);return[t/a,0,0,0,0,t,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0]}
@@ -600,7 +664,7 @@ document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{resize();fsLab
 addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('fs')){box.classList.remove('fs');document.documentElement.classList.remove('q3-fs');resize();fsLabel()}});
 /* ---------- loop ---------- */
 function tick(now){requestAnimationFrame(tick);if(!visible)return;
-  if(inited&&fac&&!evid&&!reduce){const t=now||performance.now(),dt=trT?(t-trT)/1000:0;if(t-trT>=45){TRF.step(dt);trT=t;dirty=true}}else trT=0;
+  if(inited&&fac&&!evid&&!reduce){const t=now||performance.now(),dt=trT?(t-trT)/1000:0;if(t-trT>=45){TRF.step(dt);if(TRAMS)TRAMS.step(dt);trT=t;dirty=true}}else trT=0;
   if(goal){const k=.12;cam.d+= (goal.d-cam.d)*k;cam.ph+=(goal.ph-cam.ph)*k;let dt=goal.th-cam.th;dt=Math.atan2(Math.sin(dt),Math.cos(dt));cam.th+=dt*k;for(let i=0;i<3;i++)cam.t[i]+=(goal.t[i]-cam.t[i])*k;if(Math.abs(goal.d-cam.d)<.5&&Math.abs(dt)<.002)goal=null;dirty=true}
   if(auto){cam.th+=.0012;dirty=true}
   if(dirty){dirty=false;draw()}}
