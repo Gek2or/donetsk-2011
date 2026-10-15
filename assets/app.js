@@ -721,6 +721,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 ;(()=>{
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-14-v50',d:'2026-10-14',ty:'site',v:'v5.0',cta:['model.html#q3d','q74']},
  {id:'2026-10-14-v49',d:'2026-10-14',ty:'site',v:'v4.9',cta:['model.html#q3d','q74']},
  {id:'2026-10-14-v48',d:'2026-10-14',ty:'site',v:'v4.8',cta:['model.html#q3d','q74']},
  {id:'2026-10-14-v47',d:'2026-10-14',ty:'site',v:'v4.7',cta:['model.html#q3d','q74']},
