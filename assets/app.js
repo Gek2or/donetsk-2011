@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-17-v531',d:'2026-10-17',ty:'site',v:'v5.3.1',cta:['sound.html#radio','rd0']},
  {id:'2026-10-16-v53',d:'2026-10-16',ty:'site',v:'v5.3'},
  {id:'2026-10-15-v52',d:'2026-10-15',ty:'site',v:'v5.2',cta:['model.html#q3d','q74']},
  {id:'2026-10-15-v51',d:'2026-10-15',ty:'site',v:'v5.1',cta:['model.html#q3d','q74']},
@@ -1180,7 +1181,7 @@ function ui(){needle.style.left=fx(f)+'%';knob.style.setProperty('--r',((f-MIN)/
   if(b>.45){nowEl.textContent=s.f.toFixed(1)+' FM';nameEl.textContent=T('rs'+s.k);textEl.textContent=T('rc'+s.k);cred(s.k);const a=sec.querySelector(`[data-st="${s.k}"]`);link.href=a?a.getAttribute('href'):'#';link.hidden=false;card.classList.add('tuned')}
   else{nowEl.textContent=f.toFixed(1)+' FM';nameEl.textContent='· · ·';textEl.textContent=T('rd7');link.hidden=true;card.classList.remove('tuned');cred(0)}}
 const credEl=$('#rdCred');const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function cred(k){if(!credEl)return;const L=recMeta().filter(([,e])=>e.station===k);if(!k||!L.length){credEl.hidden=true;credEl.innerHTML='';return}
+function cred(k){if(!credEl)return;const L=recMeta().filter(([,e])=>e.station===k);if(k===4){credEl.textContent=T('rd13');credEl.hidden=false;return}if(!k||!L.length){credEl.hidden=true;credEl.innerHTML='';return}
   credEl.innerHTML=esc(T('rd11'))+': '+L.map(([,e])=>`<a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(e.file.replace(/ /g,'_'))}" target="_blank" rel="noopener">${esc(e.author)}</a>${e.place?', '+esc(e.place):''}, ${e.year} · `+(e.license_url?`<a href="${esc(e.license_url)}" target="_blank" rel="noopener">${esc(e.license)}</a>`:esc(e.license))).join('; ')+(REAL[k]==='failed'?' · '+esc(T('rd12')):'');credEl.hidden=false}
 /* ---------- audio ---------- */
 function noiseBuf(sec_,brown){const sr=AC.sampleRate,b=AC.createBuffer(1,sr*sec_,sr),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b}
@@ -1220,9 +1221,17 @@ function build(){AC=new (window.AudioContext||window.webkitAudioContext)();maste
   {const g=SYN[3];const bed=gain(.35,g);loop(brown,filt('bandpass',500,.7,bed));const mid=gain(.14,g);loop(white,filt('bandpass',1100,1.2,mid));let n=0;
    EV[3]=()=>{n++;const t=AC.currentTime;if(n%60===0){mid.gain.cancelScheduledValues(t);mid.gain.setTargetAtTime(.55,t,.4);mid.gain.setTargetAtTime(.14,t+2.4,.8)}
      if(n%16<9&&n%2===0){for(let i=0;i<14;i++)burst(g,.02,'bandpass',1500+Math.random()*1500,.12,Math.random()*.06,1.5)}}}
-  /* 4 time signal: carrier hum + six pips each minute window (every 10 s here) */
-  {const g=SYN[4];const h=AC.createOscillator();h.frequency.value=50;h.connect(gain(.03,g));h.start();let n=0;
-   EV[4]=()=>{n++;if(n%100===1){for(let i=0;i<5;i++)tone(g,1000,.1,.25,i);tone(g,1000,.5,.25,5)}}}
+  /* 4 time signal, v5.3.1: the six pips to their standard, 1000 Hz, 0.1 s each, one a second; the start of the sixth marks the moment.
+     They are aligned to this device's clock: the sixth pip falls on :00 and :30 of every minute. Heard the way most Donetsk kitchens
+     heard them, through the wall speaker of the wired radio: a narrow band, a little 50 Hz hum and line hiss. */
+  {const g=SYN[4];const spk=filt('bandpass',1150,.55,gain(1,g));const shp=AC.createWaveShaper();{const n=1024,c=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(1.8*x)/Math.tanh(1.8)}shp.curve=c}
+   const lp=filt('lowpass',4800,null,spk);shp.connect(filt('highpass',180,null,lp));
+   const h=AC.createOscillator();h.frequency.value=50;const hh=AC.createOscillator();hh.frequency.value=100;h.connect(gain(.012,g));hh.connect(gain(.006,g));h.start();hh.start();
+   loop(white,filt('lowpass',3800,null,filt('highpass',300,null,gain(.012,g))));
+   let next=0;const pip=at=>{const o=AC.createOscillator(),e=AC.createGain();o.type='sine';o.frequency.value=1000;e.gain.setValueAtTime(0,at);e.gain.linearRampToValueAtTime(.2,at+.003);e.gain.setValueAtTime(.2,at+.097);e.gain.linearRampToValueAtTime(0,at+.1);o.connect(e).connect(shp);o.start(at);o.stop(at+.12)};
+   EV[4]=()=>{const nowMs=Date.now(),ac=AC.currentTime;if(next>ac)return;
+     /* the next moment whose wall-clock seconds are :00 or :30, at least 6 s ahead so all six pips fit */
+     let mark=Math.ceil((nowMs+6000)/30000)*30000;const t6=ac+(mark-nowMs)/1000;for(let i=0;i<6;i++)pip(t6-5+i);next=t6+.5}}
   /* 5 night on Zarichna: wind in trees, far traffic, distant train */
   {const g=SYN[5];const w=gain(.2,g);const wf=filt('bandpass',650,.5,w);loop(white,wf);loop(brown,filt('lowpass',90,null,gain(.25,g)));let n=0;
    EV[5]=()=>{n++;const t=AC.currentTime;wf.frequency.setTargetAtTime(500+300*Math.sin(n/23)+120*Math.sin(n/7),t,.5);w.gain.setTargetAtTime(.12+.1*(1+Math.sin(n/17))/2,t,.6);

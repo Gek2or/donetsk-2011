@@ -40,19 +40,6 @@
    "gain": 1.0,
    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/WWS_FootballAustriavs.Sweden.ogg"
   },
-  "timesignal": {
-   "station": 4,
-   "file": "2013-03-31 1948z RWM Time Signal.ogg",
-   "author": "Samslipknot",
-   "license": "CC0",
-   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-   "place": "RWM, Moscow region",
-   "year": 2013,
-   "start": 0,
-   "len": 30,
-   "gain": 1.0,
-   "url": "https://upload.wikimedia.org/wikipedia/commons/a/a5/2013-03-31_1948z_RWM_Time_Signal.ogg"
-  },
   "pines": {
    "station": 5,
    "file": "Wind in Swedish pine forest at 25 mps.ogg",
