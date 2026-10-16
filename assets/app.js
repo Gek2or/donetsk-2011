@@ -30,7 +30,9 @@ function pickLang(){
   let want=null;
   try{const q=new URLSearchParams(location.search).get('lang');if(LANGS.includes(q))want=q}catch(e){}
   const h=(location.hash||'').slice(1);if(!want&&LANGS.includes(h))want=h;
-  if(!want){try{const s=localStorage.getItem('d11-lang-pick');if(LANGS.includes(s))want=s}catch(e){}}
+  /* v5.3: the saved choice only steers someone who arrives at the root address from outside; an explicit /uk/ /en/ /fi/ link always opens as sent */
+  if(!want&&PLANG==='ru'){let inside=false;try{inside=!!document.referrer&&new URL(document.referrer).origin===location.origin}catch(e){}
+    if(!inside){try{const s=localStorage.getItem('d11-lang-pick');if(LANGS.includes(s))want=s}catch(e){}}}
   if(want&&want!==PLANG){location.replace(new URL(langURL(want,''),document.baseURI).href+(LANGS.includes(h)?'':location.hash));return PLANG}
   if(want===PLANG&&LANGS.includes(h)&&history.replaceState)history.replaceState(null,'',location.pathname);
   return PLANG;
@@ -154,17 +156,17 @@ function apply(lang){
   const md=document.querySelector('meta[name="description"]');if(md&&!document.body.dataset.pt)md.content=L.meta.desc;
   document.querySelectorAll('[data-t]').forEach(el=>{const v=S[el.dataset.t];if(v!=null)el.innerHTML=v});
   document.querySelectorAll('[data-ta]').forEach(el=>el.dataset.ta.split(' ').forEach(pair=>{const [a,k]=pair.split(':');if(S[k]!=null)el.setAttribute(a,S[k])}));
-  document.querySelectorAll('.langs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  document.querySelectorAll('.langs [data-lang]').forEach(b=>{if(b.dataset.lang===lang)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current')});
   render();
   window.__d11S=S;dispatchEvent(new CustomEvent('d11lang',{detail:{S}}));
 }
-document.querySelectorAll('.langs button').forEach(b=>b.addEventListener('click',()=>{const l=b.dataset.lang;try{localStorage.setItem('d11-lang-pick',l)}catch(e){}if(l!==PLANG)location.href=new URL(langURL(l),document.baseURI).href}));
+document.querySelectorAll('.langs [data-lang]').forEach(b=>b.addEventListener('click',ev=>{ev.preventDefault();const l=b.dataset.lang;try{localStorage.setItem('d11-lang-pick',l)}catch(e){}if(l!==PLANG)location.href=new URL(langURL(l),document.baseURI).href}));
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(LANGS.includes(h)&&h!==PLANG)location.replace(new URL(langURL(h,''),document.baseURI).href)});
 /* pages in /uk/ /en/ /fi/ use <base href="../">: keep in-page anchors on this page and page links in this language */
 if(PLANG!=='ru'){
   const PG=/^(index|city|model|dev|updates|press|help|sound|postcard)\.html/;
-  const fix=root=>{(root.querySelectorAll?root:document).querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(PG.test(h))a.setAttribute('href',PLANG+'/'+h)})};
-  fix(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.tagName==='A'&&PG.test(n.getAttribute('href')||''))n.setAttribute('href',PLANG+'/'+n.getAttribute('href'));fix(n)}}))).observe(document.body,{childList:true,subtree:true});
+  const fix=root=>{(root.querySelectorAll?root:document).querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(PG.test(h)&&!a.hasAttribute('hreflang'))a.setAttribute('href',PLANG+'/'+h)})};
+  fix(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.tagName==='A'&&!n.hasAttribute('hreflang')&&PG.test(n.getAttribute('href')||''))n.setAttribute('href',PLANG+'/'+n.getAttribute('href'));fix(n)}}))).observe(document.body,{childList:true,subtree:true});
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey)return;const id=a.getAttribute('href').slice(1);e.preventDefault();
     const el=id?document.getElementById(id):null;if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});else if(!id)scrollTo({top:0,behavior:'smooth'});
     if(history.pushState)history.pushState(null,'',location.pathname+location.search+(id?'#'+id:''))});
@@ -324,7 +326,7 @@ function wire(root){(root||document).querySelectorAll('.cmp:not([data-w])').forE
 window.__cmp=wire;wire();
 const ba=document.getElementById('ba');
 if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySelector('.cmp-b');
-  ba.querySelectorAll('.ba-tabs button').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.k;a.src='img/ue2/'+k+'.jpg';b.src='img/ue/'+k+'.jpg';f.style.setProperty('--p','50%');f.querySelector('.cmp-r').value='50';ba.querySelectorAll('.ba-tabs button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)))}))}
+  ba.querySelectorAll('.ba-tabs button').forEach(btn=>btn.addEventListener('click',()=>{const k=btn.dataset.k;a.removeAttribute('srcset');b.removeAttribute('srcset');a.src='img/ue2/'+k+'.jpg';b.src='img/ue/'+k+'.jpg';f.style.setProperty('--p','50%');f.querySelector('.cmp-r').value='50';ba.querySelectorAll('.ba-tabs button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)))}))}
 })();
 /* ---------- v3.4: hero video preview ---------- */
 (function(){const v=document.querySelector('.hero-vid video');if(!v)return;
@@ -436,9 +438,12 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   /* one visit per device per day, on any page */
   const day=new Date().toISOString().slice(0,10);
   let counted=Promise.resolve();
-  if(LS.g('d11-visit')!==day){LS.s('d11-visit',day);
+  /* v5.3: a reader can opt out; nothing is sent to country.is or Abacus for them */
+  const off=LS.g('d11-nocount')==='1';
+  if(!off&&LS.g('d11-visit')!==day){LS.s('d11-visit',day);
     counted=Promise.all([hit('visits'),fetch('https://api.country.is/').then(r=>r.ok?r.json():null).then(j=>{const c=(j&&j.country||'').toUpperCase();if(!/^[A-Z]{2}$/.test(c))return;LS.s('d11-cc',c);return Promise.all([hit('c-'+c),LIST.includes(c)?null:hit('c-other')])}).catch(()=>null)])}
   const box=document.getElementById('guests');if(!box)return;
+  const ob=box.querySelector('#gvOff');if(ob){ob.checked=off;ob.addEventListener('change',()=>{if(ob.checked)LS.s('d11-nocount','1');else{try{localStorage.removeItem('d11-nocount')}catch(e){}}})}
   const list=box.querySelector('#gvList'),nEl=box.querySelector('#gvN'),cEl=box.querySelector('#gvC'),me=box.querySelector('#gvMe');
   let data=null;
   const lang=()=>(document.documentElement.lang||'ru').slice(0,2);
@@ -575,9 +580,9 @@ const load=()=>{const l=lang();if(IDX&&IL===l)return Promise.resolve(IDX);if(bus
 const find=(ns,stem)=>{let i=ns.indexOf(stem);while(i>-1){if(i===0||!W.test(ns[i-1]))return i;i=ns.indexOf(stem,i+1)}return -1};
 const mark=(txt,ntxt,stems)=>{const hit=new Array(txt.length).fill(0);for(const s of stems){let i=ntxt.indexOf(s);while(i>-1){if(i===0||!W.test(ntxt[i-1])){let j=i+s.length;while(j<txt.length&&W.test(ntxt[j])&&j-i<s.length+3)j++;for(let k=i;k<j;k++)hit[k]=1}i=ntxt.indexOf(s,i+1)}}
   let o='',on=0;for(let k=0;k<txt.length;k++){if(hit[k]&&!on){o+='<mark>';on=1}if(!hit[k]&&on){o+='</mark>';on=0}o+=esc(txt[k])}return o+(on?'</mark>':'')};
-function search(str){const toks=norm(str).split(/[^\p{L}\p{N}]+/u).filter(t=>t.length>1||/\d/.test(t));if(!toks.length)return null;
+function search(str,LIST){LIST=LIST||IDX;const toks=norm(str).split(/[^\p{L}\p{N}]+/u).filter(t=>t.length>1||/\d/.test(t));if(!toks.length)return null;
   const stems=toks.map(t=>t.length>=5?t.slice(0,t.length-2):t);
-  const out=[];for(const e of IDX){let sc=0,ok=true;
+  const out=[];for(const e of LIST){let sc=0,ok=true;
     for(let n=0;n<stems.length;n++){const s=stems[n];const a=find(e.nh,s),b=find(e.np,s),c=find(e.nx,s);if(a<0&&b<0&&c<0){ok=false;break}
       sc+=(a>-1?10:0)+(b>-1?3:0)+(c>-1?2:0)+((e.nh+' '+e.nx).includes(toks[n])?1:0)}
     if(ok)out.push([sc+(e.k?0:.5),e])}
@@ -591,7 +596,18 @@ function render(){const v=q.value.trim();if(!v){R.innerHTML='';N.textContent='';
   if(!IDX){N.textContent=T('sr8');load().then(render);return}
   const r=search(v);if(!r){R.innerHTML='';N.textContent='';return}
   N.textContent=r.res.length?T('sr4').replace('{n}',r.res.length):T('sr2');
-  R.innerHTML=r.res.map(e=>`<li><a href="${esc(e.u)}"${e.ph!=null?` data-ph="${e.ph}"`:''} class="${e.ph!=null?'ph':''}">${e.ph!=null?thumb(e.ph):''}<span class="srch-m mono">${esc(e.p)}${e.k?' · '+esc(T(e.k)):''}${e.v?' · '+esc(e.v):''}</span><b>${mark(e.h,e.nh,r.stems)}</b>${e.x?`<span class="srch-s">${snip(e,r.stems)}</span>`:''}</a></li>`).join('')}
+  R.innerHTML=r.res.map(e=>item(e,r.stems)).join('');
+  if(!r.res.length)other(v,r.stems)}
+const item=(e,stems,lg)=>`<li><a href="${esc(e.u)}"${e.ph!=null&&!lg?` data-ph="${e.ph}"`:''} class="${e.ph!=null&&!lg?'ph':''}"${lg?` hreflang="${lg}" lang="${lg}"`:''}>${e.ph!=null&&!lg?thumb(e.ph):''}<span class="srch-m mono">${lg?lg.toUpperCase()+' · ':''}${esc(e.p)}${e.k&&!lg?' · '+esc(T(e.k)):''}${e.v?' · '+esc(e.v):''}</span><b>${mark(e.h,e.nh,stems)}</b>${e.x?`<span class="srch-s">${snip(e,stems)}</span>`:''}</a></li>`;
+/* v5.3: nothing in this language? look through the other three and say so */
+const OTH={},OLAB={ru:'Нашлось на других языках',uk:'Знайшлося іншими мовами',en:'Found in other languages',fi:'Löytyi muilla kielillä'};
+const loadL=l=>OTH[l]||(OTH[l]=fetch(new URL(`assets/search-${l}.json`,document.baseURI)).then(r=>r.json()).then(d=>d.map(e=>({...e,nh:norm(e.h),nx:norm(e.x),np:norm(e.p)}))).catch(()=>[]));
+function other(v,stems){const me=lang(),ls=['ru','uk','en','fi'].filter(x=>x!==me);
+  Promise.all(ls.map(loadL)).then(lists=>{if(q.value.trim()!==v)return;const hits=[];
+    lists.forEach((L,n)=>{const r=search(v,L);if(r)r.res.slice(0,6).forEach((e,k)=>hits.push([k,ls[n],e]))});
+    if(!hits.length)return;hits.sort((a,b)=>a[0]-b[0]);
+    N.textContent=T('sr2')+' · '+(OLAB[me]||OLAB.en)+': '+hits.length;
+    R.innerHTML=hits.slice(0,12).map(([,lg,e])=>item(e,stems,lg)).join('')})}
 dlg.querySelector('form').addEventListener('submit',e=>{if(e.submitter&&e.submitter.classList.contains('srch-x'))return;e.preventDefault()});
 let tm=0;q.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(render,90)});
 const open=()=>{load();if(!dlg.open)dlg.showModal();q.focus();q.select()};
@@ -719,8 +735,11 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 })();
 
 ;(()=>{
+/* v5.3: screenshots come in 480/960 webp copies; RSET is filled at build time */
+const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-16-v53',d:'2026-10-16',ty:'site',v:'v5.3'},
  {id:'2026-10-15-v52',d:'2026-10-15',ty:'site',v:'v5.2',cta:['model.html#q3d','q74']},
  {id:'2026-10-15-v51',d:'2026-10-15',ty:'site',v:'v5.1',cta:['model.html#q3d','q74']},
  {id:'2026-10-14-v50',d:'2026-10-14',ty:'site',v:'v5.0',cta:['model.html#q3d','q74']},
@@ -809,7 +828,7 @@ function draw(){if(!list)return;const vis=shown();let html='',m='';
 <header class="upd-h"><time class="upd-date" datetime="${e.d}">${fmtD(e.d)}</time><span class="upd-v mono">${esc(T(TY[e.ty]))} · ${esc(e.v)}</span>${nw?`<span class="upd-new mono">${esc(T('u34'))}</span>`:''}
 <span class="upd-act"><button type="button" class="upd-share" data-id="${e.id}" aria-label="${esc(T('u18'))}" title="${esc(T('u18'))}">#</button>${body?`<button type="button" class="upd-tog" data-id="${e.id}" aria-expanded="${op}" aria-controls="ub-${e.id}"><span>${esc(T(op?'u16':'u15'))}</span><i aria-hidden="true"></i></button>`:''}</span></header>
 <h3>${esc(t.t)}</h3>${t.s?`<p class="upd-s">${esc(t.s)}</p>`:''}
-${body?`<div class="upd-body${e.img?' has-img':''}" id="ub-${e.id}"${op?'':' hidden'}>${e.cmp?`<figure class="cmp upd-cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/${e.cmp}.jpg" alt="" loading="lazy"><img class="cmp-b" src="img/ue/${e.cmp}.jpg" alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono">${esc(T('cm1'))}</span><span class="cmp-l r mono">${esc(T('cm2'))}</span><input class="cmp-r" type="range" min="0" max="100" value="50" aria-label="${esc(T('cm3'))}"></div><figcaption class="mono">${esc(T('cm4'))}</figcaption></figure>`:''}${e.img?`<figure class="upd-img"><img src="${e.img}" alt="" loading="lazy"><figcaption class="mono">${esc(T(e.lab||'rn1'))}</figcaption></figure>`:''}${lists(t)}${e.cta?`<a class="upd-cta" href="${e.cta[0]}">${esc(T(e.cta[1]))}</a>`:''}</div>`:''}
+${body?`<div class="upd-body${e.img?' has-img':''}" id="ub-${e.id}"${op?'':' hidden'}>${e.cmp?`<figure class="cmp upd-cmp" style="--p:50%"><div class="cmp-box"><img class="cmp-a" src="img/ue2/${e.cmp}.jpg"${RS('img/ue2/'+e.cmp+'.jpg','(max-width: 760px) 92vw, 1080px')} alt="" loading="lazy"><img class="cmp-b" src="img/ue/${e.cmp}.jpg"${RS('img/ue/'+e.cmp+'.jpg','(max-width: 760px) 92vw, 1080px')} alt="" loading="lazy"><i class="cmp-h" aria-hidden="true"></i><span class="cmp-l l mono">${esc(T('cm1'))}</span><span class="cmp-l r mono">${esc(T('cm2'))}</span><input class="cmp-r" type="range" min="0" max="100" value="50" aria-label="${esc(T('cm3'))}"></div><figcaption class="mono">${esc(T('cm4'))}</figcaption></figure>`:''}${e.img?`<figure class="upd-img"><img src="${e.img}"${RS(e.img,'(max-width: 760px) 74vw, 520px')} alt="" loading="lazy"><figcaption class="mono">${esc(T(e.lab||'rn1'))}</figcaption></figure>`:''}${lists(t)}${e.cta?`<a class="upd-cta" href="${e.cta[0]}">${esc(T(e.cta[1]))}</a>`:''}</div>`:''}
 ${react(e)}
 </div></li>`});
   list.innerHTML=html;wireReact();if(window.__cmp)window.__cmp(list);
@@ -835,8 +854,10 @@ ${offline.v?`<span class="b-off mono">${esc(T('ur5'))}</span>`:''}</div>`}
 const get=k=>fetch(`${API}/get/${NS}/${k}`).then(r=>r.status===404?{value:0}:(r.ok?r.json():Promise.reject(r.status))).then(j=>+j.value||0);
 const hit=k=>fetch(`${API}/hit/${NS}/${k}`).then(r=>r.ok?r.json():Promise.reject(r.status));
 const loading=new Set();
-function load(id){if(CNT[id]||loading.has(id))return;loading.add(id);
-  Promise.all(['l','lx','d','dx'].map(s=>get(`${id}-${s}`))).then(([l,lx,d,dx])=>{CNT[id]={l:Math.max(0,l-lx),d:Math.max(0,d-dx)};paint(id)}).catch(()=>{offline.v=true;paint(id)}).finally(()=>loading.delete(id))}
+/* v5.3: a failed request is remembered, so a counter service that is down or blocked is asked once per card, not in a loop */
+const failed=new Set();
+function load(id){if(CNT[id]||loading.has(id)||failed.has(id))return;if(offline.v){failed.add(id);paint(id);return}loading.add(id);
+  Promise.all(['l','lx','d','dx'].map(s=>get(`${id}-${s}`))).then(([l,lx,d,dx])=>{CNT[id]={l:Math.max(0,l-lx),d:Math.max(0,d-dx)};loading.delete(id);paint(id)}).catch(()=>{offline.v=true;failed.add(id);loading.delete(id);paint(id)})}
 function paint(id){const box=list&&list.querySelector(`.upd-react[data-id="${id}"]`);if(!box)return;const e=E.find(x=>x.id===id);const tmp=document.createElement('div');tmp.innerHTML=react(e);box.replaceWith(tmp.firstElementChild);wireReact()}
 let io=null;
 function wireReact(){if(!list)return;
@@ -1133,7 +1154,7 @@ window.__tram={jump,state:()=>({t,at,playing,L})};
 })();
 
 ;(()=>{
-/* ---------- v4.3: radio "Donetsk 2011" — six stations synthesised in the browser ---------- */
+/* ---------- v4.3: radio "Donetsk 2011"; v5.3: real field recordings, synthesis only as a stand-in ---------- */
 const sec=document.getElementById('radio');if(!sec)return;
 const $=s=>sec.querySelector(s);
 const tune=$('#rdTune'),vol=$('#rdVol'),pow=$('#rdPow'),knob=$('#rdKnob'),needle=$('.rd-needle'),freqEl=$('#rdFreq'),card=$('.rd-card'),nowEl=$('#rdNow'),nameEl=$('#rdName'),textEl=$('#rdText'),link=$('#rdLink'),rd=$('#rd');
@@ -1156,8 +1177,11 @@ function ui(){needle.style.left=fx(f)+'%';knob.style.setProperty('--r',((f-MIN)/
   const [s,b]=station();rd.style.setProperty('--sig',on?b.toFixed(2):0);
   tune.setAttribute('aria-valuetext',`${f.toFixed(1)} FM${b>.5?' — '+T('rs'+s.k):''}`);
   if(!on){nowEl.textContent='';nameEl.textContent=T('rd0')+' · '+f.toFixed(1)+' FM';textEl.textContent=T('rd9');link.hidden=true;card.classList.remove('tuned');return}
-  if(b>.45){nowEl.textContent=s.f.toFixed(1)+' FM';nameEl.textContent=T('rs'+s.k);textEl.textContent=T('rc'+s.k);const a=sec.querySelector(`[data-st="${s.k}"]`);link.href=a?a.getAttribute('href'):'#';link.hidden=false;card.classList.add('tuned')}
-  else{nowEl.textContent=f.toFixed(1)+' FM';nameEl.textContent='· · ·';textEl.textContent=T('rd7');link.hidden=true;card.classList.remove('tuned')}}
+  if(b>.45){nowEl.textContent=s.f.toFixed(1)+' FM';nameEl.textContent=T('rs'+s.k);textEl.textContent=T('rc'+s.k);cred(s.k);const a=sec.querySelector(`[data-st="${s.k}"]`);link.href=a?a.getAttribute('href'):'#';link.hidden=false;card.classList.add('tuned')}
+  else{nowEl.textContent=f.toFixed(1)+' FM';nameEl.textContent='· · ·';textEl.textContent=T('rd7');link.hidden=true;card.classList.remove('tuned');cred(0)}}
+const credEl=$('#rdCred');const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function cred(k){if(!credEl)return;const L=recMeta().filter(([,e])=>e.station===k);if(!k||!L.length){credEl.hidden=true;credEl.innerHTML='';return}
+  credEl.innerHTML=esc(T('rd11'))+': '+L.map(([,e])=>`<a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(e.file.replace(/ /g,'_'))}" target="_blank" rel="noopener">${esc(e.author)}</a>${e.place?', '+esc(e.place):''}, ${e.year} · `+(e.license_url?`<a href="${esc(e.license_url)}" target="_blank" rel="noopener">${esc(e.license)}</a>`:esc(e.license))).join('; ')+(REAL[k]==='failed'?' · '+esc(T('rd12')):'');credEl.hidden=false}
 /* ---------- audio ---------- */
 function noiseBuf(sec_,brown){const sr=AC.sampleRate,b=AC.createBuffer(1,sr*sec_,sr),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b}
 function loop(buf,dest){const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.connect(dest);s.start(AC.currentTime+Math.random()*.1);return s}
@@ -1167,31 +1191,46 @@ function burst(dest,dur,type,fr,v,at=0,q){const sr=AC.sampleRate,len=Math.max(1,
   const s=AC.createBufferSource();s.buffer=b;const fl=AC.createBiquadFilter();fl.type=type;fl.frequency.value=fr;if(q)fl.Q.value=q;const g=AC.createGain();g.gain.value=v;s.connect(fl).connect(g).connect(dest);s.start(AC.currentTime+at)}
 function tone(dest,fr,dur,v,at=0,type='sine'){const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime+at;o.type=type;o.frequency.value=fr;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.01);g.gain.setValueAtTime(v,t0+Math.max(.012,dur-.02));g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g).connect(dest);o.start(t0);o.stop(t0+dur+.05)}
 const EV={};/* per-station event schedulers, run only when audible */
+/* v5.3: real field recordings. Each station plays a freely licensed recording from Wikimedia Commons (cached in sound/radio/ by the site's
+   GitHub workflow, or straight from Commons until the cache exists); the synthesised sound is only a stand-in while it loads or if it fails. */
+const SYN={},REAL={},REC={items:null,have:[]};
+const recMeta=()=>REC.items?Object.entries(REC.items).filter(([,e])=>e.station):[];
+fetch('sound/radio.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.items){REC.items=j.items;ui()}}).catch(()=>{});
+fetch('photos/radio/have.json',{cache:'no-cache'}).then(r=>r.ok?r.json():[]).then(h=>{REC.have=Array.isArray(h)?h:[]}).catch(()=>{});
+const commons=n=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(n.replace(/ /g,'_'));
+async function decodeFrom(urls){for(const u of urls){try{const r=await fetch(u);if(!r.ok)continue;const b=await r.arrayBuffer();return await new Promise((ok,no)=>{const p=AC.decodeAudioData(b,ok,no);if(p&&p.then)p.then(ok,no)})}catch(e){}}return null}
+function want(k){if(!AC||!REC.items||REAL[k])return;const layers=recMeta().filter(([,e])=>e.station===k);if(!layers.length)return;REAL[k]='loading';
+  const bus=gain(0,G[k]);const hp=filt('highpass',90,null,bus);
+  Promise.all(layers.map(([id,e])=>decodeFrom([...(REC.have.includes(id)?[`photos/radio/${id}.mp3`]:[]),e.url||commons(e.file)]).then(buf=>{if(!buf)return false;
+      /* level every recording to the same loudness (the raw Commons files differ by 30 dB) */let ss=0,nn=0;for(let c=0;c<buf.numberOfChannels;c++){const d=buf.getChannelData(c);for(let i=0;i<d.length;i+=64){ss+=d[i]*d[i];nn++}}const rms=Math.sqrt(ss/Math.max(1,nn))||.1;
+      let dest=gain((e.gain||1)*Math.max(.2,Math.min(40,.1/rms)),hp);if(e.lowpass)dest=filt('lowpass',e.lowpass,null,dest);
+      const src=AC.createBufferSource();src.buffer=buf;src.loop=true;src.connect(dest);src.start(AC.currentTime+.05,Math.random()*buf.duration*.8);return true})))
+  .then(ok=>{if(!ok.some(Boolean)){REAL[k]='failed';ui();return}REAL[k]='on';const t=AC.currentTime;bus.gain.setTargetAtTime(1,t,.4);SYN[k].gain.setTargetAtTime(0,t,.3);EV[k]=null;ui()})}
 function build(){AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=0;an=AC.createAnalyser();an.fftSize=512;master.connect(an);an.connect(AC.destination);
   const white=noiseBuf(2,false),brown=noiseBuf(3,true);
   staticG=gain(0,master);const sb=filt('bandpass',2600,.6,staticG);loop(white,sb);const crackle=gain(1,staticG);EV.static=()=>{if(Math.random()<.5)burst(crackle,.004,'highpass',3000,.6,Math.random()*.1)};
-  for(const s of ST)G[s.k]=gain(0,master);
+  for(const s of ST){G[s.k]=gain(0,master);SYN[s.k]=gain(1,G[s.k])}
   /* 1 rain: hiss + drops + gutter drips */
-  {const g=G[1];loop(white,filt('lowpass',5200,null,filt('highpass',700,null,gain(.22,g))));loop(brown,filt('lowpass',400,null,gain(.25,g)));
+  {const g=SYN[1];loop(white,filt('lowpass',5200,null,filt('highpass',700,null,gain(.22,g))));loop(brown,filt('lowpass',400,null,gain(.25,g)));
    EV[1]=()=>{for(let i=0;i<5;i++)burst(g,.012+Math.random()*.02,'bandpass',1800+Math.random()*3200,.5+Math.random()*.6,Math.random()*.1,3);if(Math.random()<.15)tone(g,900+Math.random()*500,.08,.08,Math.random()*.1)}}
   /* 2 tram: rumble, motor, joints, bell */
-  {const g=G[2];loop(brown,filt('lowpass',150,null,gain(.6,g)));const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=180;o.connect(filt('bandpass',520,7,gain(.05,g)));o.start();let n=0;
+  {const g=SYN[2];loop(brown,filt('lowpass',150,null,gain(.6,g)));const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=180;o.connect(filt('bandpass',520,7,gain(.05,g)));o.start();let n=0;
    EV[2]=()=>{n++;o.frequency.setTargetAtTime(160+60*Math.sin(n/40),AC.currentTime,.4);if(n%7===0){burst(g,.03,'bandpass',2100,.7,0,4);burst(g,.03,'bandpass',1900,.6,.12,4)}if(n%90===45){[[1180,1],[3260,.45]].forEach(([fr,a])=>{tone(g,fr,.8,.12*a);tone(g,fr,.8,.12*a,.32)})}}}
   /* 3 stadium: crowd bed, swells, claps */
-  {const g=G[3];const bed=gain(.35,g);loop(brown,filt('bandpass',500,.7,bed));const mid=gain(.14,g);loop(white,filt('bandpass',1100,1.2,mid));let n=0;
+  {const g=SYN[3];const bed=gain(.35,g);loop(brown,filt('bandpass',500,.7,bed));const mid=gain(.14,g);loop(white,filt('bandpass',1100,1.2,mid));let n=0;
    EV[3]=()=>{n++;const t=AC.currentTime;if(n%60===0){mid.gain.cancelScheduledValues(t);mid.gain.setTargetAtTime(.55,t,.4);mid.gain.setTargetAtTime(.14,t+2.4,.8)}
      if(n%16<9&&n%2===0){for(let i=0;i<14;i++)burst(g,.02,'bandpass',1500+Math.random()*1500,.12,Math.random()*.06,1.5)}}}
   /* 4 time signal: carrier hum + six pips each minute window (every 10 s here) */
-  {const g=G[4];const h=AC.createOscillator();h.frequency.value=50;h.connect(gain(.03,g));h.start();let n=0;
+  {const g=SYN[4];const h=AC.createOscillator();h.frequency.value=50;h.connect(gain(.03,g));h.start();let n=0;
    EV[4]=()=>{n++;if(n%100===1){for(let i=0;i<5;i++)tone(g,1000,.1,.25,i);tone(g,1000,.5,.25,5)}}}
   /* 5 night on Zarichna: wind in trees, far traffic, distant train */
-  {const g=G[5];const w=gain(.2,g);const wf=filt('bandpass',650,.5,w);loop(white,wf);loop(brown,filt('lowpass',90,null,gain(.25,g)));let n=0;
+  {const g=SYN[5];const w=gain(.2,g);const wf=filt('bandpass',650,.5,w);loop(white,wf);loop(brown,filt('lowpass',90,null,gain(.25,g)));let n=0;
    EV[5]=()=>{n++;const t=AC.currentTime;wf.frequency.setTargetAtTime(500+300*Math.sin(n/23)+120*Math.sin(n/7),t,.5);w.gain.setTargetAtTime(.12+.1*(1+Math.sin(n/17))/2,t,.6);
      if(n%220===110){[311,370].forEach(fr=>{const o=AC.createOscillator(),gg=AC.createGain(),lp=AC.createBiquadFilter();o.type='sawtooth';o.frequency.value=fr;lp.type='lowpass';lp.frequency.value=700;gg.gain.setValueAtTime(.0001,t);gg.gain.exponentialRampToValueAtTime(.05,t+.3);gg.gain.setValueAtTime(.05,t+1.4);gg.gain.exponentialRampToValueAtTime(.0001,t+2.6);o.connect(lp).connect(gg).connect(g);o.start(t);o.stop(t+2.7)})}}}
   /* 6 wind on a slag heap: strong gusts */
-  {const g=G[6];const w=gain(.3,g);const wf=filt('bandpass',420,.9,w);loop(white,wf);const lo=gain(.3,g);loop(brown,filt('lowpass',220,null,lo));let n=0;
+  {const g=SYN[6];const w=gain(.3,g);const wf=filt('bandpass',420,.9,w);loop(white,wf);const lo=gain(.3,g);loop(brown,filt('lowpass',220,null,lo));let n=0;
    EV[6]=()=>{n++;const t=AC.currentTime,gust=(1+Math.sin(n/11)*Math.sin(n/29))/2;wf.frequency.setTargetAtTime(300+700*gust,t,.35);w.gain.setTargetAtTime(.08+.4*gust,t,.4);lo.gain.setTargetAtTime(.15+.3*gust,t,.5)}}
-  setInterval(()=>{if(!on||!AC)return;for(const s of ST)if(sig(s)>.05&&EV[s.k])EV[s.k]();if(EV.static&&staticG.gain.value>.02)EV.static()},100)}
+  setInterval(()=>{if(!on||!AC)return;for(const s of ST){const v=sig(s);if(v>.02)want(s.k);if(v>.05&&EV[s.k])EV[s.k]()}if(EV.static&&staticG.gain.value>.02)EV.static()},100)}
 function mix(){if(!AC)return;const t=AC.currentTime;let best=0;for(const s of ST){const v=sig(s);best=Math.max(best,v);G[s.k].gain.setTargetAtTime(on?v:0,t,.06)}
   staticG.gain.setTargetAtTime(on?.03+.22*(1-best):0,t,.05);master.gain.setTargetAtTime(on?(+vol.value/100)*.9:0,t,.08)}
 /* level meter for the speaker and the magic eye */
@@ -1209,7 +1248,7 @@ tune.addEventListener('keydown',e=>{if(e.key==='PageUp'||e.key==='PageDown'){e.p
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{if(!es[0].isIntersecting&&on){pow.click()}},{threshold:0}).observe(sec);
 addEventListener('d11lang',()=>setTimeout(()=>{drawNames();pow.querySelector('span').textContent=T(on?'rd4':'rd3');ui()},0));
 ui();
-window.__radio={set:setF,state:()=>({f,on,st:station()[0].k,sig:station()[1]})};
+window.__radio={set:setF,state:()=>({f,on,st:station()[0].k,sig:station()[1],real:{...REAL}})};
 })();
 
 ;(()=>{

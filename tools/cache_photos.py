@@ -45,3 +45,10 @@ open("photos/have.js", "w").write("window.__PHHAVE=" + json.dumps(have) + ";wind
 print(f"new {new}, cached {len(have)} of {len(M)}, failed {len(failed)}")
 for u in failed:
     print("FAILED", u)
+
+# v5.3: the radio's field recordings are cached in the same run, into photos/radio/
+try:
+    import runpy
+    runpy.run_path("tools/cache_sounds.py", run_name="__main__")
+except Exception as ex:  # noqa: BLE001
+    print("sounds skipped:", ex, file=sys.stderr)

@@ -1,0 +1,98 @@
+{
+ "note": "Real field recordings for the radio on the Sounds page. None was recorded in Donetsk: these are the closest freely licensed recordings found on Wikimedia Commons. tools/cache_sounds.py (run by the photo workflow) downloads each one, cuts a seamless loop and keeps it as photos/radio/<id>.mp3.",
+ "items": {
+  "rain": {
+   "station": 1,
+   "file": "Rain and wind in London 2026 08 28.wav",
+   "author": "Acabashi",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "place": "London",
+   "year": 2026,
+   "start": 0,
+   "len": 34,
+   "gain": 1.0,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/7/73/Rain_and_wind_in_London_2026_08_28.wav"
+  },
+  "tram": {
+   "station": 2,
+   "file": "Brzdící a skákající tramvaj (BxB - JdV).ogg",
+   "author": "Juan de Vojníkov",
+   "license": "Public domain",
+   "license_url": "",
+   "place": "Prague",
+   "year": 2009,
+   "start": 0,
+   "len": 15,
+   "gain": 1.0,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Brzd%C3%ADc%C3%AD_a_sk%C3%A1kaj%C3%ADc%C3%AD_tramvaj_%28BxB_-_JdV%29.ogg"
+  },
+  "stadium": {
+   "station": 3,
+   "file": "WWS FootballAustriavs.Sweden.ogg",
+   "author": "Work With Sounds / Torsten Nilsson",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "place": "Vienna",
+   "year": 2014,
+   "start": 20,
+   "len": 60,
+   "gain": 1.0,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/WWS_FootballAustriavs.Sweden.ogg"
+  },
+  "timesignal": {
+   "station": 4,
+   "file": "2013-03-31 1948z RWM Time Signal.ogg",
+   "author": "Samslipknot",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "place": "RWM, Moscow region",
+   "year": 2013,
+   "start": 0,
+   "len": 30,
+   "gain": 1.0,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/a/a5/2013-03-31_1948z_RWM_Time_Signal.ogg"
+  },
+  "pines": {
+   "station": 5,
+   "file": "Wind in Swedish pine forest at 25 mps.ogg",
+   "author": "W.carter",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "place": "Lysekil, Sweden",
+   "year": 2024,
+   "start": 0,
+   "len": 60,
+   "gain": 0.55,
+   "lowpass": 2200,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Wind_in_Swedish_pine_forest_at_25_mps.ogg"
+  },
+  "train": {
+   "station": 5,
+   "file": "Trains through a railwa.ogg",
+   "author": "ezwa",
+   "license": "Public domain",
+   "license_url": "",
+   "place": "",
+   "year": 2008,
+   "start": 20,
+   "len": 60,
+   "gain": 0.28,
+   "lowpass": 1100,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/0/08/Trains_through_a_railwa.ogg"
+  },
+  "slagwind": {
+   "station": 6,
+   "file": "20221229 - Abisko Turiststation at night - Wind and snow.wav",
+   "author": "Fabricio Cardenas",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "place": "Abisko, Sweden",
+   "year": 2022,
+   "start": 0,
+   "len": 44,
+   "gain": 1.0,
+   "url": "https://upload.wikimedia.org/wikipedia/commons/1/11/20221229_-_Abisko_Turiststation_at_night_-_Wind_and_snow.wav"
+  }
+ }
+}
