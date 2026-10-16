@@ -445,42 +445,6 @@ section{padding-block:clamp(64px,9vw,120px);border-bottom:1px solid var(--rule)}
 .q3tools button[aria-pressed="true"]{color:#fff;background:var(--steel)}
 .q3tools button.ev[aria-pressed="true"]{background:var(--rose)}
 
-/* ---------- v4.3: walk mode ---------- */
-.q3tools button.walk{background:var(--rose);color:#fff;border-color:var(--rose);font-weight:600}
-.q3tools button.walk[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-:root[data-theme="dark"] .q3tools button.walk{color:#14110d}
-.q3walk{position:absolute;inset:0;pointer-events:none;z-index:4}
-.q3w-top{position:absolute;left:12px;right:12px;bottom:52px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
-.q3w-st{background:rgba(20,17,13,.78);color:#f3ead9;padding:6px 12px;border-radius:99px;font-size:12px;letter-spacing:.04em}.q3w-st:empty{display:none}
-.q3w-b{display:flex;gap:8px;pointer-events:auto}
-.q3w-b button{font:500 13px var(--f-body);padding:7px 14px;border-radius:99px;border:1px solid rgba(255,255,255,.35);background:rgba(20,17,13,.78);color:#f3ead9;cursor:pointer}
-.q3w-b button[aria-pressed="false"]{opacity:.6;text-decoration:line-through}
-.q3w-b button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
-.q3w-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);margin:0;background:rgba(20,17,13,.7);color:#f3ead9;font-size:11px;padding:6px 12px;border-radius:99px;white-space:nowrap;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
-.q3w-hint .tc{display:none}
-.q3joy{position:absolute;left:22px;bottom:54px;width:120px;height:120px;border-radius:50%;background:rgba(20,17,13,.35);border:2px solid rgba(255,255,255,.55);pointer-events:auto;touch-action:none;display:none;place-items:center}
-.q3joy i{display:block;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.3)}
-@media (pointer:coarse){.q3joy{display:grid;bottom:28px}.q3w-hint .kb{display:none}.q3w-hint .tc{display:inline}.q3w-hint{bottom:auto;top:104px;white-space:normal;text-align:center;width:max-content}
-  .q3w-top{position:static}.q3w-st{position:absolute;left:12px;top:62px}.q3w-b{position:absolute;right:12px;bottom:28px;flex-direction:column;align-items:flex-end}}
-.q3w-hint{animation:q3fade .6s 6s forwards}@keyframes q3fade{to{opacity:0;visibility:hidden}}
-.q3w-l{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-.q3w-hunt{background:rgba(20,17,13,.78);color:#f3ead9;padding:5px 11px;border-radius:99px;font-size:11px;letter-spacing:.04em}.q3w-hunt:empty{display:none}
-.q3w-hunt::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#e2658a;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 2px rgba(226,101,138,.3)}
-.q3w-aim{position:absolute;left:50%;top:calc(50% + 14px);transform:translateX(-50%);background:rgba(20,17,13,.62);color:#f3ead9;font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;max-width:70%;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-.q3d canvas.q3w-map{position:absolute;inset:auto 12px auto auto;top:58px;width:140px;height:140px;border-radius:50%;box-shadow:0 4px 18px rgba(0,0,0,.28);pointer-events:none;opacity:.94;cursor:default}
-.q3w-toast{position:absolute;left:50%;top:58px;transform:translateX(-50%);width:min(360px,calc(100% - 24px));background:#f7f1e3;color:#1d1912;border-left:4px solid #c8274f;padding:12px 16px 12px 14px;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:auto;display:grid;gap:4px;font-size:14px;line-height:1.4}
-.q3w-toast[hidden]{display:none}
-.q3w-toast b{font:600 15px var(--f-body)}.q3w-toast span{color:#5b5143}.q3w-toast a{font:12px var(--f-mono,monospace);color:#a8323e;justify-self:start;margin-top:2px}
-.q3w-toast.show{animation:q3toast .5s cubic-bezier(.2,1.4,.4,1)}@keyframes q3toast{from{opacity:0;transform:translate(-50%,-14px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
-@media (max-width:620px),(pointer:coarse){.q3d canvas.q3w-map{width:96px;height:96px;top:auto;bottom:150px}}
-@media (max-height:420px){.q3d canvas.q3w-map{display:none}}
-@media (pointer:coarse){.q3w-l{position:absolute;left:12px;top:62px}.q3w-l .q3w-st{position:static}.q3w-toast{top:130px}}
-@media (prefers-reduced-motion:reduce){.q3w-toast.show{animation:none}}
-.q3d.walking .q3tools .grp:not(.sun):not(:first-child){display:none}
-.q3d.walking .ql:not(.pano):not(.home){display:none}
-.q3d.walking .q3card.empty,.q3d.walking .q3leg{display:none}
-.q3d.walking canvas{cursor:grab}.q3d.walking canvas:active{cursor:grabbing}
-.q3d.walking::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 0 0 1px rgba(0,0,0,.35);pointer-events:none;z-index:3}
 
 /* ---------- v4.3: tram route 1 ---------- */
 .tram{--tr-amber:#ffb43a}
@@ -618,7 +582,7 @@ section{padding-block:clamp(64px,9vw,120px);border-bottom:1px solid var(--rule)}
 .pc-acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .pc-warn{max-width:560px;font-size:11px;color:var(--muted);margin:0}.pc-bad{color:var(--rose)}
 .pcsec.receiving .head .lede{display:none}
-@media (prefers-reduced-motion:reduce){.pc-card,.pc-flap{transition:none}.pc-fly.out{animation-duration:.01s}}
+@media (prefers-reduced-motion:reduce){.pc-card,.pc-flap{transition:none}.pc-fly.out{animation:none!important;transform:translateY(-6%) scale(1.06);z-index:6}}
 @media (max-width:860px){.pc-make{grid-template-columns:1fr}.pc-prev{position:static}.pc-photos{grid-template-columns:repeat(4,1fr)}}
 
 /* v4.3: page chips stay on one swipeable row on phones, so a late web font can't change the header height */
