@@ -600,7 +600,7 @@ section{padding-block:clamp(64px,9vw,120px);border-bottom:1px solid var(--rule)}
 .q3card dd{margin:0}
 .q3card a{color:var(--rose)}
 .gb{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 4px;font:600 11px var(--f-mono);color:#fff;border-radius:3px;vertical-align:1px}
-.gb.f{background:var(--steel)}.gb.e{background:color-mix(in srgb,var(--amber) 60%,var(--steel))}.gb.c{background:color-mix(in srgb,var(--moss) 65%,var(--amber))}
+.gb.f{background:var(--steel)}.gb.b{background:color-mix(in srgb,var(--moss) 85%,var(--steel))}.gb.e{background:color-mix(in srgb,var(--amber) 60%,var(--steel))}.gb.c{background:color-mix(in srgb,var(--moss) 65%,var(--amber))}
 .q3leg{position:absolute;left:12px;bottom:12px;width:min(330px,calc(100% - 24px));background:var(--card);border:1px solid var(--rule);padding:12px 14px;display:grid;gap:8px;font-size:13px;color:var(--ink-2)}
 .q3leg[hidden]{display:none}
 .q3leg ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}

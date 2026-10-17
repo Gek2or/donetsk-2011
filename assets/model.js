@@ -98,7 +98,14 @@ const VM=(()=>{const BODY=[-1,-1,-1],GL=[.16,.19,.23],TY=[.09,.09,.1],HUB=[.55,.
       m.bx(px-.08,px+.08,-.95,.95,5.55,5.6,[.35,.35,.35])}
     return m};
   const pack=m=>({p:new Float32Array(m.p),n:new Float32Array(m.n),c:new Float32Array(m.c),cnt:m.p.length/3,src:m});
-  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram())}})();
+  /* v5.6: a GAZelle minibus, the "marshrutka" of the period */
+  const van=()=>{const m=mk();m.ext([[-2.75,.42],[2.72,.42],[2.78,.92],[2.35,1.2],[1.75,2.2],[-2.75,2.28]],-.98,.98,BODY,i=>i===0?BLK:BODY);
+    for(const y of [-.985,.985]){for(let k=0;k<4;k++){const x0=-2.45+k*.98;m.q4([x0,y,1.32],[x0+.8,y,1.32],[x0+.8,y,1.95],[x0,y,1.95],GL)}m.q4([1.0,y,1.25],[1.62,y,1.25],[1.62,y,1.95],[1.0,y,1.95],GL)}
+    {const a=[2.33,-.9,1.22],b=[2.33,.9,1.22],c=[1.77,.9,2.15],d=[1.77,-.9,2.15];m.q4(a,b,c,d,GL)}
+    for(const y of [-.62,.62]){m.q4([2.781,y-.16,.62],[2.781,y+.16,.62],[2.781,y+.16,.75],[2.781,y-.16,.75],HL);m.q4([-2.751,y+.12,.7],[-2.751,y-.12,.7],[-2.751,y-.12,.95],[-2.751,y+.12,.95],TL)}
+    m.bx(2.72,2.86,-1,1,.35,.5,BLK);m.bx(-2.86,-2.72,-1,1,.35,.5,BLK);
+    for(const x of [1.75,-1.55])for(const y of [-.86,.86])m.wheel(x,y,.36,.22);return m};
+  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram()),van:pack(van())}})();
 /* period paint: white, beige, cherry, the bright and dark blues, faded green, sand, red and grey seen on Lada and Moskvich cars of the time */
 const VPAINT=[[.9,.9,.87],[.84,.79,.66],[.45,.1,.12],[.22,.38,.55],[.15,.2,.33],[.36,.45,.33],[.78,.7,.5],[.62,.14,.13],[.55,.57,.58],[.85,.85,.82],[.3,.32,.34]];
 /* v5.2: the tramway on Dzerzhinsky Avenue. OpenStreetMap ways 233652257 and 233652260: a double track, 1524 mm gauge,
@@ -557,11 +564,18 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       const A=P2(-la-e,-lb-e,top-de),B2=P2(la+e,-lb-e,top-de),C2=P2(la+e,lb+e,top-de),D2=P2(-la-e,lb+e,top-de),E1=P2(-rr,0,top+rh),E2=P2(rr,0,top+rh);
       tri3(A,B2,E2,roof,id);tri3(A,E2,E1,roof,id);tri3(C2,D2,E1,roof,id);tri3(C2,E1,E2,roof,id);tri3(B2,C2,E2,roof,id);tri3(D2,A,E1,roof,id);line(E1,E2)}
     else{const t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roof,id)}});
+  if(XSIM&&!evid){const pole=dk?[.24,.25,.26]:[.4,.41,.42],hous=dk?[.08,.08,.09]:[.14,.15,.16],plate=dk?[.6,.6,.55]:[.92,.9,.82];
+    const bxw=(x,y,hx,hy,w,dpt,z0,z1,col)=>{const px=-hy,py=hx,c=[[x-px*w/2-hx*dpt/2,y-py*w/2-hy*dpt/2],[x+px*w/2-hx*dpt/2,y+py*w/2-hy*dpt/2],[x+px*w/2+hx*dpt/2,y+py*w/2+hy*dpt/2],[x-px*w/2+hx*dpt/2,y-py*w/2+hy*dpt/2]];
+      for(let k=0;k<4;k++){const a=c[k],b=c[(k+1)%4];quad(W(a[0],a[1],z0),W(b[0],b[1],z0),W(b[0],b[1],z1),W(a[0],a[1],z1),col,0)}quad(W(c[0][0],c[0][1],z1),W(c[1][0],c[1][1],z1),W(c[2][0],c[2][1],z1),W(c[3][0],c[3][1],z1),col,0)};
+    for(const h of XSIM.heads){const z=hX(h.x,h.y);bxw(h.x,h.y,h.hx,h.hy,.12,.12,z-.2,z+3.0,pole);bxw(h.x-h.hx*.05,h.y-h.hy*.05,h.hx,h.hy,.34,.26,z+2.95,z+3.95,hous)}
+    const sign=(st,E,tram)=>{const e=E[st.e];if(!e)return;let s=st.s,i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;const a=e.pts[i-1],b=e.pts[i],l=(e.cum[i]-e.cum[i-1])||1,u=(s-e.cum[i-1])/l,dx=(b[0]-a[0])/l,dy=(b[1]-a[1])/l,o=(tram?3:e.lanes*3.3/2+1.6)*st.side;
+      const x=a[0]+(b[0]-a[0])*u+dy*o,y=a[1]+(b[1]-a[1])*u-dx*o,z=hX(x,y);bxw(x,y,dx,dy,.08,.08,z-.2,z+2.5,pole);bxw(x,y,dx,dy,.5,.05,z+2.0,z+2.55,plate)};
+    for(const st of XSIM.BS)sign(st,XSIM.RE,false);for(const st of XSIM.TS)sign(st,XSIM.TE,true)}
   XG={n:P.length/3,ln:Lp.length/3};buf('xp',new Float32Array(P));buf('xn',new Float32Array(N));buf('xc',new Float32Array(Cc));buf('xf',new Float32Array(FF));buf('xi',new Float32Array(I));buf('xlp',new Float32Array(Lp));buf('xlc',new Float32Array(Lc))}
 const XVIEW={t:[173,0,157],d:3300,ph:.86,th:.5};
 function xload(){if(XLOAD)return XLOAD;const u=p=>new URL(p,document.baseURI);
-  XLOAD=Promise.all([fetch(u('assets/district.json')).then(r=>{if(!r.ok)throw r.status;return r.json()}),fetch(u('photos/terrain/district.json'),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
-    .then(([d,t])=>{XD=d;if(t&&t.h&&t.nx&&t.h.length===t.nx*t.ny)XT=t;XS=true}).catch(e=>{XLOAD=null;throw e});return XLOAD}
+  XLOAD=Promise.all([fetch(u('assets/traffic.json')).then(r=>r.ok?r.json():null).catch(()=>null).then(t=>{XN=t}),fetch(u('assets/district.json')).then(r=>{if(!r.ok)throw r.status;return r.json()}),fetch(u('photos/terrain/district.json'),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
+    .then(([_,d,t])=>{XD=d;try{XSIM=xsim()}catch(e){console.warn(e);XSIM=null}if(t&&t.h&&t.nx&&t.h.length===t.nx*t.ny)XT=t;XS=true}).catch(e=>{XLOAD=null;throw e});return XLOAD}
 const xbtn=document.getElementById('q3dist');
 function setX(on){if(!xbtn)return;if(on&&!XD){xbtn.setAttribute('aria-busy','true');xbtn.disabled=true;xload().then(()=>{xbtn.disabled=false;xbtn.removeAttribute('aria-busy');setX(true)}).catch(()=>{xbtn.disabled=false;xbtn.removeAttribute('aria-busy');xbtn.setAttribute('aria-pressed','false')});return}
   XON=on;xbtn.setAttribute('aria-pressed',on);showLegend();box.classList.toggle('xmap',on);if(on&&XS)buildX();if(!on&&sel>=20000)sel=null;stopAuto();
@@ -574,6 +588,80 @@ function xname(l){const lang=document.documentElement.lang||'ru';let s;
   else if(lang==='uk')s=l[1].replace(/^(.*) вулиця$/,'$1').replace(/^(.*) проспект$/,'просп. $1').replace(/^(.*) провулок$/,'пров. $1');
   else{s=l[2]||tl(l[1].replace(/ вулиця$/,' Street').replace(/ проспект$/,' Avenue'));s=s.replace(/ Street$/,'');s=lang==='fi'?s.replace(/ Avenue$/,'-prospekti'):s.replace(/ Avenue$/,' Ave')}
   return esc(s)}
+/* ---------- v5.6: a traffic mini-simulation on the reference map (assets/traffic.json, built by traffic.py).
+   Roads, oneway and lanes from the OSM extract; traffic signals, signalled crossings, bus and tram stops from OpenStreetMap
+   as of 13.09.2012, the oldest state the OSM history keeps. The vehicles, their number, routes and the signal timing are
+   illustrative: a typical weekday of the period, denser in the rush hours, thin at night. ---------- */
+let XN=null,XSIM=null;
+function xsim(){const T=XN;if(!T)return null;
+  const P=(f,i)=>[f[i*2]/10,f[i*2+1]/10],xy=f=>{const o=[];for(let i=0;i<f.length;i+=2)o.push([f[i]/10,f[i+1]/10]);return o};
+  const mkE=(a,b,pts,o)=>{const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return Object.assign({a,b,pts,cum,len:cum[cum.length-1],cars:[]},o)};
+  const RE=T.re.map(([a,b,cls,ow,lanes,v,nm,f])=>mkE(a,b,xy(f),{cls,ow,lanes,v,nm})),TE=T.te.map(([a,b,ow,f])=>mkE(a,b,xy(f),{ow,v:9.5,cls:9,lanes:1}));
+  const [t0,t1,t2,t3]=D.tb,inQ=p=>p[0]>t0&&p[0]<t2&&p[1]>t1&&p[1]<t3;
+  const out=(E,nN)=>{const o=Array.from({length:nN},()=>[]);E.forEach((e,i)=>{const mid=e.pts[e.pts.length>>1];if(inQ(mid))return;o[e.a].push([i,1]);if(!e.ow)o[e.b].push([i,-1])});return o};
+  const RO=out(RE,T.rn.length/2),TO=out(TE,T.tn.length/2);
+  const at=(e,s)=>{s=Math.max(0,Math.min(e.len,s));let i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;const a=e.pts[i-1],b=e.pts[i],sl=(e.cum[i]-e.cum[i-1])||1,u=(s-e.cum[i-1])/sl;return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,(b[0]-a[0])/sl,(b[1]-a[1])/sl]};
+  /* signal controllers: approaches grouped into two phases by their bearing; 26 s main road, 18 s side road, 3 s amber, 2 s all red */
+  const NC={};const CTL=T.ct.map(([cx,cy,nodes,ids,ped],k)=>{const c={x:cx/10,y:cy/10,nodes,ped,off:(k*17)%40,ax:null};nodes.forEach(n=>NC[n]=c);return c});
+  const bearIn=(e,dir)=>{const p=dir>0?e.pts:e.pts.slice().reverse(),n=p.length,a=p[Math.max(0,n-3)],b=p[n-1];return Math.atan2(b[1]-a[1],b[0]-a[0])};
+  CTL.forEach(c=>{let ax=null,bc=9;RE.forEach((e,i)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){if(!c.nodes.includes(n)||(dir<0&&e.ow))continue;if(e.cls<bc){bc=e.cls;ax=bearIn(e,dir)}}});c.ax=ax||0});
+  const phaseOf=(c,e,dir)=>{if(c.ped)return 0;let d=Math.abs(((bearIn(e,dir)-c.ax)%Math.PI+Math.PI)%Math.PI);d=Math.min(d,Math.PI-d);return d<Math.PI/4?0:1};
+  const CYC=[26,3,2,18,3,2],CL=54,PCYC=[34,3,12,2],PL=51;
+  const light=(c,ph,t)=>{if(c.ped){const u=(t+c.off)%PL;return u<34?'g':u<37?'a':'r'}const u=(t+c.off)%CL;const s=ph===0?u:(u+CL-31)%CL;return s<26?'g':s<29?'a':'r'};
+  /* stops on the edges */
+  const BS=T.bs.map(([ei,s,side,nm])=>({e:ei,s,side,nm})),TS=T.ts.map(([ei,s,side,nm])=>({e:ei,s,side,nm}));
+  let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const V=[];const roadLen=RE.reduce((a,e)=>a+(inQ(e.pts[e.pts.length>>1])?0:e.len*(e.ow?1:2)*(e.cls<=1?1.6:e.cls===2?1:.45)),0);
+  const NCAR=Math.max(120,Math.min(380,Math.round(roadLen/170)));
+  const spawn=(c)=>{for(let k=0;k<50;k++){const i=(rnd()*RE.length)|0,e=RE[i];if(inQ(e.pts[e.pts.length>>1]))continue;if(rnd()>(e.cls<=1?1:e.cls===2?.6:.25))continue;
+      const dir=e.ow?1:(rnd()<.5?1:-1);c.e=i;c.dir=dir;c.s=dir>0?e.len*rnd():e.len*rnd();c.lane=((rnd()*Math.max(1,e.ow?e.lanes:e.lanes/2))|0);c.v=e.v*.6;c.nx=null;c.stopAt=-1;return}};
+  const MODELS=[['sedan',.46],['hatch',.3],['van',.14]];
+  for(let k=0;k<NCAR;k++){let r=rnd(),m='sedan';for(const [nm,p] of MODELS){if(r<p){m=nm;break}r-=p}
+    const van=m==='van',c={m,van,bus:false,tram:false,col:van?(rnd()<.6?[.93,.93,.9]:[.95,.8,.2]):VPAINT[(rnd()*VPAINT.length)|0],half:van?2.8:2.1,x:0,y:0,hx:1,hy:0,dwell:0,id:k};spawn(c);V.push(c)}
+  /* buses on the main roads, stopping at the bus stops mapped in 2012 */
+  for(let k=0;k<10;k++){const c={m:'bus',bus:true,van:false,tram:false,col:[.93,.77,.18],half:5.4,x:0,y:0,hx:1,hy:0,dwell:0,id:1000+k};for(let j=0;j<40;j++){spawn(c);if(RE[c.e].cls<=1)break}V.push(c)}
+  /* trams on the tracks, stopping at the 2012 tram stops */
+  const TR=[];for(let k=0;k<Math.min(9,Math.max(3,TE.length>>4));k++){const i=(rnd()*TE.length)|0,e=TE[i];if(inQ(e.pts[e.pts.length>>1])){k--;continue}TR.push({m:'tram',tram:true,col:null,half:7.2,e:i,dir:e.ow?1:(rnd()<.5?1:-1),s:e.len*rnd(),v:0,lane:0,x:0,y:0,hx:1,hy:0,dwell:0,nx:null,id:2000+k})}
+  const all=V.concat(TR);
+  const E_=c=>c.tram?TE[c.e]:RE[c.e],O_=c=>c.tram?TO:RO;
+  const off=(c,e)=>{if(c.tram)return e.ow?0:1.6;const lanes=e.ow?e.lanes:Math.max(1,e.lanes/2),w=3.3;return e.ow?(c.lane-(lanes-1)/2)*w:1.75+Math.min(c.lane,lanes-1)*w};
+  const place=c=>{const e=E_(c);const [x,y,dx,dy]=at(e,c.dir>0?c.s:e.len-c.s);const hx=dx*c.dir,hy=dy*c.dir,o=off(c,e);c.x=x+hy*o;c.y=y-hx*o;c.hx=hx;c.hy=hy};
+  /* positions along an edge are measured in the travel direction: s=0 at the entry node */
+  all.forEach(c=>{const e=E_(c);if(c.dir<0)c.s=e.len-c.s;c.s=Math.max(0,Math.min(e.len,c.s));place(c)});
+  const endNode=c=>{const e=E_(c);return c.dir>0?e.b:e.a};
+  const pick=c=>{const n=endNode(c),opts=O_(c)[n].filter(([i,d])=>!(i===c.e&&d===-c.dir));if(!opts.length)return null;
+    if(c.tram){return opts[(rnd()*opts.length)|0]}
+    const cur=E_(c),w=opts.map(([i])=>{const e=RE[i];return(e.cls<=cur.cls?3:1)*(e.cls<=1?2:e.cls===2?1.2:.5)});const sum=w.reduce((a,b)=>a+b,0);let r=rnd()*sum;for(let k=0;k<opts.length;k++){r-=w[k];if(r<=0)return opts[k]}return opts[0]};
+  const relocate=c=>{if(c.tram){const i=(rnd()*TE.length)|0,e=TE[i];c.e=i;c.dir=e.ow?1:1;c.s=0}else{spawn(c);c.s=Math.min(c.s,5)}c.nx=null;c.v=0;place(c)};
+  let clock=0,active=NCAR;
+  const NODE={};
+  const step=(dt,hour)=>{dt=Math.min(dt,.12);clock+=dt;
+    const dens=hour<5?.18:hour<6.5?.35:hour<9.5?1:hour<16.5?.72:hour<19.5?1:hour<22?.5:.25;active=Math.round(NCAR*dens);
+    for(const e of RE)e.cars.length=0;for(const e of TE)e.cars.length=0;
+    for(const c of all){if(!c.tram&&!c.bus&&c.id>=active){c.off=true;continue}c.off=false;E_(c).cars.push(c)}
+    for(const c of all){if(c.off)continue;const e=E_(c);let lim=c.tram?9.5:e.v*(c.bus?.8:c.van?1.05:1);
+      /* the vehicle ahead on the same edge, direction and lane */
+      let d=1e9;c.why='';for(const o of e.cars){if(o===c||o.dir!==c.dir||(!c.tram&&o.lane!==c.lane&&!(o.bus||c.bus)))continue;const ds=o.s-c.s;if(ds>0&&ds<d+o.half){d=Math.min(d,ds-o.half-c.half);c.why='lead'}}
+      const rem=e.len-c.s;
+      if(rem<40){if(!c.nx)c.nx=pick(c);
+        if(c.nx){const ne=(c.tram?TE:RE)[c.nx[0]];for(const o of ne.cars){if(o.dir!==c.nx[1])continue;if(o.s<30&&rem+o.s-o.half-c.half<d){d=rem+o.s-o.half-c.half;c.why='next:'+o.id}}}
+        const n=endNode(c),ct=c.tram?null:NC[n];
+        if(ct){const L=light(ct,phaseOf(ct,e,c.dir),clock);if(L==='r'||(L==='a'&&rem>c.v*1.2+4)){d=Math.min(d,rem-7);c.why='sig'}}
+        else if(!c.tram&&e.cls>=2&&rem<9){const k=n,t=NODE[k]||0;if(t>clock&&NODE[k+'o']!==c.id){d=Math.min(d,rem-6);c.why='node'}else if(NODE[k+'o']!==c.id&&d>rem+3){NODE[k]=clock+2;NODE[k+'o']=c.id}}}
+      /* stops */
+      if(c.bus||c.tram){const ST=c.tram?TS:BS;for(const st of ST){if(st.e!==c.e)continue;const ss=c.dir>0?st.s:e.len-st.s;if((c.tram||st.side*c.dir===1)&&ss>c.s-.5&&ss-c.s<lim*2+12&&c.lastStop!==st){d=Math.min(d,ss-c.s);if(ss-c.s<1.2&&c.v<.3){c.dwell=c.tram?18:11;c.lastStop=st}}}}
+      if(c.dwell>0){c.dwell-=dt;c.v=0;continue}
+      /* a safety valve for the rare gridlock of a toy model: a car that has stood still for 45 s without a red light leaves the map */
+      if(c.v<.05&&c.why!=='sig'){c.st=(c.st||0)+dt;if(c.st>(c.bus?90:45)){c.st=0;relocate(c);continue}}else c.st=0;
+      const vt=Math.max(0,Math.min(lim,(d-2.5)*.9));c.v+=Math.max(-6.5*dt,Math.min((c.tram?1.1:2.2)*dt,vt-c.v));if(c.v<0)c.v=0;
+      c.s+=c.v*dt;
+      if(c.s>=e.len){const nx=c.nx||pick(c);if(!nx){relocate(c);continue}const ov=c.s-e.len;c.e=nx[0];c.dir=nx[1];c.s=ov;c.nx=null;c.lastStop=null;const ne=E_(c);if(inQ(ne.pts[ne.pts.length>>1])){relocate(c);continue}
+        if(!c.tram){const ln=ne.ow?ne.lanes:Math.max(1,ne.lanes/2);if(c.lane>=ln)c.lane=ln-1}}
+      place(c)}};
+  /* traffic-light heads: one per approach, on the right before the stop line */
+  const heads=[];RE.forEach((e,i)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){const c=NC[n];if(!c||(dir<0&&e.ow)||e.len<10)continue;const sl=e.len-7;const [x,y,dx,dy]=at(e,dir>0?sl:e.len-sl),hx=dx*dir,hy=dy*dir;
+      const half=e.lanes*3.3/2+1.2;heads.push({x:x+hy*half,y:y-hx*half,hx,hy,c,ph:phaseOf(c,e,dir)})}});
+  return {all,step,heads,light,CTL,BS,TS,RE,TE,clock:()=>clock,n:NCAR}}
 /* ---------- GL ---------- */
 const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.warn(gl.getShaderInfoLog(o));return o};
 const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);return p};
@@ -689,13 +777,17 @@ void main(){float wx=o.x+r.x*p.x-r.y*p.y,wy=o.y+r.y*p.x+r.x*p.y;vec3 wp=vec3(wx,
 HP+`varying vec3 vn,vc;varying float vd;uniform vec3 ld,fog,body;uniform vec2 fr;uniform float nf;
 void main(){vec3 N=normalize(vn);vec3 col=vc.x<0.?body:min(vc,vec3(1.));float df=max(dot(N,ld),0.);vec3 c=col*(.5+.2*(.55+.45*N.y)+.5*df*(1.-nf))*mix(1.,.38,nf);
 if(vc.x>1.2)c=mix(c,min(vc,vec3(1.)),nf);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(c,fog,f*.85),1.);}`);
-    for(const k of ['sedan','hatch','bus','tram']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
+    for(const k of ['sedan','hatch','bus','tram','van']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
   gl.useProgram(PCar);const u=nm=>gl.getUniformLocation(PCar,nm);gl.uniformMatrix4fv(u('m'),false,MVP);gl.uniform3fv(u('eye'),EYE);gl.uniform3fv(u('ld'),sunDir());gl.uniform3fv(u('fog'),fogc);gl.uniform2f(u('fr'),fr[0],fr[1]);gl.uniform1f(u('nf'),NF);
   const uo=u('o'),ur=u('r'),ub=u('body');
   for(const k of ['sedan','hatch','bus']){const M=VM[k];let bound=false;
     for(const c of TRF.cars){if(c.m!==M)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
       gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.3);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
     if(bound)off()}
+  if(XON&&XSIM){for(const k of ['sedan','hatch','van','bus','tram']){let bound=false;const M=VM[k];
+      for(const c of XSIM.all){if(c.m!==k||c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>2.6e6)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
+        gl.uniform3f(uo,c.x,c.y,hX(c.x,c.y)+(k==='tram'?.43:.3));gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col||[.6,.2,.2]);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
+      if(bound)off()}}
   if(TRAMS){attr(PCar,'p','vmtramp',3);attr(PCar,'n','vmtramn',3);attr(PCar,'c','vmtramc',3);for(const c of TRAMS.cars){if(!c.on)continue;gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.43);gl.uniform2f(ur,c.hx,c.hy);gl.drawArrays(gl.TRIANGLES,0,VM.tram.cnt)}off()}}
 
 /* ---------- math ---------- */
@@ -729,6 +821,10 @@ function draw(){if(!inited)return;
   gl.uniform1f(gl.getUniformLocation(PM,'fac'),fac&&!evid?1:0);gl.uniform1f(gl.getUniformLocation(PM,'nf'),evid?0:NF);gl.uniform1f(gl.getUniformLocation(PM,'gf'),evid?0:GF);gl.uniform1f(gl.getUniformLocation(PM,'dk'),C.dark?1:0);attr(PM,'p','p',3);attr(PM,'n','n',3);attr(PM,'c','c',3);attr(PM,'f','f',4);gl.drawArrays(gl.TRIANGLES,0,G.n);off();
   if(XON&&XG){attr(PM,'p','xp',3);attr(PM,'n','xn',3);attr(PM,'c','xc',3);attr(PM,'f','xf',4);gl.drawArrays(gl.TRIANGLES,0,XG.n);off()}
   if(fac&&!evid)drawTraffic(fogc,[cam.d*1.3,cam.d*3.4+700]);
+  if(XON&&XSIM&&fac&&!evid&&cam.d<2600){const LC={r:[],a:[],g:[]},tt=XSIM.clock();for(const h of XSIM.heads){const st=XSIM.light(h.c,h.ph,tt),z=hX(h.x,h.y)+(st==='r'?3.75:st==='a'?3.45:3.15),px=-h.hy*.15,py=h.hx*.15,cx=h.x-h.hx*.19,cy=h.y-h.hy*.19;
+      LC[st].push(...W(cx-px,cy-py,z-.15),...W(cx+px,cy+py,z-.15),...W(cx+px,cy+py,z+.15),...W(cx-px,cy-py,z-.15),...W(cx+px,cy+py,z+.15),...W(cx-px,cy-py,z+.15))}
+    gl.useProgram(PU);gl.uniformMatrix4fv(gl.getUniformLocation(PU,'m'),false,MVP);const cu2=gl.getUniformLocation(PU,'col');
+    for(const [k,col] of [['r',[1,.18,.12]],['a',[1,.7,.1]],['g',[.25,1,.45]]]){if(!LC[k].length)continue;buf('xl'+k,new Float32Array(LC[k]));attr(PU,'p','xl'+k,3);gl.uniform4f(cu2,col[0],col[1],col[2],1);gl.drawArrays(gl.TRIANGLES,0,LC[k].length/3);off()}}
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
   if(G.sk){gl.depthMask(false);gl.useProgram(PK);gl.uniformMatrix4fv(gl.getUniformLocation(PK,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PK,'k'),C.dark?.35:.2);gl.bindBuffer(gl.ARRAY_BUFFER,B.sk);const l0=gl.getAttribLocation(PK,'p'),l1=gl.getAttribLocation(PK,'a');gl.enableVertexAttribArray(l0);gl.vertexAttribPointer(l0,3,gl.FLOAT,false,16,0);gl.enableVertexAttribArray(l1);gl.vertexAttribPointer(l1,1,gl.FLOAT,false,16,12);gl.drawArrays(gl.TRIANGLES,0,G.sk);off();gl.depthMask(true)}
   if(cam.d<1300){gl.useProgram(PL);gl.uniformMatrix4fv(gl.getUniformLocation(PL,'m'),false,MVP);attr(PL,'p','lp',3);attr(PL,'c','lc',4);gl.drawArrays(gl.LINES,0,G.ln);off()}
@@ -768,9 +864,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const NOTE={'108941034':'q30','108941040':'q31','113120039':'q32'};
 const fmt=n=>n.toLocaleString(document.documentElement.lang||'ru',{maximumFractionDigits:1});
 function showCard(){
-  card.classList.toggle('empty',sel==null);if(sel==null){if(XON&&XD){const nl=XD.b.filter(b=>b[4]%10).length;card.innerHTML=`<span class="eyebrow">${T('q98')}</span><h3>${T('q20')}</h3><p>${T('q106').replace('{b}',fmt(XD.b.length)).replace('{l}',fmt(nl))}</p><p>${T(XT?'q107':'q108')}</p>`;return}card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T(fac&&!evid?'q73':'q21')}</p>`;return}
+  card.classList.toggle('empty',sel==null);if(sel==null){if(XON&&XD){const nl=XD.b.filter(b=>b[4]%10).length;card.innerHTML=`<span class="eyebrow">${T('q98')}</span><h3>${T('q20')}</h3><p>${T('q106').replace('{b}',fmt(XD.b.length)).replace('{l}',fmt(nl))}</p><p>${T(XT?'q107':'q108')}</p>${XSIM?`<p>${T('q111').replace('{c}',fmt(XSIM.n)).replace('{t}',fmt(XSIM.all.filter(c=>c.tram).length)).replace('{s}',fmt(XSIM.CTL.length)).replace('{bs}',fmt(XSIM.BS.length)).replace('{ts}',fmt(XSIM.TS.length))}</p>`:''}`;return}card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T(fac&&!evid?'q73':'q21')}</p>`;return}
   if(sel>=20000){const b=XD.b[sel-20000],ty=Math.floor(b[4]/10),hs=b[4]%10,fp=[];for(let i=0;i<b[6].length;i+=2)fp.push([b[6][i]/10,b[6][i+1]/10]);const a=Math.abs(area(fp)),oid=b[0].slice(1),ot=b[0][0]==='r'?'relation':'way';
-    card.innerHTML=`<span class="eyebrow">OSM ${ot}/${oid}</span><h3>${esc(xbn(b[1])||b[2]||T('q22'))}</h3>${b[1]&&b[2]?`<p>${esc(b[2])}</p>`:''}<dl><dt>${T('q86')}</dt><dd>${T(XTK[ty])} · ${b[5]&2?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3]/10)} ${T('q38')} · ${T(hs===1?'q26':hs===2?'q99':'q95')} ${hs?'<b class="gb f">F</b>':'<b class="gb e">E</b>'}</dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd></dl><a class="mono" href="https://www.openstreetmap.org/${ot}/${oid}" target="_blank" rel="noopener">${T('q29')}</a>`;return}
+    card.innerHTML=`<span class="eyebrow">OSM ${ot}/${oid}</span><h3>${esc(xbn(b[1])||b[2]||T('q22'))}</h3>${b[1]&&b[2]?`<p>${esc(b[2])}</p>`:''}<dl><dt>${T('q86')}</dt><dd>${T(XTK[ty])} · ${b[5]&2?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3]/10)} ${T('q38')} · ${T(hs===1?'q26':hs===2?'q99':hs===3?'q110':'q95')} ${hs===3?'<b class="gb b">B</b>':hs?'<b class="gb f">F</b>':'<b class="gb e">E</b>'}</dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd></dl><a class="mono" href="https://www.openstreetmap.org/${ot}/${oid}" target="_blank" rel="noopener">${T('q29')}</a>`;return}
   if(sel>=1000){const b=D.DF[sel-1000];card.innerHTML=`<span class="eyebrow">${T('q33')}</span><h3>${esc(b[0]||T('q22'))}</h3><p>${T('q34')}</p><dl><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q18')}</dt><dd>${T('q37')} <b class="gb e">E</b></dd></dl><a class="mono" href="#frames">${T('q35')}</a>`;return}
   const b=D.B[sel-1];const a=Math.abs(area(b[2]));
   card.innerHTML=`<span class="eyebrow">OSM way/${b[1]}</span><h3>${esc(b[0]||T('q22'))}</h3>${NOTE[b[1]]?`<p>${T(NOTE[b[1]])}</p>`:''}<dl>${TYK[b[5]]?`<dt>${T('q86')}</dt><dd>${T(TYK[b[5]])} · ${b[6]?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd>`:''}<dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(bH(b))} ${T('q38')} · ${T(TYH[b[5]]?'q95':b[4]?'q26':'q27')} <b class="gb e">E</b></dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd>${fac&&!evid&&!TYH[b[5]]?`<dt>${T('q71')}</dt><dd>${T('q'+matOf(b).key)} · <i>${T('q72')}</i></dd>`:''}</dl><a class="mono" href="https://www.openstreetmap.org/way/${b[1]}" target="_blank" rel="noopener">${T('q29')}</a>`}
@@ -823,7 +919,7 @@ document.addEventListener('fullscreenchange',()=>{setTimeout(()=>{resize();fsLab
 addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('fs')){box.classList.remove('fs');document.documentElement.classList.remove('q3-fs');resize();fsLabel()}});
 /* ---------- loop ---------- */
 function tick(now){requestAnimationFrame(tick);if(!visible)return;
-  if(inited&&fac&&!evid&&!reduce){const t=now||performance.now(),dt=trT?(t-trT)/1000:0;if(t-trT>=45){TRF.step(dt);if(TRAMS)TRAMS.step(dt);trT=t;dirty=true}}else trT=0;
+  if(inited&&fac&&!evid&&!reduce){const t=now||performance.now(),dt=trT?(t-trT)/1000:0;if(t-trT>=45){TRF.step(dt);if(TRAMS)TRAMS.step(dt);if(XON&&XSIM)XSIM.step(dt,sunIn?+sunIn.value:14.5);trT=t;dirty=true}}else trT=0;
   if(goal){const k=.12;cam.d+= (goal.d-cam.d)*k;cam.ph+=(goal.ph-cam.ph)*k;let dt=goal.th-cam.th;dt=Math.atan2(Math.sin(dt),Math.cos(dt));cam.th+=dt*k;for(let i=0;i<3;i++)cam.t[i]+=(goal.t[i]-cam.t[i])*k;if(Math.abs(goal.d-cam.d)<.5&&Math.abs(dt)<.002)goal=null;dirty=true}
   if(auto){cam.th+=.0012;dirty=true}
   if(dirty){dirty=false;draw()}}
@@ -837,5 +933,5 @@ if(window.__d11S)S=window.__d11S;
 /* v4.3.1: build the quarter only when the section comes near the screen, so the page itself loads without the 3D work */
 function init(){if(inited)return;inited=true;palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick()}
 if('IntersectionObserver' in window&&!/^#q3d/.test(location.hash)){new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();init()}},{rootMargin:'600px 0px'}).observe(box)}else init();
-window.__q3d={x:on=>setX(on),xready:()=>!!XG,xn:()=>XG&&XG.n,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
+window.__q3d={x:on=>setX(on),xready:()=>!!XG,xn:()=>XG&&XG.n,xsim:()=>XSIM,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
 })();
