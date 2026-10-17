@@ -435,6 +435,8 @@ section{padding-block:clamp(64px,9vw,120px);border-bottom:1px solid var(--rule)}
 .q3lab{position:absolute;inset:0;pointer-events:none}
 .ql{position:absolute;left:0;top:0;white-space:nowrap;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-2);background:color-mix(in srgb,var(--paper) 78%,transparent);padding:1px 6px;border-radius:3px;margin:-9px 0 0 -20px;text-transform:uppercase}
 .ql.home{color:#fff;background:var(--rose);font-weight:500}
+.ql.xl{font-size:10px;color:var(--ink);background:color-mix(in srgb,var(--paper) 62%,transparent)}
+.q3tools button[aria-busy=true]{cursor:progress;opacity:.6}
 .ql.pano{pointer-events:auto;text-decoration:none;color:#fff;background:var(--rose);border-radius:99px;min-width:26px;text-align:center;margin:-20px 0 0 -13px;padding:3px 7px;box-shadow:0 0 0 3px color-mix(in srgb,var(--rose) 25%,transparent)}
 .ql.pano:hover{transform-origin:center;filter:brightness(1.15)}
 .q3tools{position:absolute;left:12px;top:12px;right:12px;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none}

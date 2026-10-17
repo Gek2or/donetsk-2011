@@ -52,3 +52,9 @@ try:
     runpy.run_path("tools/cache_sounds.py", run_name="__main__")
 except Exception as ex:  # noqa: BLE001
     print("sounds skipped:", ex, file=sys.stderr)
+
+# v5.5: SRTM relief for the 3D reference map, into photos/terrain/
+try:
+    runpy.run_path("tools/cache_terrain.py", run_name="__main__")
+except Exception as ex:  # noqa: BLE001
+    print("terrain skipped:", ex, file=sys.stderr)
