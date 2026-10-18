@@ -518,6 +518,7 @@ function xobb2(pts){let best=null;for(let i=0;i<pts.length;i++){const a=pts[i],b
     for(const q of pts){const s=q[0]*u[0]+q[1]*u[1],t=q[0]*v[0]+q[1]*v[1];s0=Math.min(s0,s);s1=Math.max(s1,s);t0=Math.min(t0,t);t1=Math.max(t1,t)}const A=(s1-s0)*(t1-t0);
     if(!best||A<best.A){const cs=(s0+s1)/2,ct=(t0+t1)/2;best={A,c:[u[0]*cs+v[0]*ct,u[1]*cs+v[1]*ct],u,v,a:(s1-s0)/2,b:(t1-t0)/2}}}
   if(best&&best.b>best.a){const {u,v,a,b}=best;best.u=v;best.v=u.map(x=>-x);best.a=b;best.b=a}return best}
+const rgbi=v=>[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255];
 function buildX(){const X=XD;if(!X)return;XS=false;
   const P=[],N=[],Cc=[],I=[],FF=[],Lp=[],Lc=[];const dk=C.dark,tn=c=>dk?c.map(v=>v*.6):mix(c,C.paper,.12),ill=fac&&!evid;
   const push=(v,n,c,id,f)=>{P.push(v[0],v[1],v[2]);N.push(n[0],n[1],n[2]);Cc.push(c[0],c[1],c[2]);I.push(id);if(f)FF.push(f[0],f[1],f[2],f[3]);else FF.push(0,0,0,0)};
@@ -558,7 +559,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const PAL=[[.93,.91,.86],[.91,.84,.67],[.73,.81,.85],[.62,.36,.28],[.86,.75,.52]],APAL=[[.86,.85,.8],[.75,.74,.71],[.86,.75,.52],[.62,.36,.28]],RP=ROOF.house;
   const KIND=[2,1,4,5,1,5,5,0,2,5];
   X.b.forEach((b,k)=>{const id=20000+k,ty=Math.floor(b[4]/10),hs=b[4]%10,h=b[3]/10;let pts=xy(b[6]);const ccw=area(pts)>0?pts:pts.slice().reverse();const r=hash(b[0]);
-    let col,roof;if(evid){col=C.gF;roof=C.gE}else if(ill){col=tn(ty===1||ty===4?APAL[r%4]:ty===0||ty===8?PAL[r%5]:ty===2?[.84,.82,.76]:[.8,.79,.75]);roof=tn(ty===0||ty===8?RP[(r>>>4)%4]:[.56,.56,.54])}else{col=hs?C.lvl:C.est;roof=hs?col:C.roof}
+    let col,roof;if(evid){col=C.gF;roof=C.gE}else if(ill){col=tn(ty===1||ty===4?APAL[r%4]:ty===0||ty===8?PAL[r%5]:ty===2?[.84,.82,.76]:[.8,.79,.75]);roof=tn(ty===0||ty===8?RP[(r>>>4)%4]:[.56,.56,.54]);if(b[7]>=0)col=tn(rgbi(b[7]));if(b[8]>=0)roof=tn(rgbi(b[8]))}else{col=hs?C.lvl:C.est;roof=hs?col:C.roof}
     let base=Infinity;for(const p of ccw)base=Math.min(base,hX(p[0],p[1]));base-=.4;
     if(ty===7){const z0=base+.4+h,t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],z0),[0,1,0],roof,id);for(let i=0;i<ccw.length;i++){const a=ccw[i],c=ccw[(i+1)%ccw.length];line(W(a[0],a[1],z0),W(c[0],c[1],z0))}return}
     const top=base+.4+h,cb=col.map(v=>v*.88),kd=ill?KIND[ty]:0;
@@ -633,12 +634,26 @@ function buildX(){const X=XD;if(!X)return;XS=false;
           quad(W(px,py,z+6.3),W(x,y,z+6.3),W(x,y,z+6.42),W(px,py,z+6.42),pole,0)}})}
     /* trees in the mapped woods and parks: positions illustrative, density by land use */
     {const trk=dk?[.18,.14,.11]:[.38,.3,.24];let sd=20111015;const rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+      const ytree=(x,y,small)=>{const z=hX(x,y),s=(small?3.6:5)+rr()*3,h=hash(x.toFixed(1)+y),gc=tn([[.33,.46,.26],[.4,.5,.28],[.48,.52,.29],[.3,.42,.28],[.52,.5,.27]][h%5]);
+          for(const [ux,uy] of [[.16,0],[0,.16]])quad(W(x-ux,y-uy,z),W(x+ux,y+uy,z),W(x+ux*.7,y+uy*.7,z+s*.5),W(x-ux*.7,y-uy*.7,z+s*.5),trk,0);
+          const r=s*.42,cz=z+s*.6,top=W(x,y,cz+r*1.05),bot=W(x,y,cz-r*.4),ring=[];for(let q=0;q<5;q++){const a=q*1.2566+(h%7);ring.push(W(x+Math.cos(a)*r,y+Math.sin(a)*r,cz))}
+          for(let q=0;q<5;q++){const a=ring[q],b=ring[(q+1)%5];tri3(a,b,top,gc,0);tri3(b,a,bot,mix(gc,[0,0,0],.22),0)}};
+      const yt=X.yt||[];for(let i=0;i<yt.length;i+=2)ytree(yt[i]/10,yt[i+1]/10,true);
       for(let j=0;j<=g.ny;j++)for(let i=0;i<=g.nx;i++){const k=g.c[j][i];if(k!=='f'&&k!=='g')continue;const n=k==='f'?2:(rr()<.3?1:0);
         for(let m=0;m<n;m++){const x=g.x+i*g.s+(rr()-.5)*16,y=g.y+j*g.s+(rr()-.5)*16;if(x>t0-6&&x<t2+6&&y>t1-6&&y<t3+6)continue;
           const z=hX(x,y),s=5+rr()*5,h=hash(x.toFixed(1)+y),gc=tn([[.33,.46,.26],[.4,.5,.28],[.48,.52,.29],[.3,.42,.28],[.52,.5,.27]][h%5]);
           for(const [ux,uy] of [[.2,0],[0,.2]])quad(W(x-ux,y-uy,z),W(x+ux,y+uy,z),W(x+ux*.7,y+uy*.7,z+s*.55),W(x-ux*.7,y-uy*.7,z+s*.55),trk,0);
           const r=s*.4,cz=z+s*.62,top=W(x,y,cz+r*1.1),bot=W(x,y,cz-r*.4),ring=[];for(let q=0;q<5;q++){const a=q*1.2566+(h%7);ring.push(W(x+Math.cos(a)*r,y+Math.sin(a)*r,cz))}
           for(let q=0;q<5;q++){const a=ring[q],b=ring[(q+1)%5];tri3(a,b,top,gc,0);tri3(b,a,bot,mix(gc,[0,0,0],.22),0)}}}}}
+  /* v5.9: fences and walls mapped in OSM, sports pitches and playgrounds, storage tanks */
+  if(ill){const fcol=[dk?[.3,.32,.3]:[.66,.68,.63],dk?[.36,.35,.33]:[.78,.76,.71],dk?[.33,.32,.3]:[.7,.67,.6]],fh=[1.7,2.3,1.2];
+    for(const [k,f] of (X.fe||[])){const p=xy(f);for(let i=1;i<p.length;i++){const a=p[i-1],c=p[i];if(Math.hypot(c[0]-a[0],c[1]-a[1])<.3)continue;const za=hX(a[0],a[1]),zc=hX(c[0],c[1]);const fx=-(c[1]-a[1]),fy=c[0]-a[0];if(fx*-.7+fy*-.7<0)quad(W(a[0],a[1],za-.1),W(c[0],c[1],zc-.1),W(c[0],c[1],zc+fh[k]),W(a[0],a[1],za+fh[k]),fcol[k],0);else quad(W(c[0],c[1],zc-.1),W(a[0],a[1],za-.1),W(a[0],a[1],za+fh[k]),W(c[0],c[1],zc+fh[k]),fcol[k],0)}}
+    const PC=[dk?[.2,.33,.2]:[.4,.6,.37],dk?[.36,.22,.18]:[.66,.4,.31],dk?[.3,.3,.28]:[.62,.6,.55],dk?[.36,.33,.26]:[.8,.72,.56]],lc=dk?[.6,.6,.58,.7]:[.97,.97,.95,.8];
+    for(const [k,f] of (X.pt||[])){const r=xy(f),cc=area(r)>0?r:r.slice().reverse();let z=Infinity;for(const q of cc)z=Math.min(z,hX(q[0],q[1]));z+=.36;const tt=tri(cc);for(let i=0;i<tt.length;i+=3)for(const m of [tt[i],tt[i+1],tt[i+2]])push(W(cc[m][0],cc[m][1],z),[0,1,0],PC[k],0);
+      if(k<2)for(let i=0;i<cc.length;i++){const a=cc[i],c=cc[(i+1)%cc.length];Lp.push(...W(a[0],a[1],z+.02),...W(c[0],c[1],z+.02));Lc.push(...lc,...lc)}}
+    const tkc=dk?[.36,.37,.37]:[.8,.8,.78];
+    for(const [x0,y0,r0,h0] of (X.tk||[])){const x=x0/10,y=y0/10,r=r0/10,h=h0/10,z=hX(x,y)-.2,n=16;for(let i=0;i<n;i++){const a0=i/n*6.2832,a1=(i+1)/n*6.2832;quad(W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z),W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z),W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z+h),W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z+h),tkc,0);
+        push(W(x,y,z+h+r*.08),[0,1,0],tkc,0);push(W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z+h),[0,1,0],tkc,0);push(W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z+h),[0,1,0],tkc,0)}}}
   XG_L={lp:new Float32Array(XLP),lg:new Float32Array(XLG)};
   XG={n:P.length/3,ln:Lp.length/3,lpn:XG_L.lp.length/3,lgn:XG_L.lg.length/5};buf('xlpt',XG_L.lp);buf('xlgl',XG_L.lg);/* v5.8: sort the triangles into 500 m tiles (base and detail apart) so the draw can skip tiles outside the view and detail far away */
   {const nt=P.length/9,TS=500,[f0,f1,f2,f3]=X.f,TX=Math.ceil((f2-f0)/TS),TY=Math.ceil((f3-f1)/TS),key=new Uint16Array(nt),cnt=new Uint32Array(TX*TY*2+1);
@@ -956,9 +971,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const NOTE={'108941034':'q30','108941040':'q31','113120039':'q32'};
 const fmt=n=>n.toLocaleString(document.documentElement.lang||'ru',{maximumFractionDigits:1});
 function showCard(){
-  card.classList.toggle('empty',sel==null);if(sel==null){if(XON&&XD){const nl=XD.b.filter(b=>b[4]%10).length;card.innerHTML=`<span class="eyebrow">${T('q98')}</span><h3>${T('q20')}</h3><p>${T('q106').replace('{b}',fmt(XD.b.length)).replace('{l}',fmt(nl))}</p><p>${T(XT?'q107':'q108')}</p>${XSIM?`<p>${T('q111').replace('{c}',fmt(XSIM.n)).replace('{t}',fmt(XSIM.all.filter(c=>c.tram).length)).replace('{s}',fmt(XSIM.CTL.length)).replace('{bs}',fmt(XSIM.BS.length)).replace('{ts}',fmt(XSIM.TS.length))}</p>`:''}`;return}card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T(fac&&!evid?'q73':'q21')}</p>`;return}
+  card.classList.toggle('empty',sel==null);if(sel==null){if(XON&&XD){const nl=XD.b.filter(b=>{const h=b[4]%10;return h===1||h===2}).length;card.innerHTML=`<span class="eyebrow">${T('q98')}</span><h3>${T('q20')}</h3><p>${T('q106').replace('{b}',fmt(XD.b.length)).replace('{l}',fmt(nl))}</p><p>${T(XT?'q107':'q108')}</p>${XSIM?`<p>${T('q111').replace('{c}',fmt(XSIM.n)).replace('{t}',fmt(XSIM.all.filter(c=>c.tram).length)).replace('{s}',fmt(XSIM.CTL.length)).replace('{bs}',fmt(XSIM.BS.length)).replace('{ts}',fmt(XSIM.TS.length))}</p>`:''}`;return}card.innerHTML=`<span class="eyebrow">${T('q19')}</span><h3>${T('q20')}</h3><p>${T(fac&&!evid?'q73':'q21')}</p>`;return}
   if(sel>=20000){const b=XD.b[sel-20000],ty=Math.floor(b[4]/10),hs=b[4]%10,fp=[];for(let i=0;i<b[6].length;i+=2)fp.push([b[6][i]/10,b[6][i+1]/10]);const a=Math.abs(area(fp)),oid=b[0].slice(1),ot=b[0][0]==='r'?'relation':'way';
-    card.innerHTML=`<span class="eyebrow">OSM ${ot}/${oid}</span><h3>${esc(xbn(b[1])||b[2]||T('q22'))}</h3>${b[1]&&b[2]?`<p>${esc(b[2])}</p>`:''}<dl><dt>${T('q86')}</dt><dd>${T(XTK[ty])} · ${b[5]&2?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3]/10)} ${T('q38')} · ${T(hs===1?'q26':hs===2?'q99':hs===3?'q110':'q95')} ${hs===3?'<b class="gb b">B</b>':hs?'<b class="gb f">F</b>':'<b class="gb e">E</b>'}</dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd></dl><a class="mono" href="https://www.openstreetmap.org/${ot}/${oid}" target="_blank" rel="noopener">${T('q29')}</a>`;return}
+    card.innerHTML=`<span class="eyebrow">OSM ${ot}/${oid}</span><h3>${esc(xbn(b[1])||b[2]||T('q22'))}</h3>${b[1]&&b[2]?`<p>${esc(b[2])}</p>`:''}<dl><dt>${T('q86')}</dt><dd>${T(XTK[ty])} · ${b[5]&2?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(b[3]/10)} ${T('q38')} · ${T(hs===1?'q26':hs===2?'q99':hs===3?'q110':hs===4?'q112':'q95')} ${hs===3?'<b class="gb b">B</b>':hs===1||hs===2?'<b class="gb f">F</b>':'<b class="gb e">E</b>'}</dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd></dl><a class="mono" href="https://www.openstreetmap.org/${ot}/${oid}" target="_blank" rel="noopener">${T('q29')}</a>`;return}
   if(sel>=1000){const b=D.DF[sel-1000];card.innerHTML=`<span class="eyebrow">${T('q33')}</span><h3>${esc(b[0]||T('q22'))}</h3><p>${T('q34')}</p><dl><dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q18')}</dt><dd>${T('q37')} <b class="gb e">E</b></dd></dl><a class="mono" href="#frames">${T('q35')}</a>`;return}
   const b=D.B[sel-1];const a=Math.abs(area(b[2]));
   card.innerHTML=`<span class="eyebrow">OSM way/${b[1]}</span><h3>${esc(b[0]||T('q22'))}</h3>${NOTE[b[1]]?`<p>${T(NOTE[b[1]])}</p>`:''}<dl>${TYK[b[5]]?`<dt>${T('q86')}</dt><dd>${T(TYK[b[5]])} · ${b[6]?`${T('q96')} <b class="gb f">F</b>`:`${T('q97')} <b class="gb e">E</b>`}</dd>`:''}<dt>${T('q23')}</dt><dd>${T('q24')} <b class="gb f">F</b></dd><dt>${T('q25')}</dt><dd>${fmt(bH(b))} ${T('q38')} · ${T(TYH[b[5]]?'q95':b[4]?'q26':'q27')} <b class="gb e">E</b></dd><dt>${T('q28')}</dt><dd>≈ ${fmt(Math.round(a))} ${T('q39')}</dd>${fac&&!evid&&!TYH[b[5]]?`<dt>${T('q71')}</dt><dd>${T('q'+matOf(b).key)} · <i>${T('q72')}</i></dd>`:''}</dl><a class="mono" href="https://www.openstreetmap.org/way/${b[1]}" target="_blank" rel="noopener">${T('q29')}</a>`}
