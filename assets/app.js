@@ -739,6 +739,8 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-17-v58',d:'2026-10-17',ty:'site',v:'v5.8',cta:['model.html#q3d','q74']},
+ {id:'2026-10-17-v57',d:'2026-10-17',ty:'site',v:'v5.7',cta:['model.html#q3d','q74']},
  {id:'2026-10-17-v56',d:'2026-10-17',ty:'site',v:'v5.6',cta:['model.html#q3d','q74']},
  {id:'2026-10-17-v55',d:'2026-10-17',ty:'site',v:'v5.5',cta:['model.html#q3d','q74']},
  {id:'2026-10-17-v54',d:'2026-10-17',ty:'site',v:'v5.4',cta:['model.html#q3d','q74']},

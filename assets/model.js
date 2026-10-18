@@ -495,7 +495,7 @@ function build(evid){FEN=[];
     for(const q of TWL)LP.push(...q);}
   /* panorama pins */
   const pin=[];for(const p of D.P){const g=H(p[5],p[6]);pin.push(...W(p[5],p[6],g+.3),...W(p[5],p[6],g+14))}
-  G={LP:new Float32Array(LP),lpn:LP.length/3,LG:new Float32Array(LG),lgn:LG.length/5,F:new Float32Array(F),SK:new Float32Array(SK),sk:SK.length/4,P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(Cl),I:new Float32Array(I),n:P.length/3,L:new Float32Array(Lp),LC:new Float32Array(Lc),ln:Lp.length/3,H:new Float32Array(Hc),hn:Hc.length/3,pin:new Float32Array(pin),pn:pin.length/3};
+  G={LP:new Float32Array(LP),lpn:LP.length/3,LG:new Float32Array(LG),lgn:LG.length/5,F:pk(F,Int16Array,32),SK:new Float32Array(SK),sk:SK.length/4,P:new Float32Array(P),N:pk(N,Int8Array,127),C:pk(Cl,Uint8ClampedArray,255),I:new Uint16Array(I),n:P.length/3,L:new Float32Array(Lp),LC:new Float32Array(Lc),ln:Lp.length/3,H:new Float32Array(Hc),hn:Hc.length/3,pin:new Float32Array(pin),pn:pin.length/3};
   upload();smDirty=true;XS=true;if(XON)buildX();
 }
 /* ---------- v5.5: L3 of the scale ladder. The 4.37 x 2.84 km reference map around the quarter (assets/district.json, built by district.py
@@ -503,7 +503,7 @@ function build(evid){FEN=[];
    heights from building:levels / height or a typical height for the type (class E), roads, rails, water, mapped trees and land-use colours.
    Terrain: SRTM (photos/terrain/district.json, cached by the site workflow) where present, otherwise the quarter's relief fading out.
    Loaded only when the "Reference map" view is switched on. ---------- */
-let XD=null,XT=null,XON=false,XG=null,XS=true,XLOAD=null;
+let XG_L=null,XD=null,XT=null,XON=false,XG=null,XS=true,XLOAD=null;
 const TXE=TX+TS*(TH[0].length-1),TYE=TY+TS*(TH.length-1);
 function xtH(x,y){const g=XT,fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,c=Math.max(0,Math.min(g.nx-2,Math.floor(fx))),r=Math.max(0,Math.min(g.ny-2,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-c)),v=Math.max(0,Math.min(1,fy-r)),h=g.h,n=g.nx;
   return((h[r*n+c]*(1-u)+h[r*n+c+1]*u)*(1-v)+(h[(r+1)*n+c]*(1-u)+h[(r+1)*n+c+1]*u)*v)/10}
@@ -514,6 +514,10 @@ function xobb(pts){let best=null;const ar=Math.abs(area(pts));for(let i=0;i<pts.
     for(const q of pts){const s=q[0]*u[0]+q[1]*u[1],t=q[0]*v[0]+q[1]*v[1];s0=Math.min(s0,s);s1=Math.max(s1,s);t0=Math.min(t0,t);t1=Math.max(t1,t)}const A=(s1-s0)*(t1-t0);
     if(!best||A<best.A){const cs=(s0+s1)/2,ct=(t0+t1)/2;best={A,c:[u[0]*cs+v[0]*ct,u[1]*cs+v[1]*ct],u,v,a:(s1-s0)/2,b:(t1-t0)/2}}}
   if(!best||ar/best.A<.86||best.A>320)return null;if(best.b>best.a){const {u,v,a,b}=best;best.u=v;best.v=u.map(x=>-x);best.a=b;best.b=a}return best}
+function xobb2(pts){let best=null;for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(L<1)continue;const u=[dx/L,dy/L],v=[-u[1],u[0]];let s0=1e9,s1=-1e9,t0=1e9,t1=-1e9;
+    for(const q of pts){const s=q[0]*u[0]+q[1]*u[1],t=q[0]*v[0]+q[1]*v[1];s0=Math.min(s0,s);s1=Math.max(s1,s);t0=Math.min(t0,t);t1=Math.max(t1,t)}const A=(s1-s0)*(t1-t0);
+    if(!best||A<best.A){const cs=(s0+s1)/2,ct=(t0+t1)/2;best={A,c:[u[0]*cs+v[0]*ct,u[1]*cs+v[1]*ct],u,v,a:(s1-s0)/2,b:(t1-t0)/2}}}
+  if(best&&best.b>best.a){const {u,v,a,b}=best;best.u=v;best.v=u.map(x=>-x);best.a=b;best.b=a}return best}
 function buildX(){const X=XD;if(!X)return;XS=false;
   const P=[],N=[],Cc=[],I=[],FF=[],Lp=[],Lc=[];const dk=C.dark,tn=c=>dk?c.map(v=>v*.6):mix(c,C.paper,.12),ill=fac&&!evid;
   const push=(v,n,c,id,f)=>{P.push(v[0],v[1],v[2]);N.push(n[0],n[1],n[2]);Cc.push(c[0],c[1],c[2]);I.push(id);if(f)FF.push(f[0],f[1],f[2],f[3]);else FF.push(0,0,0,0)};
@@ -563,7 +567,13 @@ function buildX(){const X=XD;if(!X)return;XS=false;
     if(hip){const {c,u,v,a:la,b:lb}=hip;const rh=Math.min(la,lb)*Math.tan(24*Math.PI/180),e=.4,de=e*Math.tan(24*Math.PI/180),P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z),rr=Math.max(0,la-lb);
       const A=P2(-la-e,-lb-e,top-de),B2=P2(la+e,-lb-e,top-de),C2=P2(la+e,lb+e,top-de),D2=P2(-la-e,lb+e,top-de),E1=P2(-rr,0,top+rh),E2=P2(rr,0,top+rh);
       tri3(A,B2,E2,roof,id);tri3(A,E2,E1,roof,id);tri3(C2,D2,E1,roof,id);tri3(C2,E1,E2,roof,id);tri3(B2,C2,E2,roof,id);tri3(D2,A,E1,roof,id);line(E1,E2)}
-    else{const t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roof,id)}});
+    else{const t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roof,id);
+      /* v5.8: flat roofs of multi-storey buildings get a parapet; nine storeys and more a lift machine room (typical, class E) */
+      if(ill&&h>=9&&ty!==2){const pc=col.map(v=>v*.8);for(let i=0;i<ccw.length;i++){const a=ccw[i],c=ccw[(i+1)%ccw.length];if(Math.hypot(c[0]-a[0],c[1]-a[1])<2)continue;quad(W(a[0],a[1],top),W(c[0],c[1],top),W(c[0],c[1],top+.55),W(a[0],a[1],top+.55),pc,id)}}
+      if(ill&&h>=27&&(ty===1||ty===9||ty===4)){const o=xobb2(ccw);if(o&&o.a>6){const {c,u,v}=o,P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z),rc2=mix(col,[.5,.5,.5],.3);
+          const bx=(s0,s1,t0,t1,z0,z1)=>{quad(P2(s0,t0,z0),P2(s1,t0,z0),P2(s1,t0,z1),P2(s0,t0,z1),rc2,id);quad(P2(s1,t0,z0),P2(s1,t1,z0),P2(s1,t1,z1),P2(s1,t0,z1),rc2,id);quad(P2(s1,t1,z0),P2(s0,t1,z0),P2(s0,t1,z1),P2(s1,t1,z1),rc2,id);quad(P2(s0,t1,z0),P2(s0,t0,z0),P2(s0,t0,z1),P2(s0,t1,z1),rc2,id);quad(P2(s0,t0,z1),P2(s1,t0,z1),P2(s1,t1,z1),P2(s0,t1,z1),mix(rc2,[0,0,0],.15),id)};
+          bx(-1.8,1.8,-1.4,1.4,top,top+2.6);if(o.a>18){bx(o.a*.55-1.6,o.a*.55+1.6,-1.3,1.3,top,top+2.4);bx(-o.a*.55-1.6,-o.a*.55+1.6,-1.3,1.3,top,top+2.4)}}}}});
+  const DET0=P.length/3;
   if(XSIM&&!evid){const pole=dk?[.24,.25,.26]:[.4,.41,.42],hous=dk?[.08,.08,.09]:[.14,.15,.16],plate=dk?[.6,.6,.55]:[.92,.9,.82];
     const bxw=(x,y,hx,hy,w,dpt,z0,z1,col)=>{const px=-hy,py=hx,c=[[x-px*w/2-hx*dpt/2,y-py*w/2-hy*dpt/2],[x+px*w/2-hx*dpt/2,y+py*w/2-hy*dpt/2],[x+px*w/2+hx*dpt/2,y+py*w/2+hy*dpt/2],[x-px*w/2+hx*dpt/2,y-py*w/2+hy*dpt/2]];
       for(let k=0;k<4;k++){const a=c[k],b=c[(k+1)%4];quad(W(a[0],a[1],z0),W(b[0],b[1],z0),W(b[0],b[1],z1),W(a[0],a[1],z1),col,0)}quad(W(c[0][0],c[0][1],z1),W(c[1][0],c[1][1],z1),W(c[2][0],c[2][1],z1),W(c[3][0],c[3][1],z1),col,0)};
@@ -571,8 +581,81 @@ function buildX(){const X=XD;if(!X)return;XS=false;
     const sign=(st,E,tram)=>{const e=E[st.e];if(!e)return;let s=st.s,i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;const a=e.pts[i-1],b=e.pts[i],l=(e.cum[i]-e.cum[i-1])||1,u=(s-e.cum[i-1])/l,dx=(b[0]-a[0])/l,dy=(b[1]-a[1])/l,o=(tram?3:e.lanes*3.3/2+1.6)*st.side;
       const x=a[0]+(b[0]-a[0])*u+dy*o,y=a[1]+(b[1]-a[1])*u-dx*o,z=hX(x,y);bxw(x,y,dx,dy,.08,.08,z-.2,z+2.5,pole);bxw(x,y,dx,dy,.5,.05,z+2.0,z+2.55,plate)};
     for(const st of XSIM.BS)sign(st,XSIM.RE,false);for(const st of XSIM.TS)sign(st,XSIM.TE,true)}
-  XG={n:P.length/3,ln:Lp.length/3};buf('xp',new Float32Array(P));buf('xn',new Float32Array(N));buf('xc',new Float32Array(Cc));buf('xf',new Float32Array(FF));buf('xi',new Float32Array(I));buf('xlp',new Float32Array(Lp));buf('xlc',new Float32Array(Lc))}
+  /* v5.7: streets of the reference map in detail. Joints at bends and junctions; lane markings, stop lines and zebras at the
+     signalled junctions and at the crossings mapped in OSM 2012; lamps along the main roads and trees in the mapped parks and woods
+     (positions illustrative); the overhead contact line over the tram tracks. Only with "Facades" on. */
+  const XLP=[],XLG=[];
+  if(ill){const up=[0,1,0];
+    const disc=(x,y,z,r,col,n)=>{const c=W(x,y,z);for(let j=0;j<n;j++){const a0=j/n*6.2832,a1=(j+1)/n*6.2832;push(c,up,col,0);push(W(x+Math.cos(a0)*r,y+Math.sin(a0)*r,z),up,col,0);push(W(x+Math.cos(a1)*r,y+Math.sin(a1)*r,z),up,col,0)}};
+    /* joints */
+    for(const [k,w,br,f] of X.r){if(br||k===4)continue;const pts=xy(f),r=w/20,col=k===4?fc:rc,lift=k===4?.18:.3;
+      for(let i=0;i<pts.length;i++){let need=i===0||i===pts.length-1;if(!need){const a=pts[i-1],b=pts[i],c=pts[i+1],u1=[b[0]-a[0],b[1]-a[1]],u2=[c[0]-b[0],c[1]-b[1]];need=Math.abs(u1[0]*u2[1]-u1[1]*u2[0])/((Math.hypot(...u1)*Math.hypot(...u2))||1)>.2}
+        if(need)disc(pts[i][0],pts[i][1],hX(pts[i][0],pts[i][1])+lift-.005,r,col,6)}}
+    if(XSIM){const S=XSIM,paint=dk?[.46,.46,.44]:[.95,.95,.92],WID=[14,11,8,6];
+      const at=(e,s)=>{s=Math.max(0,Math.min(e.len,s));let i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;const a=e.pts[i-1],b=e.pts[i],l=(e.cum[i]-e.cum[i-1])||1,u=(s-e.cum[i-1])/l;return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,(b[0]-a[0])/l,(b[1]-a[1])/l]};
+      /* a painted strip along an edge from s0 to s1 at lateral offset o */
+      const strip=(e,s0,s1,o,wd)=>{const n=Math.max(1,Math.ceil((s1-s0)/4));for(let k=0;k<n;k++){const a=at(e,s0+(s1-s0)*k/n),b=at(e,s0+(s1-s0)*(k+1)/n);
+          const A=[a[0]+a[3]*o,a[1]-a[2]*o],B=[b[0]+b[3]*o,b[1]-b[2]*o],nx=a[3]*wd/2,ny=-a[2]*wd/2,za=hX(A[0],A[1])+.335,zb=hX(B[0],B[1])+.335;
+          quad(W(A[0]-nx,A[1]-ny,za),W(B[0]-nx,B[1]-ny,zb),W(B[0]+nx,B[1]+ny,zb),W(A[0]+nx,A[1]+ny,za),paint,0)}};
+      /* a band across the road at s (zebra or stop line) */
+      const across=(e,s,len,width,stripes)=>{const [x,y,dx,dy]=at(e,s),hw=width/2;if(stripes){for(let o=-hw+.5;o<hw-.2;o+=1.1){const cx=x+dy*o,cy=y-dx*o,z=hX(cx,cy)+.34;
+            quad(W(cx-dy*.25-dx*len/2,cy+dx*.25-dy*len/2,z),W(cx+dy*.25-dx*len/2,cy-dx*.25-dy*len/2,z),W(cx+dy*.25+dx*len/2,cy-dx*.25+dy*len/2,z),W(cx-dy*.25+dx*len/2,cy+dx*.25+dy*len/2,z),paint,0)}}
+        else{const z=hX(x,y)+.34;quad(W(x-dy*hw-dx*len/2,y+dx*hw-dy*len/2,z),W(x+dy*hw-dx*len/2,y-dx*hw-dy*len/2,z),W(x+dy*hw+dx*len/2,y-dx*hw+dy*len/2,z),W(x-dy*hw+dx*len/2,y+dx*hw+dy*len/2,z),paint,0)}};
+      S.RE.forEach((e,ei)=>{if(S.inQ(e.pts[e.pts.length>>1])||e.cls>2||e.len<20)return;const wd=WID[e.cls],a=8,b=e.len-8;if(b<=a)return;
+        if(!e.ow){for(let s=a;s<b;s+=9)strip(e,s,Math.min(b,s+3),0,.13);if(e.lanes>=4)for(const o of [-3.3,3.3])for(let s=a;s<b;s+=12)strip(e,s,Math.min(b,s+3),o,.11)}
+        else if(e.lanes>=2)for(let l=1;l<e.lanes;l++){const o=(l-e.lanes/2)*3.3;for(let s=a;s<b;s+=12)strip(e,s,Math.min(b,s+3),o,.11)}});
+      /* stop lines and zebras before every signalled approach */
+      S.RE.forEach((e,ei)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){const c=S.CTL.find(c=>c.nodes.includes(n));if(!c||(dir<0&&e.ow)||e.len<14||S.inQ(e.pts[e.pts.length>>1]))continue;const wd=e.cls<=3?WID[e.cls]:6;
+          const s=dir>0?e.len:0,sg=dir>0?-1:1;across(e,s+sg*3.2,3,wd,true);if(!c.ped)across(e,s+sg*5.6,.35,e.ow?wd:wd/2,false)}});
+      for(const cr of S.CR){const e=S.RE[cr.e];if(!e)continue;across(e,cr.s,3,e.cls<=3?WID[e.cls]:6,true)}
+      /* v5.8: pavements with a kerb along the main roads (both sides, 3 m) */
+      const pave=dk?[.27,.28,.27]:[.79,.78,.74],kerb=dk?[.34,.34,.33]:[.86,.85,.82];
+      S.RE.forEach(e=>{if(S.inQ(e.pts[e.pts.length>>1])||e.cls>2||e.len<16)return;const wd=WID[e.cls],tr=Math.max(9,wd*.8);if(e.len<tr*2+4)return;for(const side of e.ow?[1]:[1,-1]){const o0=(wd/2)*side,o1=(wd/2+3.2)*side,n=Math.max(1,Math.ceil((e.len-2*tr)/8));
+          for(let k=0;k<n;k++){const s0=tr+(e.len-2*tr)*k/n,s1=tr+(e.len-2*tr)*(k+1)/n,a=at(e,s0),b=at(e,s1);const A0=[a[0]+a[3]*o0,a[1]-a[2]*o0],A1=[a[0]+a[3]*o1,a[1]-a[2]*o1],B0=[b[0]+b[3]*o0,b[1]-b[2]*o0],B1=[b[0]+b[3]*o1,b[1]-b[2]*o1];
+            const z=p=>hX(p[0],p[1])+.45;if(side<0)quad(W(A0[0],A0[1],z(A0)),W(B0[0],B0[1],z(B0)),W(B1[0],B1[1],z(B1)),W(A1[0],A1[1],z(A1)),pave,0);else quad(W(A1[0],A1[1],z(A1)),W(B1[0],B1[1],z(B1)),W(B0[0],B0[1],z(B0)),W(A0[0],A0[1],z(A0)),pave,0);quad(W(A0[0],A0[1],z(A0)-.17),W(B0[0],B0[1],z(B0)-.17),W(B0[0],B0[1],z(B0)),W(A0[0],A0[1],z(A0)),kerb,0)}}});
+      /* bus shelters of the usual period type at the bus stops mapped in 2012 (form illustrative) */
+      const shw=dk?[.3,.32,.33]:[.66,.7,.72],shr=dk?[.22,.23,.24]:[.5,.52,.54];
+      for(const st of S.BS){const e=S.RE[st.e];if(!e)continue;const [x0,y0,dx,dy]=at(e,st.s),o=(WID[Math.min(3,e.cls)]/2+2.6)*st.side,x=x0+dy*o,y=y0-dx*o,z=hX(x,y)+.45,nx=dy*st.side,ny=-dx*st.side;
+        const P3=(s,t,h)=>W(x+dx*s+nx*t,y+dy*s+ny*t,z+h);quad(P3(-2.6,.9,0),P3(2.6,.9,0),P3(2.6,.9,2.4),P3(-2.6,.9,2.4),shw,0);for(const s of [-2.6,2.6])quad(P3(s,-.7,0),P3(s,.9,0),P3(s,.9,2.4),P3(s,-.7,2.4),shw,0);
+        quad(P3(-2.9,-1.1,2.4),P3(2.9,-1.1,2.4),P3(2.9,1.1,2.55),P3(-2.9,1.1,2.55),shr,0)}
+      /* lamps along the main roads: one every 36 m on each side, staggered */
+      const pole=dk?[.26,.27,.28]:[.48,.49,.5],head=dk?[.2,.2,.2]:[.32,.33,.34];
+      S.RE.forEach((e,ei)=>{if(S.inQ(e.pts[e.pts.length>>1])||e.cls>2||e.len<25)return;const wd=WID[e.cls];for(const side of e.ow?[1]:[1,-1])for(let s=(side>0?6:24);s<e.len-6;s+=36){
+          const [x,y,dx,dy]=at(e,s),o=(wd/2+1.3)*side,px=x+dy*o,py=y-dx*o,z=hX(px,py),ax=-dy*side,ay=dx*side;
+          for(let k=0;k<3;k++){const t0=k*2.094,t1=t0+2.094,r=.11;quad(W(px+Math.cos(t0)*r,py+Math.sin(t0)*r,z-.2),W(px+Math.cos(t1)*r,py+Math.sin(t1)*r,z-.2),W(px+Math.cos(t1)*r*.6,py+Math.sin(t1)*r*.6,z+8.2),W(px+Math.cos(t0)*r*.6,py+Math.sin(t0)*r*.6,z+8.2),pole,0)}
+          const hx=px+ax*1.6,hy=py+ay*1.6;quad(W(px,py,z+8.1),W(hx,hy,z+8.1),W(hx,hy,z+8.25),W(px,py,z+8.25),pole,0);
+          quad(W(hx-ax*.4-dx*.2,hy-ay*.4-dy*.2,z+8.0),W(hx+ax*.3-dx*.2,hy+ay*.3-dy*.2,z+8.0),W(hx+ax*.3+dx*.2,hy+ay*.3+dy*.2,z+8.0),W(hx-ax*.4+dx*.2,hy-ay*.4+dy*.2,z+8.0),head,0);
+          XLP.push(...W(hx,hy,z+7.95));const R=10;for(const [u,v] of [[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]])XLG.push(...W(hx+u*R,hy+v*R,hX(hx+u*R,hy+v*R)+.37),u,v)}});
+      /* tram overhead line: poles every 34 m on the outer side, contact wire 5.6 m above the rail */
+      const wire=dk?[0,0,0,.6]:[.1,.1,.12,.55];
+      S.TE.forEach(e=>{if(S.inQ(e.pts[e.pts.length>>1]))return;for(let i=1;i<e.pts.length;i++){const a=e.pts[i-1],b=e.pts[i];Lp.push(...W(a[0],a[1],hX(a[0],a[1])+5.9),...W(b[0],b[1],hX(b[0],b[1])+5.9));Lc.push(...wire,...wire)}
+        for(let s=10;s<e.len;s+=34){const [x,y,dx,dy]=at(e,s),px=x+dy*3.1,py=y-dx*3.1,z=hX(px,py);for(let k=0;k<3;k++){const t0=k*2.094,t1=t0+2.094,r=.13;quad(W(px+Math.cos(t0)*r,py+Math.sin(t0)*r,z-.2),W(px+Math.cos(t1)*r,py+Math.sin(t1)*r,z-.2),W(px+Math.cos(t1)*r,py+Math.sin(t1)*r,z+6.6),W(px+Math.cos(t0)*r,py+Math.sin(t0)*r,z+6.6),pole,0)}
+          quad(W(px,py,z+6.3),W(x,y,z+6.3),W(x,y,z+6.42),W(px,py,z+6.42),pole,0)}})}
+    /* trees in the mapped woods and parks: positions illustrative, density by land use */
+    {const trk=dk?[.18,.14,.11]:[.38,.3,.24];let sd=20111015;const rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+      for(let j=0;j<=g.ny;j++)for(let i=0;i<=g.nx;i++){const k=g.c[j][i];if(k!=='f'&&k!=='g')continue;const n=k==='f'?2:(rr()<.3?1:0);
+        for(let m=0;m<n;m++){const x=g.x+i*g.s+(rr()-.5)*16,y=g.y+j*g.s+(rr()-.5)*16;if(x>t0-6&&x<t2+6&&y>t1-6&&y<t3+6)continue;
+          const z=hX(x,y),s=5+rr()*5,h=hash(x.toFixed(1)+y),gc=tn([[.33,.46,.26],[.4,.5,.28],[.48,.52,.29],[.3,.42,.28],[.52,.5,.27]][h%5]);
+          for(const [ux,uy] of [[.2,0],[0,.2]])quad(W(x-ux,y-uy,z),W(x+ux,y+uy,z),W(x+ux*.7,y+uy*.7,z+s*.55),W(x-ux*.7,y-uy*.7,z+s*.55),trk,0);
+          const r=s*.4,cz=z+s*.62,top=W(x,y,cz+r*1.1),bot=W(x,y,cz-r*.4),ring=[];for(let q=0;q<5;q++){const a=q*1.2566+(h%7);ring.push(W(x+Math.cos(a)*r,y+Math.sin(a)*r,cz))}
+          for(let q=0;q<5;q++){const a=ring[q],b=ring[(q+1)%5];tri3(a,b,top,gc,0);tri3(b,a,bot,mix(gc,[0,0,0],.22),0)}}}}}
+  XG_L={lp:new Float32Array(XLP),lg:new Float32Array(XLG)};
+  XG={n:P.length/3,ln:Lp.length/3,lpn:XG_L.lp.length/3,lgn:XG_L.lg.length/5};buf('xlpt',XG_L.lp);buf('xlgl',XG_L.lg);/* v5.8: sort the triangles into 500 m tiles (base and detail apart) so the draw can skip tiles outside the view and detail far away */
+  {const nt=P.length/9,TS=500,[f0,f1,f2,f3]=X.f,TX=Math.ceil((f2-f0)/TS),TY=Math.ceil((f3-f1)/TS),key=new Uint16Array(nt),cnt=new Uint32Array(TX*TY*2+1);
+    for(let t=0;t<nt;t++){const x=P[t*9],y=-P[t*9+2];const tx=Math.max(0,Math.min(TX-1,Math.floor((x-f0)/TS))),ty=Math.max(0,Math.min(TY-1,Math.floor((y-f1)/TS)));const k=(ty*TX+tx)*2+(t*3>=DET0?1:0);key[t]=k;cnt[k+1]++}
+    for(let k=1;k<cnt.length;k++)cnt[k]+=cnt[k-1];const pos=cnt.slice(0,-1),ord=new Uint32Array(nt);for(let t=0;t<nt;t++)ord[pos[key[t]]++]=t;
+    const P2=new Float32Array(P.length),N2=new Int8Array(N.length),C2=new Uint8ClampedArray(Cc.length),F2=new Int16Array(FF.length),I2=new Uint16Array(I.length);
+    for(let j=0;j<nt;j++){const t=ord[j];for(let k=0;k<9;k++){P2[j*9+k]=P[t*9+k];N2[j*9+k]=Math.round(N[t*9+k]*127);C2[j*9+k]=Math.round(Cc[t*9+k]*255)}for(let k=0;k<12;k++)F2[j*12+k]=Math.round(FF[t*12+k]*32);for(let k=0;k<3;k++)I2[j*3+k]=I[t*3+k]}
+    XG.R=[];for(let k=0;k<TX*TY*2;k++){const a=cnt[k],b=cnt[k+1];if(b<=a)continue;const bb=[1e9,1e9,1e9,-1e9,-1e9,-1e9];for(let v=a*3;v<b*3;v++)for(let c=0;c<3;c++){const q=P2[v*3+c];if(q<bb[c])bb[c]=q;if(q>bb[c+3])bb[c+3]=q}XG.R.push({s:a*3,n:(b-a)*3,b:bb,d:k&1})}
+    buf('xp',P2);buf('xn',N2);buf('xc',C2);buf('xf',F2);buf('xi',I2)}
+buf('xlp',new Float32Array(Lp));buf('xlc',new Float32Array(Lc))}
 const XVIEW={t:[173,0,157],d:3300,ph:.86,th:.5};
+/* draw the visible tiles: a box is skipped when all its corners lie outside one clip plane; detail only within 1.1 km of the eye */
+let XSTAT={tiles:0,verts:0};
+function xdraw(){const m=MVP;let nt=0,nv=0;for(const r of XG.R){const b=r.b;if(r.d){const dx=Math.max(b[0]-EYE[0],0,EYE[0]-b[3]),dy=Math.max(b[1]-EYE[1],0,EYE[1]-b[4]),dz=Math.max(b[2]-EYE[2],0,EYE[2]-b[5]);if(dx*dx+dy*dy+dz*dz>1.21e6)continue}
+    const o=[0,0,0,0,0,0];for(let k=0;k<8;k++){const x=k&1?b[3]:b[0],y=k&2?b[4]:b[1],z=k&4?b[5]:b[2],cx=m[0]*x+m[4]*y+m[8]*z+m[12],cy=m[1]*x+m[5]*y+m[9]*z+m[13],cz=m[2]*x+m[6]*y+m[10]*z+m[14],cw=m[3]*x+m[7]*y+m[11]*z+m[15];
+      if(cx<-cw)o[0]++;if(cx>cw)o[1]++;if(cy<-cw)o[2]++;if(cy>cw)o[3]++;if(cz<-cw)o[4]++;if(cz>cw)o[5]++}
+    if(o[0]===8||o[1]===8||o[2]===8||o[3]===8||o[4]===8||o[5]===8)continue;gl.drawArrays(gl.TRIANGLES,r.s,r.n);nt++;nv+=r.n}XSTAT={tiles:nt,verts:nv}}
 function xload(){if(XLOAD)return XLOAD;const u=p=>new URL(p,document.baseURI);
   XLOAD=Promise.all([fetch(u('assets/traffic.json')).then(r=>r.ok?r.json():null).catch(()=>null).then(t=>{XN=t}),fetch(u('assets/district.json')).then(r=>{if(!r.ok)throw r.status;return r.json()}),fetch(u('photos/terrain/district.json'),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
     .then(([_,d,t])=>{XD=d;try{XSIM=xsim()}catch(e){console.warn(e);XSIM=null}if(t&&t.h&&t.nx&&t.h.length===t.nx*t.ny)XT=t;XS=true}).catch(e=>{XLOAD=null;throw e});return XLOAD}
@@ -609,7 +692,7 @@ function xsim(){const T=XN;if(!T)return null;
   const CYC=[26,3,2,18,3,2],CL=54,PCYC=[34,3,12,2],PL=51;
   const light=(c,ph,t)=>{if(c.ped){const u=(t+c.off)%PL;return u<34?'g':u<37?'a':'r'}const u=(t+c.off)%CL;const s=ph===0?u:(u+CL-31)%CL;return s<26?'g':s<29?'a':'r'};
   /* stops on the edges */
-  const BS=T.bs.map(([ei,s,side,nm])=>({e:ei,s,side,nm})),TS=T.ts.map(([ei,s,side,nm])=>({e:ei,s,side,nm}));
+  const CR=(T.cr||[]).map(([ei,s,sig])=>({e:ei,s,sig}));const BS=T.bs.map(([ei,s,side,nm])=>({e:ei,s,side,nm})),TS=T.ts.map(([ei,s,side,nm])=>({e:ei,s,side,nm}));
   let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   const V=[];const roadLen=RE.reduce((a,e)=>a+(inQ(e.pts[e.pts.length>>1])?0:e.len*(e.ow?1:2)*(e.cls<=1?1.6:e.cls===2?1:.45)),0);
   const NCAR=Math.max(120,Math.min(380,Math.round(roadLen/170)));
@@ -661,13 +744,13 @@ function xsim(){const T=XN;if(!T)return null;
   /* traffic-light heads: one per approach, on the right before the stop line */
   const heads=[];RE.forEach((e,i)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){const c=NC[n];if(!c||(dir<0&&e.ow)||e.len<10)continue;const sl=e.len-7;const [x,y,dx,dy]=at(e,dir>0?sl:e.len-sl),hx=dx*dir,hy=dy*dir;
       const half=e.lanes*3.3/2+1.2;heads.push({x:x+hy*half,y:y-hx*half,hx,hy,c,ph:phaseOf(c,e,dir)})}});
-  return {all,step,heads,light,CTL,BS,TS,RE,TE,clock:()=>clock,n:NCAR}}
+  return {all,step,heads,light,CTL,BS,TS,CR,inQ,RE,TE,clock:()=>clock,n:NCAR}}
 /* ---------- GL ---------- */
 const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.warn(gl.getShaderInfoLog(o));return o};
 const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);return p};
 const HP='#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n';
 const DX=gl.getExtension('OES_standard_derivatives'),DH=DX?'#extension GL_OES_standard_derivatives : enable\n#define DERIV 1\n':'';
-const PM=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec4 f;uniform mat4 m;uniform mat4 lm;varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;varying vec4 vf;uniform vec3 eye;uniform vec3 ld;void main(){vf=f;vec3 N=normalize(n);vdf=max(dot(N,ld),0.);va=.5+.2*(.55+.45*N.y);vc=c;vd=distance(p,eye);vl=lm*vec4(p+N*.6,1.);gl_Position=m*vec4(p,1.);}`,
+const PM=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec4 f;uniform mat4 m;uniform mat4 lm;varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;varying vec4 vf;uniform vec3 eye;uniform vec3 ld;void main(){vf=f/32.;vec3 N=normalize(n);vdf=max(dot(N,ld),0.);va=.5+.2*(.55+.45*N.y);vc=c;vd=distance(p,eye);vl=lm*vec4(p+N*.6,1.);gl_Position=m*vec4(p,1.);}`,
 DH+HP+`varying vec3 vc;varying float va,vdf,vd;varying vec4 vl;varying vec4 vf;uniform vec3 fog;uniform vec2 fr;uniform sampler2D sm;uniform float smOn,smT,sk,fac,dk,nf,gf;
 float h1(vec2 q){return fract(sin(dot(q,vec2(12.9898,78.233)))*43758.5453);}
 float box(vec2 q,vec2 a,vec2 b){return step(a.x,q.x)*step(q.x,b.x)*step(a.y,q.y)*step(q.y,b.y);}
@@ -682,7 +765,7 @@ vec2 dw=fwidth(vf.xy);float aa=1.-smoothstep(.22,.55,max(dw.x,dw.y));
 float aa=1.;
 #endif
 
-if(fac>.5&&vf.z>50.){float k=floor(vf.z/100.),ht=vf.z-k*100.,u=vf.x,v=vf.y,L=vf.w;float lodS=(1.-smoothstep(160.,520.,vd))*aa;
+if(fac>.5&&vf.z>50.&&vd<560.){float k=floor(vf.z/100.),ht=vf.z-k*100.,u=vf.x,v=vf.y,L=vf.w;float lodS=(1.-smoothstep(160.,520.,vd))*aa;
 if(k>4.5){/* v5.4 non-residential building of unknown use: a plain wall and a dark plinth, no invented windows */
   float pl=1.-step(.5,v);bc=mix(bc,bc*.72,pl*lodS);}
 else if(k>3.5){/* v5.4 garage row: a steel gate every 3.3 m, painted in the colours of the period, a concrete lintel above */
@@ -731,7 +814,10 @@ const PLm=prog(`attribute vec3 p;uniform mat4 m;uniform float sz;void main(){gl_
 const PLg=prog(`attribute vec3 p;attribute vec2 q;uniform mat4 m;varying vec2 vq;void main(){vq=q;gl_Position=m*vec4(p,1.);gl_Position.z-=.0008*gl_Position.w;}`,`precision mediump float;varying vec2 vq;uniform float a;void main(){float d=length(vq);float g=pow(max(0.,1.-d),2.);gl_FragColor=vec4(vec3(1.,.62,.28)*g*a,g*a);}`);
 const B={};const buf=(k,a)=>{if(!B[k])B[k]=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,B[k]);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW)};
 function upload(){buf('lpt',G.LP);buf('lgl',G.LG);buf('f',G.F);buf('sk',G.SK);buf('p',G.P);buf('n',G.N);buf('c',G.C);buf('i',G.I);buf('lp',G.L);buf('lc',G.LC);buf('h',G.H);buf('pin',G.pin)}
-const attr=(pr,name,k,size)=>{const l=gl.getAttribLocation(pr,name);if(l<0)return;gl.bindBuffer(gl.ARRAY_BUFFER,B[k]);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,size,gl.FLOAT,false,0,0)};
+const attr=(pr,name,k,size,type,norm)=>{const l=gl.getAttribLocation(pr,name);if(l<0)return;gl.bindBuffer(gl.ARRAY_BUFFER,B[k]);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,size,type||gl.FLOAT,!!norm,0,0)};
+/* v5.8: normals and colours travel as bytes, facade coordinates as 1/32 m shorts and pick ids as unsigned shorts: about half the memory of plain floats */
+const pk=(a,T,s)=>{const o=new T(a.length);for(let i=0;i<a.length;i++)o[i]=Math.round(a[i]*s);return o};
+const AN=k=>[k,3,gl.BYTE,true],AC=k=>[k,3,gl.UNSIGNED_BYTE,true],AF=k=>[k,4,gl.SHORT,false],AI=k=>[k,1,gl.UNSIGNED_SHORT,false];
 const off=pr=>{for(let i=0;i<8;i++)gl.disableVertexAttribArray(i)};
 /* v5.0: traffic. Cars and one bus drive on the right along the carriageways, turn at junctions, keep their distance,
    give way to each other at crossings. Illustrative: the 2011 panoramas show the street, not the traffic flow. */
@@ -818,8 +904,8 @@ function draw(){if(!inited)return;
   const fogc=bg;
   gl.useProgram(PM);gl.uniformMatrix4fv(gl.getUniformLocation(PM,'m'),false,MVP);gl.uniform3fv(gl.getUniformLocation(PM,'eye'),EYE);gl.uniform3fv(gl.getUniformLocation(PM,'fog'),fogc);gl.uniform2f(gl.getUniformLocation(PM,'fr'),cam.d*1.3,cam.d*3.4+700);
   gl.uniform3fv(gl.getUniformLocation(PM,'ld'),sunDir());gl.uniformMatrix4fv(gl.getUniformLocation(PM,'lm'),false,LM);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,smTex);gl.uniform1i(gl.getUniformLocation(PM,'sm'),0);gl.uniform1f(gl.getUniformLocation(PM,'smOn'),evid?0:1);gl.uniform1f(gl.getUniformLocation(PM,'smT'),1/SMS);gl.uniform1f(gl.getUniformLocation(PM,'sk'),C.dark?.4:.52);
-  gl.uniform1f(gl.getUniformLocation(PM,'fac'),fac&&!evid?1:0);gl.uniform1f(gl.getUniformLocation(PM,'nf'),evid?0:NF);gl.uniform1f(gl.getUniformLocation(PM,'gf'),evid?0:GF);gl.uniform1f(gl.getUniformLocation(PM,'dk'),C.dark?1:0);attr(PM,'p','p',3);attr(PM,'n','n',3);attr(PM,'c','c',3);attr(PM,'f','f',4);gl.drawArrays(gl.TRIANGLES,0,G.n);off();
-  if(XON&&XG){attr(PM,'p','xp',3);attr(PM,'n','xn',3);attr(PM,'c','xc',3);attr(PM,'f','xf',4);gl.drawArrays(gl.TRIANGLES,0,XG.n);off()}
+  gl.uniform1f(gl.getUniformLocation(PM,'fac'),fac&&!evid?1:0);gl.uniform1f(gl.getUniformLocation(PM,'nf'),evid?0:NF);gl.uniform1f(gl.getUniformLocation(PM,'gf'),evid?0:GF);gl.uniform1f(gl.getUniformLocation(PM,'dk'),C.dark?1:0);attr(PM,'p','p',3);attr(PM,'n',...AN('n'));attr(PM,'c',...AC('c'));attr(PM,'f',...AF('f'));gl.drawArrays(gl.TRIANGLES,0,G.n);off();
+  if(XON&&XG){attr(PM,'p','xp',3);attr(PM,'n',...AN('xn'));attr(PM,'c',...AC('xc'));attr(PM,'f',...AF('xf'));xdraw();off()}
   if(fac&&!evid)drawTraffic(fogc,[cam.d*1.3,cam.d*3.4+700]);
   if(XON&&XSIM&&fac&&!evid&&cam.d<2600){const LC={r:[],a:[],g:[]},tt=XSIM.clock();for(const h of XSIM.heads){const st=XSIM.light(h.c,h.ph,tt),z=hX(h.x,h.y)+(st==='r'?3.75:st==='a'?3.45:3.15),px=-h.hy*.15,py=h.hx*.15,cx=h.x-h.hx*.19,cy=h.y-h.hy*.19;
       LC[st].push(...W(cx-px,cy-py,z-.15),...W(cx+px,cy+py,z-.15),...W(cx+px,cy+py,z+.15),...W(cx-px,cy-py,z-.15),...W(cx+px,cy+py,z+.15),...W(cx-px,cy-py,z+.15))}
@@ -837,6 +923,12 @@ function draw(){if(!inited)return;
   if(NF>.02&&!evid&&G.lpn){gl.depthMask(false);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
     gl.useProgram(PLg);gl.uniformMatrix4fv(gl.getUniformLocation(PLg,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PLg,'a'),NF*.95);gl.bindBuffer(gl.ARRAY_BUFFER,B.lgl);const g0=gl.getAttribLocation(PLg,'p'),g1=gl.getAttribLocation(PLg,'q');gl.enableVertexAttribArray(g0);gl.vertexAttribPointer(g0,3,gl.FLOAT,false,20,0);gl.enableVertexAttribArray(g1);gl.vertexAttribPointer(g1,2,gl.FLOAT,false,20,12);gl.drawArrays(gl.TRIANGLES,0,G.lgn);off();
     gl.useProgram(PLm);gl.uniformMatrix4fv(gl.getUniformLocation(PLm,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PLm,'a'),NF);gl.uniform1f(gl.getUniformLocation(PLm,'sz'),2600*dpr);attr(PLm,'p','lpt',3);gl.drawArrays(gl.POINTS,0,G.lpn);off();
+    gl.depthMask(true);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)}
+  if(NF>.02&&!evid&&XON&&XG&&XG.lpn){gl.depthMask(false);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+    gl.useProgram(PLg);gl.uniformMatrix4fv(gl.getUniformLocation(PLg,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PLg,'a'),NF*.85);gl.bindBuffer(gl.ARRAY_BUFFER,B.xlgl);const g0=gl.getAttribLocation(PLg,'p'),g1=gl.getAttribLocation(PLg,'q');gl.enableVertexAttribArray(g0);gl.vertexAttribPointer(g0,3,gl.FLOAT,false,20,0);gl.enableVertexAttribArray(g1);gl.vertexAttribPointer(g1,2,gl.FLOAT,false,20,12);gl.drawArrays(gl.TRIANGLES,0,XG.lgn);off();
+    gl.useProgram(PLm);gl.uniformMatrix4fv(gl.getUniformLocation(PLm,'m'),false,MVP);gl.uniform1f(gl.getUniformLocation(PLm,'a'),NF);gl.uniform1f(gl.getUniformLocation(PLm,'sz'),2600*dpr);attr(PLm,'p','xlpt',3);gl.drawArrays(gl.POINTS,0,XG.lpn);off();
+    if(XSIM&&fac){const hl=[];for(const c of XSIM.all){if(c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>1.2e6)continue;const f=c.half+.05,z=hX(c.x,c.y)+(c.tram?1.2:.95);for(const sd of [-.6,.6])hl.push(...W(c.x+c.hx*f-c.hy*sd,c.y+c.hy*f+c.hx*sd,z))}
+      if(hl.length){buf('xhl',new Float32Array(hl));gl.uniform1f(gl.getUniformLocation(PLm,'sz'),520*dpr);attr(PLm,'p','xhl',3);gl.drawArrays(gl.POINTS,0,hl.length/3);off()}}
     gl.depthMask(true);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)}
   gl.disable(gl.BLEND);
   labels();
@@ -857,7 +949,7 @@ function labels(){let html='';
 /* ---------- picking ---------- */
 let fb=null,fbt=null,fbd=null,fw=0,fh=0;
 function pick(px,py){const w=cv.width,h=cv.height;if(!fb||fw!==w||fh!==h){fb=fb||gl.createFramebuffer();fbt=fbt||gl.createTexture();fbd=fbd||gl.createRenderbuffer();gl.bindTexture(gl.TEXTURE_2D,fbt);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.bindRenderbuffer(gl.RENDERBUFFER,fbd);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,w,h);gl.bindFramebuffer(gl.FRAMEBUFFER,fb);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,fbt,0);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,fbd);fw=w;fh=h}
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fb);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.useProgram(PI);gl.uniformMatrix4fv(gl.getUniformLocation(PI,'m'),false,MVP);attr(PI,'p','p',3);attr(PI,'i','i',1);gl.drawArrays(gl.TRIANGLES,0,G.n);off();if(XON&&XG){attr(PI,'p','xp',3);attr(PI,'i','xi',1);gl.drawArrays(gl.TRIANGLES,0,XG.n);off()}
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fb);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.useProgram(PI);gl.uniformMatrix4fv(gl.getUniformLocation(PI,'m'),false,MVP);attr(PI,'p','p',3);attr(PI,'i',...AI('i'));gl.drawArrays(gl.TRIANGLES,0,G.n);off();if(XON&&XG){attr(PI,'p','xp',3);attr(PI,'i',...AI('xi'));gl.drawArrays(gl.TRIANGLES,0,XG.n);off()}
   const px2=new Uint8Array(4);gl.readPixels(Math.round(px*dpr),Math.round(h-py*dpr),1,1,gl.RGBA,gl.UNSIGNED_BYTE,px2);gl.bindFramebuffer(gl.FRAMEBUFFER,null);if(!px2[3])return null;const id=px2[0]+px2[1]*256;return id||null}
 /* ---------- card ---------- */
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -933,5 +1025,5 @@ if(window.__d11S)S=window.__d11S;
 /* v4.3.1: build the quarter only when the section comes near the screen, so the page itself loads without the 3D work */
 function init(){if(inited)return;inited=true;palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick()}
 if('IntersectionObserver' in window&&!/^#q3d/.test(location.hash)){new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();init()}},{rootMargin:'600px 0px'}).observe(box)}else init();
-window.__q3d={x:on=>setX(on),xready:()=>!!XG,xn:()=>XG&&XG.n,xsim:()=>XSIM,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
+window.__q3d={x:on=>setX(on),xready:()=>!!XG,xn:()=>XG&&XG.n,xsim:()=>XSIM,xstat:()=>XSTAT,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
 })();
