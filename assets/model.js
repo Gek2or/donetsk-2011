@@ -116,7 +116,10 @@ const VM=(()=>{const BODY=[-1,-1,-1],GL=[.16,.19,.23],TY=[.09,.09,.1],HUB=[.55,.
   /* v6.0: a pedestrian, 1.7 m: coat in the walker's colour, dark trousers and shoes */
   const ped=()=>{const m=mk(),TR=[.17,.17,.2],SK=[.78,.62,.52],HR=[.2,.15,.12];m.bx(-.1,.1,-.19,-.03,0,.82,TR);m.bx(-.1,.1,.03,.19,0,.82,TR);m.bx(-.13,.13,-.23,.23,.8,1.45,BODY);
     m.bx(-.07,.07,-.31,-.23,.85,1.42,BODY);m.bx(-.07,.07,.23,.31,.85,1.42,BODY);m.bx(-.05,.05,-.05,.05,1.45,1.5,SK);m.bx(-.11,.11,-.1,.1,1.5,1.72,SK);m.bx(-.12,.1,-.11,.11,1.66,1.76,HR);return m};
-  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram()),van:pack(van()),trolley:pack(trolley()),ped:pack(ped())}})();
+  /* v6.1: the same walker mid-stride, alternated with the standing pose while walking */
+  const ped2=()=>{const m=mk(),TR=[.17,.17,.2],SK=[.78,.62,.52],HR=[.2,.15,.12];m.bx(.06,.26,-.19,-.03,0,.82,TR);m.bx(-.26,-.06,.03,.19,0,.82,TR);m.bx(-.13,.13,-.23,.23,.8,1.45,BODY);
+    m.bx(-.2,-.06,-.31,-.23,.88,1.42,BODY);m.bx(.06,.2,.23,.31,.88,1.42,BODY);m.bx(-.05,.05,-.05,.05,1.45,1.5,SK);m.bx(-.11,.11,-.1,.1,1.5,1.72,SK);m.bx(-.12,.1,-.11,.11,1.66,1.76,HR);return m};
+  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram()),van:pack(van()),trolley:pack(trolley()),ped:pack(ped()),ped2:pack(ped2())}})();
 /* period paint: white, beige, cherry, the bright and dark blues, faded green, sand, red and grey seen on Lada and Moskvich cars of the time */
 const VPAINT=[[.9,.9,.87],[.84,.79,.66],[.45,.1,.12],[.22,.38,.55],[.15,.2,.33],[.36,.45,.33],[.78,.7,.5],[.62,.14,.13],[.55,.57,.58],[.85,.85,.82],[.3,.32,.34]];
 /* v5.2: the tramway on Dzerzhinsky Avenue. OpenStreetMap ways 233652257 and 233652260: a double track, 1524 mm gauge,
@@ -578,10 +581,17 @@ function buildX(){const X=XD;if(!X)return;XS=false;
     const hip=!evid&&(ty===0||ty===8||b[5]&1)&&h<=7?xobb(ccw):null;
     if(hip){const {c,u,v,a:la,b:lb}=hip;const rh=Math.min(la,lb)*Math.tan(24*Math.PI/180),e=.4,de=e*Math.tan(24*Math.PI/180),P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z),rr=Math.max(0,la-lb);
       const A=P2(-la-e,-lb-e,top-de),B2=P2(la+e,-lb-e,top-de),C2=P2(la+e,lb+e,top-de),D2=P2(-la-e,lb+e,top-de),E1=P2(-rr,0,top+rh),E2=P2(rr,0,top+rh);
-      tri3(A,B2,E2,roof,id);tri3(A,E2,E1,roof,id);tri3(C2,D2,E1,roof,id);tri3(C2,E1,E2,roof,id);tri3(B2,C2,E2,roof,id);tri3(D2,A,E1,roof,id);line(E1,E2)}
+      tri3(A,B2,E2,roof,id);tri3(A,E2,E1,roof,id);tri3(C2,D2,E1,roof,id);tri3(C2,E1,E2,roof,id);tri3(B2,C2,E2,roof,id);tri3(D2,A,E1,roof,id);line(E1,E2);
+      /* v6.2: a brick chimney on the roof of the private houses (typical, illustrative) */
+      if(ill&&(ty===0||ty===8)&&la>2.5){const sx=(r%2?.45:-.45)*la,sy=lb*.25,hz=top+rh*(1-Math.abs(sy)/Math.max(.1,lb))*(Math.abs(sx)<=rr?1:Math.max(0,1-(Math.abs(sx)-rr)/Math.max(.1,lb))),bc2=tn([.55,.3,.24]),q=.28;
+        const Q=(s,t,z)=>P2(s,t,z);for(const [a1,b1,c1,d1] of [[[-q,-q],[q,-q],[q,q],[-q,q]]].flatMap(v=>[[v[0],v[1]],[v[1],v[2]],[v[2],v[3]],[v[3],v[0]]].map(([p,q2])=>[p,q2,q2,p]))){quad(Q(sx+a1[0],sy+a1[1],hz-.3),Q(sx+b1[0],sy+b1[1],hz-.3),Q(sx+c1[0],sy+c1[1],hz+1),Q(sx+d1[0],sy+d1[1],hz+1),bc2,id)}
+        quad(Q(sx-q,sy-q,hz+1),Q(sx+q,sy-q,hz+1),Q(sx+q,sy+q,hz+1),Q(sx-q,sy+q,hz+1),tn([.25,.2,.18]),id)}}
     else{const t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],top),[0,1,0],roof,id);
       /* v5.8: flat roofs of multi-storey buildings get a parapet; nine storeys and more a lift machine room (typical, class E) */
       if(ill&&h>=9&&ty!==2){const pc=col.map(v=>v*.8);for(let i=0;i<ccw.length;i++){const a=ccw[i],c=ccw[(i+1)%ccw.length];if(Math.hypot(c[0]-a[0],c[1]-a[1])<2)continue;quad(W(a[0],a[1],top),W(c[0],c[1],top),W(c[0],c[1],top+.55),W(a[0],a[1],top+.55),pc,id)}}
+      /* v6.2: TV aerials on the flat roofs of the apartment blocks (typical of the period, illustrative) */
+      if(ill&&ty===1&&h>=9){const o=xobb2(ccw);if(o&&o.a>5){const {c,u,v}=o,ac=dk?[.5,.5,.5,.7]:[.2,.2,.22,.75];const n=Math.min(8,Math.max(2,Math.round(o.a/5)));for(let j=0;j<n;j++){const hh=hash(b[0]+j),s=(j+.5)/n*2*o.a-o.a+((hh%7)-3)*.3,t=((hh>>3)%5-2)*o.b*.25,px=c[0]+u[0]*s+v[0]*t,py=c[1]+u[1]*s+v[1]*t,mh=2.2+(hh%5)*.4;
+          Lp.push(...W(px,py,top),...W(px,py,top+mh));Lc.push(...ac,...ac);for(const k of [0,1]){const zz=top+mh-.3-k*.55,w=.9-k*.25;Lp.push(...W(px-u[0]*w,py-u[1]*w,zz),...W(px+u[0]*w,py+u[1]*w,zz));Lc.push(...ac,...ac)}}}}
       if(ill&&h>=27&&(ty===1||ty===9||ty===4)){const o=xobb2(ccw);if(o&&o.a>6){const {c,u,v}=o,P2=(s,t,z)=>W(c[0]+u[0]*s+v[0]*t,c[1]+u[1]*s+v[1]*t,z),rc2=mix(col,[.5,.5,.5],.3);
           const bx=(s0,s1,t0,t1,z0,z1)=>{quad(P2(s0,t0,z0),P2(s1,t0,z0),P2(s1,t0,z1),P2(s0,t0,z1),rc2,id);quad(P2(s1,t0,z0),P2(s1,t1,z0),P2(s1,t1,z1),P2(s1,t0,z1),rc2,id);quad(P2(s1,t1,z0),P2(s0,t1,z0),P2(s0,t1,z1),P2(s1,t1,z1),rc2,id);quad(P2(s0,t1,z0),P2(s0,t0,z0),P2(s0,t0,z1),P2(s0,t1,z1),rc2,id);quad(P2(s0,t0,z1),P2(s1,t0,z1),P2(s1,t1,z1),P2(s0,t1,z1),mix(rc2,[0,0,0],.15),id)};
           bx(-1.8,1.8,-1.4,1.4,top,top+2.6);if(o.a>18){bx(o.a*.55-1.6,o.a*.55+1.6,-1.3,1.3,top,top+2.4);bx(-o.a*.55-1.6,-o.a*.55+1.6,-1.3,1.3,top,top+2.4)}}}}});
@@ -728,6 +738,59 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       for(const sd of [-1,1])for(let i=1;i<pts.length;i++){const p=pts[i-1],q=pts[i],l=Math.hypot(q[0]-p[0],q[1]-p[1])||1,ox=-(q[1]-p[1])/l*w/20*sd,oy=(q[0]-p[0])/l*w/20*sd,z0=za+(zb-za)*cum[i-1]/(Lt||1)+.9,z1=za+(zb-za)*cum[i]/(Lt||1)+.9;
         for(const hh of [.55,1.05]){Lp.push(...W(p[0]+ox,p[1]+oy,z0+hh),...W(q[0]+ox,q[1]+oy,z1+hh));Lc.push(...rl,...rl)}
         const n=Math.max(1,Math.round(l/2.5));for(let m=0;m<=n;m++){const u=m/n,x=p[0]+ox+(q[0]-p[0])*u,y=p[1]+oy+(q[1]-p[1])*u,z=z0+(z1-z0)*u;Lp.push(...W(x,y,z),...W(x,y,z+1.05));Lc.push(...rl,...rl)}}}}
+  /* v6.1: furniture at the places OSM maps: pumps under the fuel-station canopies, stall rows in the open markets, cars in the open
+     car parks, fountain basins, swings and slides on the playgrounds, goals on the football pitches, kiosks by about half of the bus stops.
+     Positions of the places from OSM; the furniture itself is illustrative. */
+  if(ill){const pip=(x,y,r)=>{let ins=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])ins=!ins}return ins};
+    const box=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
+    const frame=(x,y,ux,uy)=>{const z=hX(x,y);return(s,t,h)=>W(x+ux*s-uy*t,y+uy*s+ux*t,z+h)};
+    const AWN=[[.25,.42,.68],[.72,.2,.17],[.25,.55,.32],[.86,.72,.2],[.88,.88,.85]].map(tn),STW=tn([.86,.85,.8]),MET=tn([.55,.57,.6]);
+    /* fuel stations: two pump islands under the canopies OSM maps as building=roof */
+    for(const [x0,y0,a0] of (X.fu||[])){const x=x0/10,y=y0/10,a=a0*Math.PI/180,P3=frame(x,y,Math.cos(a),Math.sin(a));
+      for(const t of [-2.6,2.6]){box(P3,-3,3,t-.6,t+.6,0,.2,tn([.7,.7,.68]));for(const s of [-1.6,1.6])box(P3,s-.35,s+.35,t-.25,t+.25,.2,1.8,tn([.88,.88,.86]),tn([.75,.2,.16]))}}
+    /* open markets: stalls with striped awnings in rows (positions from district.py, clear of buildings and roads) */
+    const mk=X.mk||[];for(let i=0;i<mk.length;i+=4){const x=mk[i]/10,y=mk[i+1]/10,a=mk[i+2]*Math.PI/180,P3=frame(x,y,Math.cos(a),Math.sin(a)),ac=AWN[mk[i+3]];
+      box(P3,-1.4,1.4,0,2.4,0,2.1,STW);quad(P3(-1.5,-1.2,2.0),P3(1.5,-1.2,2.0),P3(1.5,0,2.5),P3(-1.5,0,2.5),ac,0);box(P3,-1.4,1.4,-.7,0,0,.85,tn([.6,.5,.38]))}
+    /* open car parks: parked cars in rows */
+    const PKC2=[[.78,.77,.73],[.2,.22,.25],[.55,.13,.12],[.18,.3,.5],[.85,.84,.8],[.36,.38,.4],[.4,.5,.36],[.7,.62,.3],[.25,.25,.28],[.6,.6,.62],[.58,.32,.18],[.9,.9,.88],[.3,.18,.2],[.5,.55,.6],[.16,.16,.18],[.75,.7,.55]].map(tn),glc2=dk?[.08,.09,.1]:[.16,.19,.22];
+    const pl=X.pl||[];for(let i=0;i<pl.length;i+=4){const x=pl[i]/10,y=pl[i+1]/10,a=pl[i+2]*Math.PI/180,P3=frame(x,y,Math.cos(a),Math.sin(a)),cc=PKC2[pl[i+3]];box(P3,-2.1,2.1,-.82,.82,.12,.78,cc);box(P3,-.95,.7,-.7,.7,.78,1.36,glc2,cc)}
+    /* fountains: a stone basin, water, a jet */
+    for(const [x0,y0,r0] of (X.fo||[])){const x=x0/10,y=y0/10,R=Math.max(2,r0/10),z=hX(x,y),n=20,stone=tn([.78,.76,.72]),wat=dk?[.12,.2,.26]:[.5,.66,.74];
+      for(let i=0;i<n;i++){const a0=i/n*6.2832,a1=(i+1)/n*6.2832,c0=Math.cos(a0),s0=Math.sin(a0),c1=Math.cos(a1),s1=Math.sin(a1);
+        quad(W(x+c0*R,y+s0*R,z-.1),W(x+c1*R,y+s1*R,z-.1),W(x+c1*R,y+s1*R,z+.55),W(x+c0*R,y+s0*R,z+.55),stone,0);
+        quad(W(x+c0*R,y+s0*R,z+.55),W(x+c1*R,y+s1*R,z+.55),W(x+c1*R*.9,y+s1*R*.9,z+.55),W(x+c0*R*.9,y+s0*R*.9,z+.55),stone,0);
+        push(W(x,y,z+.4),[0,1,0],wat,0);push(W(x+c0*R*.9,y+s0*R*.9,z+.4),[0,1,0],wat,0);push(W(x+c1*R*.9,y+s1*R*.9,z+.4),[0,1,0],wat,0)}
+      const jet=dk?[.5,.6,.66]:[.9,.95,.98];for(let i=0;i<6;i++){const a0=i/6*6.2832,a1=(i+1)/6*6.2832;quad(W(x+Math.cos(a0)*.35,y+Math.sin(a0)*.35,z+.4),W(x+Math.cos(a1)*.35,y+Math.sin(a1)*.35,z+.4),W(x+Math.cos(a1)*.08,y+Math.sin(a1)*.08,z+Math.min(5,R*.9)),W(x+Math.cos(a0)*.08,y+Math.sin(a0)*.08,z+Math.min(5,R*.9)),jet,0)}}
+    /* playgrounds: a swing frame, a slide, a sandbox; football pitches: two goals */
+    const red=tn([.75,.22,.18]),blu=tn([.25,.42,.7]),yel=tn([.86,.72,.2]),wood=tn([.62,.48,.32]),gl=dk?[.6,.6,.58,.8]:[.97,.97,.95,.9];
+    for(const [k,f] of (X.pt||[])){const r=xy(f),o=xobb2(r);if(!o)continue;const {c,u,v,a,b}=o;
+      if(k===3){const P3=frame(c[0],c[1],u[0],u[1]);for(const s of [-1.8,1.8])for(const t of [-.9,.9])quad(P3(s,t,0),P3(s+.08,t,0),P3(s+.08,0,2.3),P3(s,0,2.3),blu,0);box(P3,-1.9,1.9,-.06,.06,2.25,2.35,blu);
+        for(const s of [-.9,.9]){Lp.push(...P3(s,0,2.3),...P3(s,0,.55));Lc.push(...gl,...gl);box(P3,s-.3,s+.3,-.18,.18,.5,.56,wood)}
+        if(a>5){box(P3,3.4,4.4,-.5,.5,0,1.6,red);quad(P3(4.4,-.45,1.6),P3(4.4,.45,1.6),P3(7.2,.45,.2),P3(7.2,-.45,.2),yel,0)}
+        if(b>4){box(P3,-1.5,1.5,2.2,4.2,0,.3,wood,tn([.86,.8,.62]))}}
+      else if(k===0&&a>12){for(const sd of [-1,1]){const gx=c[0]+u[0]*(a-.8)*sd,gy=c[1]+u[1]*(a-.8)*sd,z=hX(gx,gy)+.36,w=Math.min(3.66,b*.4),h=Math.min(2.44,1+w*.4);
+          const p=t=>[gx+v[0]*t,gy+v[1]*t];const A=p(-w),B=p(w);for(const [q0,q1] of [[[...A,z],[...A,z+h]],[[...B,z],[...B,z+h]],[[...A,z+h],[...B,z+h]]]){Lp.push(...W(q0[0],q0[1],q0[2]),...W(q1[0],q1[1],q1[2]));Lc.push(...gl,...gl)}}}}
+    /* a kiosk beside about half of the bus shelters: cigarettes, newspapers, drinks */
+    if(XSIM){const S=XSIM,WID=[14,11,8,6];for(const st of S.BS){const e=S.RE[st.e];if(!e||hash('k'+st.s+st.e)%2)continue;let s=st.s+5,i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;if(s>e.len)continue;
+        const p0=e.pts[i-1],p1=e.pts[i],l=(e.cum[i]-e.cum[i-1])||1,uu=(s-e.cum[i-1])/l,dx=(p1[0]-p0[0])/l,dy=(p1[1]-p0[1])/l,o=(WID[Math.min(3,e.cls)]/2+2.9)*st.side,x=p0[0]+(p1[0]-p0[0])*uu+dy*o,y=p0[1]+(p1[1]-p0[1])*uu-dx*o;
+        const P3=frame(x,y,dx,dy),kc=AWN[hash('c'+st.s)%4];box(P3,-1.3,1.3,-1,1,.4,2.9,tn([.9,.9,.87]),kc);quad(P3(-1.3,-1.01*st.side,1.2),P3(1.3,-1.01*st.side,1.2),P3(1.3,-1.01*st.side,2.3),P3(-1.3,-1.01*st.side,2.3),tn([.3,.38,.44]),0)}}}
+  /* v6.2: a concrete canopy, a door and a bench at the entrances of the apartment blocks (on the long side facing the drive);
+     freight wagons standing on the industrial spurs; shelters at the tram stops mapped in OSM 2012. All forms illustrative. */
+  if(ill){const box=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
+    const frame=(x,y,ux,uy,z)=>(s,t,h)=>W(x+ux*s-uy*t,y+uy*s+ux*t,z+h);
+    const conc=tn([.74,.73,.7]),door=tn([.34,.27,.22]),wood=tn([.55,.4,.27]),iron=tn([.25,.26,.27]);
+    const en=X.en||[];for(let i=0;i<en.length;i+=3){const x=en[i]/10,y=en[i+1]/10,a=en[i+2]*Math.PI/180,z=hX(x,y),P3=frame(x,y,Math.cos(a),Math.sin(a),z-.1);
+      box(P3,0,1.4,-1.15,1.15,2.55,2.72,conc);box(P3,0,.07,-.6,.6,0,2.15,door);
+      XLP.push(...P3(.9,0,2.48));{const R=4,gx=x+Math.cos(a)*1.5,gy=y+Math.sin(a)*1.5,gz=hX(gx,gy)+.25;for(const [u,v] of [[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]])XLG.push(...W(gx+u*R,gy+v*R,gz),u,v)}box(P3,2.6,3.0,1.4,3.2,.1,.5,wood);box(P3,2.95,3.02,1.4,3.2,.5,.9,wood);}
+    const WGC=[[.36,.22,.17],[.14,.14,.15],[.45,.27,.19]].map(tn),coal=tn([.12,.12,.12]),under=tn([.1,.1,.11]);
+    const wg=X.wg||[];for(let i=0;i<wg.length;i+=4){const x=wg[i]/10,y=wg[i+1]/10,a=wg[i+2]*Math.PI/180,k=wg[i+3],z=hX(x,y)+.26,P3=frame(x,y,Math.cos(a),Math.sin(a),z),c=WGC[k];
+      box(P3,-6.6,6.6,-1.2,1.2,.35,1.15,under);
+      if(k===1){const n=8,r=1.4,zc=2.55;for(let j=0;j<n;j++){const a0=j/n*6.2832,a1=(j+1)/n*6.2832;quad(P3(-6.2,Math.cos(a0)*r,zc+Math.sin(a0)*r),P3(6.2,Math.cos(a0)*r,zc+Math.sin(a0)*r),P3(6.2,Math.cos(a1)*r,zc+Math.sin(a1)*r),P3(-6.2,Math.cos(a1)*r,zc+Math.sin(a1)*r),c,0)}box(P3,-.5,.5,-.5,.5,3.9,4.2,c)}
+      else box(P3,-6.9,6.9,-1.55,1.55,1.15,k===0?3.3:4.1,c,k===0?coal:mix(c,[.6,.6,.6],.3))}
+    if(XSIM){const S=XSIM,shw=dk?[.3,.32,.33]:[.66,.7,.72],shr=dk?[.22,.23,.24]:[.5,.52,.54];
+      for(const st of S.TS){const e=S.TE[st.e];if(!e)continue;let s=st.s,i=1;while(i<e.cum.length-1&&e.cum[i]<s)i++;const p0=e.pts[i-1],p1=e.pts[i],l=(e.cum[i]-e.cum[i-1])||1,u=(s-e.cum[i-1])/l,dx=(p1[0]-p0[0])/l,dy=(p1[1]-p0[1])/l;
+        const o=4.3*st.side,x=p0[0]+(p1[0]-p0[0])*u+dy*o,y=p0[1]+(p1[1]-p0[1])*u-dx*o,P3=frame(x,y,dx,dy,hX(x,y)+.3),nt=st.side;
+        box(P3,-2.6,2.6,.8*nt-.05,.8*nt+.05,0,2.4,shw);for(const s2 of [-2.6,2.6])box(P3,s2-.05,s2+.05,Math.min(-.7*nt,.8*nt),Math.max(-.7*nt,.8*nt),0,2.4,shw);box(P3,-2.9,2.9,-1.1,1.1,2.4,2.55,shr);box(P3,-4,4,-1.6,1.6,-.3,0,tn([.7,.69,.66]))}}}
   XG_L={lp:new Float32Array(XLP),lg:new Float32Array(XLG)};
   XG={n:P.length/3,ln:Lp.length/3,lpn:XG_L.lp.length/3,lgn:XG_L.lg.length/5};buf('xlpt',XG_L.lp);buf('xlgl',XG_L.lg);/* v5.8: sort the triangles into 500 m tiles (base and detail apart) so the draw can skip tiles outside the view and detail far away */
   {const nt=P.length/9,TS=500,[f0,f1,f2,f3]=X.f,TX=Math.ceil((f2-f0)/TS),TY=Math.ceil((f3-f1)/TS),key=new Uint16Array(nt),cnt=new Uint32Array(TX*TY*2+1);
@@ -847,7 +910,7 @@ function xsim(){const T=XN;if(!T)return null;
   const pstep=(dt,dens)=>{for(let k=0;k<PED.length;k++){const p=PED[k];p.off=k>=PED.length*dens;if(p.off)continue;const e=RE[p.e];
       if(p.cross>=0){const L=WID[e.cls]+3.2;p.cross+=p.v*1.15*dt/L;if(p.cross>=1){p.cross=-1;p.side=-p.side;p.d=-p.d;p.want=rnd()<.35}pplace(p);continue}
       const n=p.d>0?e.b:e.a,c=NC[n],zs=p.d>0?e.len-3.2:3.2,rem=p.d>0?zs-p.s:p.s-zs;
-      if(c&&!e.ow&&p.want&&rem<=.4&&rem>-1){if(light(c,phaseOf(c,e,1),clock)==='r'&&light(c,phaseOf(c,e,-1),clock)==='r'){p.cross=0}pplace(p);continue}
+      p.mv=true;if(c&&!e.ow&&p.want&&rem<=.4&&rem>-1){p.mv=false;if(light(c,phaseOf(c,e,1),clock)==='r'&&light(c,phaseOf(c,e,-1),clock)==='r'){p.cross=0}pplace(p);continue}
       p.s+=p.v*p.d*dt;
       if(p.s>e.len||p.s<0){const opts=PO[n].filter(i=>i!==p.e).map(i=>{const f=RE[i],d=f.a===n?1:-1,rs=p.side*p.d;return[i,d,rs*d]}).filter(([i,d,sd])=>!RE[i].ow||sd===1);
         if(!opts.length){p.d=-p.d;p.s=Math.max(0,Math.min(e.len,p.s));if(e.ow)p.side=1}else{const [i,d,sd]=opts[(rnd()*opts.length)|0];p.e=i;p.d=d;p.side=sd;p.s=d>0?0:RE[i].len;p.want=rnd()<.5}}
@@ -905,7 +968,7 @@ else{bool apt=k<1.5;
   vec3 wc=mix(glass,frame,max(fr,mul));
   if(apt&&r>.72)wc=mix(wc,bc*.82,(1.-fr)*.55);
   float pl=1.-step(.55,v);float cor=apt?step(ht-.35,v):0.;
-  vec3 fac2=mix(bc,wc,inW);fac2=mix(fac2,bc*.7,pl);fac2=mix(fac2,bc*.84,cor);
+  vec3 fac2=mix(bc,wc,inW);if(apt&&ht>11.){float bq=step(.6,h1(vec2(ci,3.)+floor(L*4.)))*step(1.,fi)*step(0.,cu)*step(cu,n*sp)*step(.6+fi*fh+sl+wh,ht-.5);float bal=bq*box(vec2(cx,fy),vec2(-ww*.5-.4,sl-.2),vec2(ww*.5+.4,sl+.8));float bsh=bq*box(vec2(cx,fy),vec2(-ww*.5-.4,sl-.32),vec2(ww*.5+.4,sl-.2));fac2=mix(fac2,mix(bc*1.08,vec3(.92),.18),bal*.94);fac2=mix(fac2,bc*.55,bsh);}fac2=mix(fac2,bc*.7,pl);fac2=mix(fac2,bc*.84,cor);
   float cov=apt?.22:.14;bc=mix(mix(bc,glass,cov)*(1.-pl*.3),fac2,lod);gl0=inW*lod;
   float lit=step(.42,fract(r*7.13+.31));vec3 warm=mix(vec3(1.,.72,.4),vec3(.6,.68,.8),step(.8,r));em=nf*(inW*(1.-fr)*(1.-mul)*lit*lod*warm*1.15+(1.-lod)*cov*.45*warm);}}
 vec3 col=bc*(va*mix(mix(mix(vec3(.96,.98,1.01),vec3(1.06,.88,.76),gf*.5),vec3(.36,.41,.58),nf),vec3(.66,.56,.7),nf*(1.-nf)*1.1)+sk*vdf*s*mix(vec3(1.05,.98,.88),vec3(1.3,.7,.42),gf)*(1.-nf*.96))+gl0*vec3(.03,.035,.045)*(1.-nf)+em;float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(col,fog,f*.85*(1.-nf*.5)),1.);}`);
@@ -975,14 +1038,14 @@ void main(){float wx=o.x+r.x*p.x-r.y*p.y,wy=o.y+r.y*p.x+r.x*p.y;vec3 wp=vec3(wx,
 HP+`varying vec3 vn,vc;varying float vd;uniform vec3 ld,fog,body;uniform vec2 fr;uniform float nf;
 void main(){vec3 N=normalize(vn);vec3 col=vc.x<0.?body:min(vc,vec3(1.));float df=max(dot(N,ld),0.);vec3 c=col*(.5+.2*(.55+.45*N.y)+.5*df*(1.-nf))*mix(1.,.38,nf);
 if(vc.x>1.2)c=mix(c,min(vc,vec3(1.)),nf);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(c,fog,f*.85),1.);}`);
-    for(const k of ['sedan','hatch','bus','tram','van','trolley','ped']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
+    for(const k of ['sedan','hatch','bus','tram','van','trolley','ped','ped2']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
   gl.useProgram(PCar);const u=nm=>gl.getUniformLocation(PCar,nm);gl.uniformMatrix4fv(u('m'),false,MVP);gl.uniform3fv(u('eye'),EYE);gl.uniform3fv(u('ld'),sunDir());gl.uniform3fv(u('fog'),fogc);gl.uniform2f(u('fr'),fr[0],fr[1]);gl.uniform1f(u('nf'),NF);
   const uo=u('o'),ur=u('r'),ub=u('body');
   for(const k of ['sedan','hatch','bus']){const M=VM[k];let bound=false;
     for(const c of TRF.cars){if(c.m!==M)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
       gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.3);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
     if(bound)off()}
-  if(XON&&XSIM){if(XSIM.PED&&cam.d<900){let bound=false;const M=VM.ped;for(const c of XSIM.PED){if(c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>3.6e5)continue;if(!bound){attr(PCar,'p','vmpedp',3);attr(PCar,'n','vmpedn',3);attr(PCar,'c','vmpedc',3);bound=true}
+  if(XON&&XSIM){if(XSIM.PED&&cam.d<900)for(const pk of ['ped','ped2']){let bound=false;const M=VM[pk],tq=XSIM.clock()*2.2;for(const c of XSIM.PED){if(c.off||(pk==='ped2')!==(!!c.mv&&Math.floor(tq+c.id*.37)%2===1))continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>3.6e5)continue;if(!bound){attr(PCar,'p','vm'+pk+'p',3);attr(PCar,'n','vm'+pk+'n',3);attr(PCar,'c','vm'+pk+'c',3);bound=true}
         gl.uniform3f(uo,c.x,c.y,hX(c.x,c.y)+.45);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}if(bound)off()}
     for(const k of ['sedan','hatch','van','bus','trolley','tram']){let bound=false;const M=VM[k];
       for(const c of XSIM.all){if(c.m!==k||c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>2.6e6)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
@@ -1137,7 +1200,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',retheme);
 addEventListener('d11lang',e=>{S=e.detail.S;showCard();showLegend();fsLabel();if(sunIn)setSun(+sunIn.value);dirty=true});
 if(window.__d11S)S=window.__d11S;
 /* v4.3.1: build the quarter only when the section comes near the screen, so the page itself loads without the 3D work */
-function init(){if(inited)return;inited=true;palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick()}
+function init(){if(inited)return;inited=true;palette();resize();cam.d=HOME.d*fit();build(false);showCard();tick();if(xbtn)setX(true)}
 if('IntersectionObserver' in window&&!/^#q3d/.test(location.hash)){new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();init()}},{rootMargin:'600px 0px'}).observe(box)}else init();
 window.__q3d={x:on=>setX(on),xready:()=>!!XG,xn:()=>XG&&XG.n,xsim:()=>XSIM,xstat:()=>XSTAT,pick:(x,y)=>pick(x,y),sel:i=>{sel=i;showCard();dirty=true},cam:()=>cam,set:(c,o)=>{init();auto=false;goal=null;Object.assign(cam,c);if(o&&o.sun){Object.assign(SUN,o.sun);if(o.sun.raw==null)SUN.raw=SUN.el;phase();smDirty=true}if(o&&o.sms){SMS=o.sms;smFB=null;smDirty=true}resize();draw()}};
 })();
