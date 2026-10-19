@@ -517,6 +517,8 @@ function build(evid){FEN=[];
    heights from building:levels / height or a typical height for the type (class E), roads, rails, water, mapped trees and land-use colours.
    Terrain: SRTM (photos/terrain/district.json, cached by the site workflow) where present, otherwise the quarter's relief fading out.
    Loaded only when the "Reference map" view is switched on. ---------- */
+/* v6.2: phones and low-memory devices get a lighter map: half the trees, no parked cars or entrance details */
+const XLITE=(()=>{try{return matchMedia('(pointer:coarse)').matches||(navigator.deviceMemory||8)<=4}catch(e){return false}})();
 let XG_L=null,XD=null,XT=null,XON=false,XG=null,XS=true,XLOAD=null;
 const TXE=TX+TS*(TH[0].length-1),TYE=TY+TS*(TH.length-1);
 function xtH(x,y){const g=XT,fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,c=Math.max(0,Math.min(g.nx-2,Math.floor(fx))),r=Math.max(0,Math.min(g.ny-2,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-c)),v=Math.max(0,Math.min(1,fy-r)),h=g.h,n=g.nx;
@@ -688,7 +690,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
           for(const [ux,uy] of [[.16,0],[0,.16]])quad(W(x-ux,y-uy,z),W(x+ux,y+uy,z),W(x+ux*.7,y+uy*.7,z+s*.5),W(x-ux*.7,y-uy*.7,z+s*.5),trk,0);
           const r=s*.42,cz=z+s*.6,top=W(x,y,cz+r*1.05),bot=W(x,y,cz-r*.4),ring=[];for(let q=0;q<5;q++){const a=q*1.2566+(h%7);ring.push(W(x+Math.cos(a)*r,y+Math.sin(a)*r,cz))}
           for(let q=0;q<5;q++){const a=ring[q],b=ring[(q+1)%5];tri3(a,b,top,gc,0);tri3(b,a,bot,mix(gc,[0,0,0],.22),0)}};
-      const yt=X.yt||[];for(let i=0;i<yt.length;i+=2)ytree(yt[i]/10,yt[i+1]/10,true);
+      const yt=X.yt||[];for(let i=0;i<yt.length;i+=XLITE?4:2)ytree(yt[i]/10,yt[i+1]/10,true);
       for(let j=0;j<=g.ny;j++)for(let i=0;i<=g.nx;i++){const k=g.c[j][i];if(k!=='f'&&k!=='g')continue;const n=k==='f'?2:(rr()<.3?1:0);
         for(let m=0;m<n;m++){const x=g.x+i*g.s+(rr()-.5)*16,y=g.y+j*g.s+(rr()-.5)*16;if(x>t0-6&&x<t2+6&&y>t1-6&&y<t3+6)continue;
           const z=hX(x,y),s=5+rr()*5,h=hash(x.toFixed(1)+y),gc=tn([[.33,.46,.26],[.4,.5,.28],[.48,.52,.29],[.3,.42,.28],[.52,.5,.27]][h%5]);
@@ -725,11 +727,11 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       const n=6,top=W(x,y,sp===1?z+s:cz+r*1.15),bot=W(x,y,sp===1?z+s*.22:cz-r*.6),R1=[];
       for(let k=0;k<n;k++){const a=k*1.0472+(h%7)*.3,rr=r*(k%2?.86:1);R1.push(W(x+Math.cos(a)*rr,y+Math.sin(a)*rr,cz+(k%2?r*.18:-r*.06)))}
       for(let k=0;k<n;k++){const a=R1[k],b=R1[(k+1)%n];tri3(a,b,top,gc,0);tri3(b,a,bot,gd,0)}};
-    const st=X.st||[];for(let i=0;i<st.length;i+=3)stree(st[i]/10,st[i+1]/10,st[i+2]);
+    const st=X.st||[];for(let i=0;i<st.length;i+=XLITE?6:3)stree(st[i]/10,st[i+1]/10,st[i+2]);
     /* v6.0: cars parked along the drives in the yards of the apartment blocks (illustrative): a Lada, a Moskvich, a foreign car */
     const PKC=[[.78,.77,.73],[.2,.22,.25],[.55,.13,.12],[.18,.3,.5],[.85,.84,.8],[.36,.38,.4],[.4,.5,.36],[.7,.62,.3],[.25,.25,.28],[.6,.6,.62],[.58,.32,.18],[.9,.9,.88],[.3,.18,.2],[.5,.55,.6],[.16,.16,.18],[.75,.7,.55]],glc=dk?[.08,.09,.1]:[.16,.19,.22],tyc=[.07,.07,.08];
     const bx=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
-    const pk=X.pk||[];for(let i=0;i<pk.length;i+=4){const x=pk[i]/10,y=pk[i+1]/10,a=pk[i+2]*Math.PI/180,c=tn(PKC[pk[i+3]]),z=hX(x,y)+.3,ux=Math.cos(a),uy=Math.sin(a),k=pk[i+3]%3;
+    const pk=XLITE?[]:X.pk||[];for(let i=0;i<pk.length;i+=4){const x=pk[i]/10,y=pk[i+1]/10,a=pk[i+2]*Math.PI/180,c=tn(PKC[pk[i+3]]),z=hX(x,y)+.3,ux=Math.cos(a),uy=Math.sin(a),k=pk[i+3]%3;
       const P3=(s,t,h)=>W(x+ux*s-uy*t,y+uy*s+ux*t,z+h),L=k===2?2.2:2.05,Wd=k===2?.86:.8;
       bx(P3,-L,L,-Wd,Wd,.12,.78,c);bx(P3,-L*.45+(k===1?-.15:0),L*.32,-Wd*.86,Wd*.86,.78,1.36,glc,c)}
     /* v6.0: railings on the road and rail bridges */
@@ -779,7 +781,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   if(ill){const box=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
     const frame=(x,y,ux,uy,z)=>(s,t,h)=>W(x+ux*s-uy*t,y+uy*s+ux*t,z+h);
     const conc=tn([.74,.73,.7]),door=tn([.34,.27,.22]),wood=tn([.55,.4,.27]),iron=tn([.25,.26,.27]);
-    const en=X.en||[];for(let i=0;i<en.length;i+=3){const x=en[i]/10,y=en[i+1]/10,a=en[i+2]*Math.PI/180,z=hX(x,y),P3=frame(x,y,Math.cos(a),Math.sin(a),z-.1);
+    const en=XLITE?[]:X.en||[];for(let i=0;i<en.length;i+=3){const x=en[i]/10,y=en[i+1]/10,a=en[i+2]*Math.PI/180,z=hX(x,y),P3=frame(x,y,Math.cos(a),Math.sin(a),z-.1);
       box(P3,0,1.4,-1.15,1.15,2.55,2.72,conc);box(P3,0,.07,-.6,.6,0,2.15,door);
       XLP.push(...P3(.9,0,2.48));{const R=4,gx=x+Math.cos(a)*1.5,gy=y+Math.sin(a)*1.5,gz=hX(gx,gy)+.25;for(const [u,v] of [[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]])XLG.push(...W(gx+u*R,gy+v*R,gz),u,v)}box(P3,2.6,3.0,1.4,3.2,.1,.5,wood);box(P3,2.95,3.02,1.4,3.2,.5,.9,wood);}
     const WGC=[[.36,.22,.17],[.14,.14,.15],[.45,.27,.19]].map(tn),coal=tn([.12,.12,.12]),under=tn([.1,.1,.11]);

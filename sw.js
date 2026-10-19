@@ -1,7 +1,7 @@
 /* Donetsk 2011 · service worker (v4.1). Pages you open stay readable offline. */
-const V='cb742079';
+const V='f0a76629';
 const CORE='d11-core-'+V,PAGES='d11-pages',IMG='d11-img',IMG_MAX=240;
-const PRE=["offline.html", "assets/site.css?v=99cadfb5", "assets/app.js?v=bf2b4c38", "assets/fonts/fonts.css", "icon-192.png", "assets/fonts/alegreya-normal-cyrillic.woff2", "assets/fonts/alegreya-normal-latin.woff2", "assets/fonts/literata-normal-cyrillic.woff2", "assets/fonts/literata-normal-latin.woff2"];
+const PRE=["offline.html", "assets/site.css?v=99cadfb5", "assets/app.js?v=28a95f97", "assets/fonts/fonts.css", "icon-192.png", "assets/fonts/alegreya-normal-cyrillic.woff2", "assets/fonts/alegreya-normal-latin.woff2", "assets/fonts/literata-normal-cyrillic.woff2", "assets/fonts/literata-normal-latin.woff2"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CORE).then(c=>c.addAll(PRE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('d11-core-')&&k!==CORE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 const trim=async(name,max)=>{const c=await caches.open(name),ks=await c.keys();for(let i=0;i<ks.length-max;i++)await c.delete(ks[i])};
