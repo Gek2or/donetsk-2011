@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-21-v64',d:'2026-10-21',ty:'site',v:'v6.4',cta:['city.html#guessing','ql3']},
  {id:'2026-10-20-v63',d:'2026-10-20',ty:'site',v:'v6.3',cta:['model.html#q3d','q74']},
  {id:'2026-10-19-v62',d:'2026-10-20',ty:'site',v:'v6.2',cta:['model.html#q3d','q74']},
  {id:'2026-10-19-v61',d:'2026-10-19',ty:'site',v:'v6.1',cta:['model.html#q3d','q74']},
@@ -892,7 +893,7 @@ try{if(firstVisit||list)localStorage.setItem(KEY,LATEST)}catch(e){}
 
 ;(()=>{
 /* ---------- v3.5: Donetsk quiz — place, map, year, photo of the day ---------- */
-const box=document.getElementById('guess'),tabs=document.getElementById('qzTabs');
+const box=document.getElementById('guess'),tabs=document.getElementById('qzTabs'),wrap=document.getElementById('qzl'),bar=document.getElementById('qzBar'),cta=document.getElementById('qzCta'),meta=document.getElementById('qzMeta'),art=document.getElementById('qzArt');
 if(!box||!window.__QZ)return;
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -955,8 +956,40 @@ const best=LS.get('d11-qz-best',{});
 const saveBest=(m,v)=>{if(!(best[m]>=v)){best[m]=v;LS.set('d11-qz-best',best)}};
 const MAPPOOL=P.filter(p=>p.k!=='heaps'&&p.lat!=null);
 let st=null;
-function drawTabs(){if(!tabs)return;tabs.innerHTML=MODES.map(([m,k])=>`<button type="button" role="tab" aria-selected="${m===mode}" data-m="${m}">${esc(T(k))}${m==='daily'&&!playedToday()?'<i class="qz-dot" aria-hidden="true"></i>':''}</button>`).join('');
-  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;LS.set('d11-qz-mode',mode);st=null;drawTabs();render();box.focus({preventScroll:true})})}
+/* v6.4: the lobby: a dark stage with a stack of photos, one "Play", and the four modes as cards */
+const MI={place:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16.5" cy="9" r="1.6"/></svg>',
+ map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/></svg>',
+ year:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9 15.5h6" stroke-linecap="round"/></svg>',
+ daily:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>'};
+const TAG={place:'ql7',map:'ql8',year:'ql9',daily:'ql10'},MIN={place:2,year:2,map:3};
+const streakNow=()=>{const r=LS.get('d11-qz-daily',null);return r&&r.n>=dayNo()-1?(r.streak||0):0};
+function bestTxt(m){if(m==='daily'){const k=streakNow();return playedToday()?T('ql16')+(k>1?' · '+T('qz25').replace('{n}',k):''):(k?T('qz25').replace('{n}',k):'')}
+  const b=best[m];if(b==null)return T('ql15');return m==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',N[m])}
+const metaTxt=m=>m==='daily'?T('qz20').replace('{n}',dayNo()):T('ql4').replace('{n}',N[m]).replace('{m}',MIN[m]);
+let playing=false,plays=null;
+function drawTabs(){if(!tabs)return;
+  tabs.innerHTML=MODES.map(([m,k],i)=>`<button type="button" class="qz-mode${m==='daily'?' qz-daily':''}" data-m="${m}"><span class="qm-ico" aria-hidden="true">${MI[m]}</span>${m==='daily'&&!playedToday()?`<i class="qm-new">${esc(T('g20'))}</i>`:''}<span class="qm-n mono" aria-hidden="true">0${i+1}</span><b>${esc(T(k))}</b><span class="qm-t">${esc(T(TAG[m]))}</span><span class="qm-f mono"><span>${esc(metaTxt(m))}</span><span class="qm-b">${esc(bestTxt(m))}</span></span><i class="qm-go" aria-hidden="true">→</i></button>`).join('');
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.m));
+  if(cta){cta.innerHTML=`<button type="button" class="qzl-play" id="qzPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>${esc(T('ql3'))}</button><button type="button" class="qzl-day" id="qzDay">${playedToday()?'':'<i class="qd-dot" aria-hidden="true"></i>'}${esc(T('qz20').replace('{n}',dayNo()))}</button>`;
+    cta.querySelector('#qzPlay').onclick=()=>go(mode==='daily'?'place':mode);cta.querySelector('#qzDay').onclick=()=>go('daily')}
+  if(meta)meta.innerHTML=`<li>${esc(T('ql13').replace('{n}',P.length))}</li><li>${esc(T('ql4').replace('{n}',8).replace('{m}',2))}</li><li>${esc(T('ql5'))}</li>${plays>=30?`<li><b>${esc(T('ql14').replace('{n}',fmtN(plays)))}</b></li>`:''}`}
+/* the stack: four photos fanned out, the top one flies off every few seconds */
+const FAN=[['-7deg','-3%','2%'],['5deg','4%','-1%'],['-2deg','-1%','-3%'],['9deg','2%','3%']];
+function drawArt(){if(!art)return;const ps=shuf(MAPPOOL,rng(dayNo()*31)).slice(0,6);
+  art.innerHTML=ps.map((p,i)=>`<figure class="qa-card"><img src="${esc(window.__ph?window.__ph(p.src,1):p.src)}" alt="" decoding="async" ${i>1?'loading="lazy"':''} referrerpolicy="no-referrer"><figcaption>?<small>${esc(T('g16').replace('{i}',i+1).replace('{n}',8))}</small></figcaption></figure>`).join('')+'<span class="qa-q">?</span><svg class="qa-pin" viewBox="0 0 24 32"><path d="M12 31S2 19.5 2 11.5a10 10 0 0 1 20 0C22 19.5 12 31 12 31z" fill="currentColor"/><circle cx="12" cy="11.5" r="4" fill="#1c1814"/></svg>';
+  const lay=()=>{const c=[...art.querySelectorAll('.qa-card')];c.forEach((e,k)=>{const f=FAN[Math.min(k,3)];e.style.zIndex=10-k;e.style.setProperty('--r',f[0]);e.style.setProperty('--x',f[1]);e.style.setProperty('--y',f[2]);e.style.opacity=k>3?0:1})};
+  /* the first card in DOM order is the top of the stack */
+  const top=()=>art.querySelector('.qa-card');lay();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let vis=false;if('IntersectionObserver'in window)new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(art);else vis=true;
+  setInterval(()=>{if(!vis||playing||document.hidden)return;const t=top();t.classList.add('out');setTimeout(()=>{t.classList.remove('out');art.insertBefore(t,art.querySelector('.qa-q'));lay()},650)},3800)}
+function bars(){if(!bar)return;const sc=st&&mode!=='daily'?(mode==='map'?fmtN(st.score):st.score):null;
+  bar.innerHTML=`<button type="button" class="qz-back" id="qzBack">${esc(T('ql11'))}</button><span class="qz-bt">${esc(T(MODES.find(x=>x[0]===mode)[1]))}</span>${sc!=null?`<span class="qz-sc">${esc(T('ql12'))}: <b>${esc(sc)}</b></span>`:''}`;
+  bar.querySelector('#qzBack').onclick=back}
+function show(on){playing=on;wrap&&wrap.classList.toggle('qz-on',on);if(bar)bar.hidden=!on;box.hidden=!on}
+function scrollTo0(){const r=(wrap||box).getBoundingClientRect();if(r.top<0||r.top>innerHeight*.4)window.scrollTo({top:r.top+scrollY-74,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+function go(m){mode=m;LS.set('d11-qz-mode',mode);st=null;show(true);if(m==='daily')render();else{start();hit('qz-plays').then(v=>{if(v!=null)plays=v})}scrollTo0();box.focus({preventScroll:true})}
+function back(){st=null;show(false);drawTabs();scrollTo0();const b=tabs&&tabs.querySelector(`[data-m="${mode}"]`);if(b)b.focus({preventScroll:true})}
 const N={place:8,year:8,map:5};
 function start(){const n=N[mode];const pool=mode==='map'?MAPPOOL:P;
   /* spread the landmarks: one photo per landmark first */
@@ -968,18 +1001,17 @@ function round(){const p=st.ids[st.i];st.ans=null;st.km=null;st.stat=null;
   render()}
 const yAns=p=>{const y=yr(p);return y<2011?'b':(y===2011?'e':'a')};
 const YL={b:'qz12',e:'qz13',a:'qz14'};
-function intro(){const b=mode==='map'?best.map:best[mode];const n=N[mode];
-  box.innerHTML=`<div class="gs-intro"><p class="qz-lead">${esc(T({place:'qz40',map:'qz41',year:'qz42'}[mode]))}</p><button type="button" class="btn primary" id="gsStart">${esc(T('g4'))}</button>${b?`<p class="gs-best">${esc(mode==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',n))}</p>`:''}</div>`;
-  box.querySelector('#gsStart').onclick=start}
 function end(){const n=st.ids.length;let txt,msg;
   if(mode==='map'){const s=st.score;saveBest('map',s);txt=T('qz17').replace('{p}',fmtN(s)).replace('{max}',fmtN(n*1000));msg=s>=3500?'g15':(s>=2000?'g17':'g18')}
   else{const s=st.score;saveBest(mode,s);txt=T('g9').replace('{s}',s).replace('{n}',n);msg=s>=6?'g15':(s>=4?'g17':'g18')}
   const b=best[mode];
-  box.innerHTML=`<div class="gs-end"><b class="num">${esc(txt)}</b><p>${esc(T(msg))}</p><p class="gs-best">${esc(mode==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',n))}</p><div class="qz-row"><button type="button" class="btn primary" id="gsAgain">${esc(T('g5'))}</button>${!playedToday()?`<button type="button" class="btn ghost" id="gsDaily">${esc(T('qz4'))} →</button>`:''}</div></div>`;
-  box.querySelector('#gsAgain').onclick=start;const dl=box.querySelector('#gsDaily');if(dl)dl.onclick=()=>{mode='daily';LS.set('d11-qz-mode',mode);st=null;drawTabs();render()}}
-function render(){S=window.__d11S||S;box.classList.toggle('qz-wide',mode==='map'||mode==='daily');
-  if(mode==='daily')return daily();
-  if(!st)return intro();if(st.i>=st.ids.length)return end();
+  const strip=st.ids.map((p,k)=>{const r=st.res[k];const c=mode==='map'?(r<=1.5?'ok':(r<=4?'mid':'')):(r?'ok':'');const mk=mode==='map'?(r<=1.5?'✓':(r<=4?'~':'✕')):(r?'✓':'✕');
+    return `<li class="${c}" title="${esc(nm(p.k))}"><img src="${esc(window.__ph?window.__ph(p.src,1):p.src)}" alt="${esc(nm(p.k))}" loading="lazy" referrerpolicy="no-referrer"><i aria-hidden="true">${mk}</i></li>`}).join('');
+  box.innerHTML=`<div class="gs-end"><span class="eyebrow">${esc(T('ql18'))}</span><b class="num">${esc(txt)}</b><p>${esc(T(msg))}</p><ul class="qz-strip">${strip}</ul><p class="gs-best">${esc(mode==='map'?T('qz34').replace('{b}',fmtN(b)):T('g42').replace('{b}',b).replace('{n}',n))}</p><div class="qz-row"><button type="button" class="btn primary" id="gsAgain">${esc(T('g5'))}</button><button type="button" class="btn ghost" id="gsOther">${esc(T('ql17'))}</button>${!playedToday()?`<button type="button" class="btn ghost" id="gsDaily">${esc(T('qz4'))} →</button>`:''}</div></div>`;
+  bars();box.querySelector('#gsAgain').onclick=()=>{start();hit('qz-plays')};box.querySelector('#gsOther').onclick=back;const dl=box.querySelector('#gsDaily');if(dl)dl.onclick=()=>go('daily');box.querySelector('#gsAgain').focus({preventScroll:true})}
+function render(){S=window.__d11S||S;if(!playing)return;box.classList.toggle('qz-wide',mode==='map'||mode==='daily');
+  if(mode==='daily'){bars();return daily()}
+  if(!st)return start();if(st.i>=st.ids.length)return end();bars();
   const p=st.ids[st.i],n=st.ids.length,head=`<span class="eyebrow">${esc(T('g16').replace('{i}',st.i+1).replace('{n}',n))}</span>`;
   if(mode==='map'){const answered=st.km!=null;
     box.innerHTML=`${photo(p,answered)}<div class="gs-side qz-mside">${head}<div class="qz-mapbox"></div>
@@ -987,17 +1019,21 @@ function render(){S=window.__d11S||S;box.classList.toggle('qz-wide',mode==='map'
 <div class="qz-row">${answered?`<button type="button" class="btn primary" id="gsNext">${esc(T('g8'))}</button>`:`<button type="button" class="btn primary" id="qzGo" disabled>${esc(T('qz9'))}</button>`}</div>${dots(st.i,n)}</div>`;
     const mv=mapView(box.querySelector('.qz-mapbox'),()=>{const g=box.querySelector('#qzGo');if(g)g.disabled=false});
     if(answered){mv.setGuess(st.g);mv.reveal(p.lat,p.lon)}
-    const go=box.querySelector('#qzGo');if(go)go.onclick=()=>{const g=mv.guess();if(!g)return;st.g=g;st.km=dist(g[0],g[1],p.lat,p.lon);st.score+=pts(st.km);const close=st.km<=1.5;render();
+    const go=box.querySelector('#qzGo');if(go)go.onclick=()=>{const g=mv.guess();if(!g)return;st.g=g;st.km=dist(g[0],g[1],p.lat,p.lon);st.score+=pts(st.km);st.res[st.i]=st.km;const close=st.km<=1.5;render();
       count(`qz-${p.id}-m`,close).then(s=>statLine(box.querySelector('.qz-stat'),s,'qz26'))};
     const nx=box.querySelector('#gsNext');if(nx){nx.onclick=()=>{st.i++;st.i<n?round():render()};nx.focus({preventScroll:true})}
     return}
   const ok=mode==='place'?p.k:yAns(p);const lab=o=>mode==='place'?nm(o):T(YL[o]);
-  box.innerHTML=`${photo(p,!!st.ans)}<div class="gs-side">${head}<div class="gs-opts${mode==='year'?' qz-years':''}">${st.opts.map(o=>`<button type="button" data-o="${o}" class="${st.ans?(o===ok?'ok':(o===st.ans?'bad':'')):''}" ${st.ans?'disabled':''}>${esc(lab(o))}</button>`).join('')}</div>
-<p class="gs-fb" aria-live="polite">${st.ans?esc(st.ans===ok?T('g6'):T('g7').replace('{x}',lab(ok))):''}</p>${st.ans?`<p class="gs-cap">${mode==='year'?`<b>${esc(T('qz15').replace('{d}',fmtD(p.d)))}</b> · ${esc(nm(p.k))}`:esc(T('qz15').replace('{d}',fmtD(p.d)))}</p><p class="qz-stat mono"></p>`:''}${st.ans&&mode==='place'&&window.__mm?`<a class="gs-mem" href="#memory" id="gsMem">${esc(T('gr1'))}</a>`:''}${st.ans?`<button type="button" class="btn ghost" id="gsNext">${esc(T('g8'))}</button>`:''}${dots(st.i,n)}</div>`;
-  box.querySelectorAll('.gs-opts button').forEach(b=>b.onclick=()=>{if(st.ans)return;st.ans=b.dataset.o;const good=st.ans===ok;if(good)st.score++;render();const nx=box.querySelector('#gsNext');if(nx)nx.focus({preventScroll:true});
+  box.innerHTML=`${photo(p,!!st.ans)}<div class="gs-side">${head}<div class="gs-opts${mode==='year'?' qz-years':''}">${st.opts.map((o,k)=>`<button type="button" data-o="${o}" class="${st.ans?(o===ok?'ok':(o===st.ans?'bad':'')):''}" ${st.ans?'disabled':''}><kbd aria-hidden="true">${k+1}</kbd>${esc(lab(o))}${st.ans&&o===ok?' ✓':''}</button>`).join('')}</div>
+<p class="gs-fb${st.ans?(st.ans===ok?' ok':' bad'):''}" aria-live="polite">${st.ans?esc(st.ans===ok?T('g6'):T('g7').replace('{x}',lab(ok))):''}</p>${st.ans?`<p class="gs-cap">${mode==='year'?`<b>${esc(T('qz15').replace('{d}',fmtD(p.d)))}</b> · ${esc(nm(p.k))}`:esc(T('qz15').replace('{d}',fmtD(p.d)))}</p><p class="qz-stat mono"></p>`:''}${st.ans&&mode==='place'&&window.__mm?`<a class="gs-mem" href="#memory" id="gsMem">${esc(T('gr1'))}</a>`:''}${st.ans?`<button type="button" class="btn ghost" id="gsNext">${esc(T('g8'))}</button>`:''}${dots(st.i,n)}</div>`;
+  box.querySelectorAll('.gs-opts button').forEach(b=>b.onclick=()=>{if(st.ans)return;st.ans=b.dataset.o;const good=st.ans===ok;if(good)st.score++;st.res[st.i]=good;render();const nx=box.querySelector('#gsNext');if(nx)nx.focus({preventScroll:true});
     count(`qz-${p.id}-${mode==='place'?'p':'y'}`,good).then(s=>statLine(box.querySelector('.qz-stat'),s))});
   const gm=box.querySelector('#gsMem');if(gm)gm.onclick=e=>{e.preventDefault();window.__mm.add(nm(p.k))};
   const nx=box.querySelector('#gsNext');if(nx)nx.onclick=()=>{st.i++;st.i<n?round():render()}}
+/* keys: 1–4 answer, Enter or → goes on */
+box.addEventListener('keydown',e=>{if(!playing||!st||mode==='daily'||e.altKey||e.ctrlKey||e.metaKey)return;const k=e.key;
+  if(/^[1-4]$/.test(k)){const b=box.querySelectorAll('.gs-opts button')[+k-1];if(b&&!b.disabled){e.preventDefault();b.click()}}
+  else if(k==='Enter'||k==='ArrowRight'){const nx=box.querySelector('#gsNext');if(nx&&document.activeElement!==nx){e.preventDefault();nx.click()}}});
 /* ---------- photo of the day ---------- */
 const DAY0=Date.UTC(2026,9,7);
 const dayNo=()=>Math.floor((Date.now()-DAY0)/864e5)+1;
@@ -1015,8 +1051,11 @@ function daily(){const n=dayNo(),p=dailyPhoto(n),rec=LS.get('d11-qz-daily',null)
     LS.set('d11-qz-daily',{n,km,g,streak});const close=km<=1.5;Promise.all([hit(`qd-${n}-n`),close?hit(`qd-${n}-ok`):get(`qd-${n}-ok`)]).then(()=>{if(mode==='daily'){drawTabs();daily()}});drawTabs();daily()};
   const sh=box.querySelector('#qzShare');if(sh)sh.onclick=()=>{const t=shareText(n,rec.km);const done2=()=>{sh.textContent=T('qz23');setTimeout(()=>{sh.textContent=T('qz22')},1800)};
     if(navigator.share&&matchMedia('(pointer:coarse)').matches)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(done2,()=>{});}}
-addEventListener('d11lang',e=>{S=e.detail.S;drawTabs();render()});
-drawTabs();render();
+addEventListener('d11lang',e=>{S=e.detail.S;drawTabs();drawArt();render()});
+drawTabs();drawArt();show(false);
+get('qz-plays').then(v=>{if(v!=null){plays=v;if(!playing)drawTabs()}});
+/* a link to #play or ?play starts the game right away */
+if(/[#?&]play\b/.test(location.href))go('place');
 })();
 
 ;(()=>{
