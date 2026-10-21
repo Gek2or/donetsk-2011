@@ -827,7 +827,7 @@ function xdraw(){const m=MVP;let nt=0,nv=0;for(const r of XG.R){const b=r.b;if(r
       if(cx<-cw)o[0]++;if(cx>cw)o[1]++;if(cy<-cw)o[2]++;if(cy>cw)o[3]++;if(cz<-cw)o[4]++;if(cz>cw)o[5]++}
     if(o[0]===8||o[1]===8||o[2]===8||o[3]===8||o[4]===8||o[5]===8)continue;gl.drawArrays(gl.TRIANGLES,r.s,r.n);nt++;nv+=r.n}XSTAT={tiles:nt,verts:nv}}
 function xload(){if(XLOAD)return XLOAD;const u=p=>new URL(p,document.baseURI);
-  XLOAD=Promise.all([fetch(u('assets/traffic.json')).then(r=>r.ok?r.json():null).catch(()=>null).then(t=>{XN=t}),fetch(u('assets/district.json')).then(r=>{if(!r.ok)throw r.status;return r.json()}),fetch(u('photos/terrain/district.json'),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
+  XLOAD=Promise.all([fetch(u('assets/traffic.json?v=7cb7e25e')).then(r=>r.ok?r.json():null).catch(()=>null).then(t=>{XN=t}),fetch(u('assets/district.json?v=48286c60')).then(r=>{if(!r.ok)throw r.status;return r.json()}),fetch(u('photos/terrain/district.json'),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)])
     .then(([_,d,t])=>{XD=d;try{XSIM=xsim()}catch(e){console.warn(e);XSIM=null}if(t&&t.h&&t.nx&&t.h.length===t.nx*t.ny)XT=t;XS=true}).catch(e=>{XLOAD=null;throw e});return XLOAD}
 const xbtn=document.getElementById('q3dist');
 function setX(on){if(!xbtn)return;if(on&&!XD){xbtn.setAttribute('aria-busy','true');xbtn.disabled=true;xload().then(()=>{xbtn.disabled=false;xbtn.removeAttribute('aria-busy');setX(true)}).catch(()=>{xbtn.disabled=false;xbtn.removeAttribute('aria-busy');xbtn.setAttribute('aria-pressed','false')});return}
