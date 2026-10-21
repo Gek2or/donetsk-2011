@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-21-v65',d:'2026-10-21',ty:'site',v:'v6.5',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v64',d:'2026-10-21',ty:'site',v:'v6.4',cta:['city.html#guessing','ql3']},
  {id:'2026-10-20-v63',d:'2026-10-20',ty:'site',v:'v6.3',cta:['model.html#q3d','q74']},
  {id:'2026-10-19-v62',d:'2026-10-20',ty:'site',v:'v6.2',cta:['model.html#q3d','q74']},
@@ -765,7 +766,7 @@ const E=[
  {id:'2026-10-11-v42',d:'2026-10-11',ty:'site',v:'v4.2',cta:['city.html#oct','oc0']},
  {id:'2026-10-09-v41',d:'2026-10-09',ty:'site',v:'v4.1',cta:['model.html#q3d','q70']},
  {id:'2026-10-09-v40',d:'2026-10-09',ty:'site',v:'v4.0',cta:['city.html#atlas','at0']},
- {id:'2026-10-08-daynight',d:'2026-10-08',ty:'site',v:'v3.9',cta:['city.html#then','tn0']},
+ {id:'2026-10-08-daynight',d:'2026-10-08',ty:'site',v:'v3.9',cta:['city.html#atlas','at0']},
  {id:'2026-10-08-guests',d:'2026-10-08',ty:'site',v:'v3.8',lab:'gv1',cta:['index.html#guests','gv1']},
  {id:'2026-10-08-album',d:'2026-10-08',ty:'site',v:'v3.6',lab:'n1'},
  {id:'2026-10-08-quiz',d:'2026-10-07',ty:'site',v:'v3.5',img:'img/render/plan_top.jpg',lab:'qz0',cta:['city.html#guessing','uc9']},
@@ -1142,33 +1143,68 @@ addEventListener('d11lang',()=>setTimeout(()=>{if(inited){draw();if(act>=0)show(
 })();
 
 ;(()=>{
-/* ---------- v4.3: a ride on tram route 1 ---------- */
+/* ---------- v6.5: a ride on tram route 1 along the real track ----------
+   Units: the map is 1 unit = 10 m. The physics runs in metres and seconds of "tram time";
+   the clock runs faster than real time (x12, or x48 with the fast button). */
 const sec=document.getElementById('tram');if(!sec)return;
-const box=sec.querySelector('.tr-box');let ST=[];try{ST=JSON.parse(box.dataset.stops)}catch(e){return}
-const svg=sec.querySelector('.tr-map svg'),car=sec.querySelector('.tr-car'),done=sec.querySelector('.tr-done'),now=sec.querySelector('.tr-now'),nxt=sec.querySelector('.tr-next');
-const glass=sec.querySelector('.tr-glass'),img=glass.querySelector('img'),cap=sec.querySelector('.tr-cap'),play=sec.querySelector('.tr-play'),snd=sec.querySelector('.tr-snd'),range=sec.querySelector('.tr-range');
+const box=sec.querySelector('.tr-box');let R;try{R=JSON.parse(box.dataset.ride)}catch(e){return}
+const P=R.P,ST=R.S,PH=R.F||[];
+const $=s=>sec.querySelector(s),$$=s=>[...sec.querySelectorAll(s)];
+const now=$('.tr-now'),nxt=$('.tr-next'),glass=$('.tr-glass'),imgs=$$('.tr-ph img'),cap=$('.tr-cap'),play=$('.tr-play'),snd=$('.tr-snd'),fast=$('.tr-fast'),range=$('.tr-range');
+const mapv=$('.tr-mapv'),car=$('.tr-car'),done=$('.tr-done'),gV=$('.tr-v'),gK=$('.tr-km'),gT=$('.tr-tm'),scheme=$('.tr-scheme ol');
 const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
 const lang=()=>document.documentElement.dataset.plang||(document.documentElement.lang||'ru').slice(0,2);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nm=s=>s.n[lang()]||s.n.ru;
-/* distances along the line, in map units (1 unit = 10 m) */
-const cum=[0];for(let i=1;i<ST.length;i++)cum.push(cum[i-1]+Math.hypot(ST[i].x-ST[i-1].x,ST[i].y-ST[i-1].y));
-const L=cum[cum.length-1];done.style.strokeDasharray=L;done.style.strokeDashoffset=L;
-const VMAX=L/70,ACC=14,DWELL=1.9;
-let t=0,v=0,playing=false,dwell=0,at=0,last=0,shown=-1,inView=false;
-const posAt=d=>{let i=1;while(i<cum.length-1&&cum[i]<d)i++;const a=ST[i-1],b=ST[i],k=(d-cum[i-1])/((cum[i]-cum[i-1])||1);return[a.x+(b.x-a.x)*k,a.y+(b.y-a.y)*k,i-1]};
-function render(){const [x,y]=posAt(t);car.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)})`);done.style.strokeDashoffset=(L-t).toFixed(1);
-  range.value=Math.round(t/L*1000);box.classList.toggle('moving',playing&&dwell<=0&&v>VMAX*.08);
-  sec.querySelectorAll('.tr-stop').forEach((c,i)=>c.classList.toggle('past',cum[i]<=t+.01))}
-function board(i,arrived){const s=ST[i],n=ST[i+1];
-  now.innerHTML=arrived?`<small>${esc(T('tr7'))}</small>${esc(nm(s))}`:`<small>→</small>${esc(nm(n||s))}`;
-  nxt.innerHTML=n?`${esc(T('tr6'))} ${esc(nm(arrived?n:(ST[i+2]||n)))}`:esc(T('tr13'));
-  if(!n&&arrived)nxt.textContent=T('tr13')}
-function view(i){if(i===shown)return;shown=i;const s=ST[i];
-  if(s.img){glass.classList.remove('none');glass.classList.add('fade');setTimeout(()=>{img.src=s.img;img.alt=T(s.k)||nm(s)},180);img.onload=()=>glass.classList.remove('fade');
-    cap.innerHTML=`${esc(T(s.k))} · ${esc(T('tr10'))}, ~${s.d} ${/^(ru|uk)$/.test(lang())?'м':'m'} · <a href="${esc(s.pg)}" target="_blank" rel="noopener">© ${esc(s.au)} · ${esc(s.li)} ↗</a>`}
-  else{glass.classList.add('none');img.removeAttribute('src');cap.textContent=nm(s)}}
-/* sound: everything is synthesised here, no recordings */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ---- the track ---- */
+const cum=[0];for(let i=1;i<P.length;i++)cum.push(cum[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
+const L=cum[cum.length-1],LM=L*10;
+done.style.strokeDasharray=L;done.style.strokeDashoffset=L;
+let seg=1;const at=d=>{if(cum[seg-1]>d)seg=1;while(seg<cum.length-1&&cum[seg]<d)seg++;const a=P[seg-1],b=P[seg],k=(d-cum[seg-1])/((cum[seg]-cum[seg-1])||1);return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,Math.atan2(b[1]-a[1],b[0]-a[0])]};
+/* curve limits: the turn angle at each vertex, spread over the vertex's neighbourhood; sharp turns 15 km/h */
+const VMAX=11.5,ACC=1.0,DEC=1.1,DWELL=18;
+const LIM=[];for(let i=1;i<P.length-1;i++){const a1=Math.atan2(P[i][1]-P[i-1][1],P[i][0]-P[i-1][0]),a2=Math.atan2(P[i+1][1]-P[i][1],P[i+1][0]-P[i][0]);let da=Math.abs(a2-a1);if(da>Math.PI)da=2*Math.PI-da;
+  if(da>.35){const v=da>1.2?4.2:da>.7?6:8.5;LIM.push([cum[i]*10,v])}}
+const SS=ST.map(s=>s.s*10);
+/* ---- state ---- */
+let x=0,v=0,i0=0,dwell=0,playing=false,tsim=0,last=0,inView=false,mode='win',tf=12;
+/* the stop we are at or heading to */
+const nextStop=()=>{let k=0;while(k<SS.length-1&&SS[k]<=x+.5)k++;return k};
+const atStop=()=>{for(let k=0;k<SS.length;k++)if(Math.abs(SS[k]-x)<1.5)return k;return -1};
+function targetV(){const k=nextStop();let tv=VMAX;const ds=SS[k]-x;if(ds>0)tv=Math.min(tv,Math.sqrt(2*DEC*Math.max(0,ds-1)));
+  for(const [p,vl] of LIM){if(p<x-20)continue;if(p>x+160)break;const d=Math.max(0,p-x-15);tv=Math.min(tv,Math.sqrt(vl*vl+2*DEC*d))}
+  if(x-SS[Math.max(0,k-1)]<12&&k>0)tv=Math.min(tv,Math.max(2,v+.4));return tv}
+/* ---- the window: photos next to the line, otherwise the view from above ---- */
+let curPh=null,ib=0,holdUntil=0;
+function pickPhoto(){const xs=x/10;let best=null,bd=1e9;for(const p of PH){const d=Math.abs(p.s-xs);if(d<45&&d<bd){bd=d;best=p}}return best}
+function showPhoto(p){if(p===curPh)return;curPh=p;
+  if(!p){glass.classList.add('none');cap.textContent='';return}
+  const a=imgs[ib],b=imgs[1-ib];b.onload=()=>{b.classList.add('on');a.classList.remove('on')};b.src=p.img;b.alt=T(p.k);ib=1-ib;glass.classList.remove('none');
+  cap.innerHTML=`<b>${esc(T('tr31'))}:</b> ${esc(T(p.k))} · ~${p.d} ${/^(ru|uk)$/.test(lang())?'м':'m'} ${esc(T('tr32'))} · ${esc(String(p.yr).slice(0,4))} · <a href="${esc(p.pg)}" target="_blank" rel="noopener">© ${esc(p.au)} · ${esc(p.li)} ↗</a>`}
+function windowView(force){const ts=performance.now();if(!force&&ts<holdUntil)return;const p=mode==='map'?null:pickPhoto();
+  if(p!==curPh){holdUntil=ts+(playing?2200:0);showPhoto(p)}glass.classList.toggle('maponly',mode==='map'||!p)}
+/* ---- the map camera ---- */
+let cx=null,cy=null,cz=330,camA=0;const CS=1.9;
+function camera(dt){const [px,py,a]=at(x/10);const w=mapv.clientWidth||600,h=mapv.clientHeight||375,W=cz,H=W*h/w;
+  if(cx===null||dt===0){cx=px;cy=py}else{const k=1-Math.exp(-dt*3);cx+=(px-cx)*k;cy+=(py-cy)*k}
+  mapv.setAttribute('viewBox',`${(cx-W/2).toFixed(1)} ${(cy-H/2).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}`);
+  let da=a-camA;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;camA+=da*Math.min(1,dt*6||1);
+  car.setAttribute('transform',`translate(${px.toFixed(2)},${py.toFixed(2)}) rotate(${(camA*180/Math.PI).toFixed(1)}) scale(${CS})`)}
+/* ---- the board, gauges and the diagram ---- */
+let lastBoard='';
+function board(){const s=atStop(),k=s>=0?s:nextStop();const here=s>=0&&v<.3;
+  const html=here?`<small>${esc(T('tr7'))}</small>${esc(nm(ST[s]))}`:`<small>→</small>${esc(nm(ST[k]))}`;
+  const n2=here?ST[s+1]:ST[k+1];const nx=here&&s===ST.length-1?esc(T('tr13')):(n2?`${esc(T('tr6'))} ${esc(nm(n2))}`:esc(T('tr13')));
+  const key=html+nx;if(key!==lastBoard){lastBoard=key;now.innerHTML=html;nxt.innerHTML=nx}
+  $$('.tr-scheme li').forEach((li,j)=>{li.classList.toggle('past',SS[j]<x-1);li.classList.toggle('cur',j===(here?s:k))})}
+const fmtT=t=>{t=Math.round(t);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
+const dec=n=>n.toFixed(1).replace('.',/^(ru|uk|fi)$/.test(lang())?',':'.');
+function gauges(){gV.textContent=Math.round(v*3.6);gK.textContent=dec(x/1000);gT.textContent=fmtT(tsim);range.value=Math.round(x/LM*1000);done.style.strokeDashoffset=(L-x/10).toFixed(1);
+  box.classList.toggle('moving',playing&&v>1.2);box.style.setProperty('--sway',Math.min(1,v/VMAX).toFixed(2))}
+let curLi=-1;function follow(){const li=scheme.querySelector('li.cur');if(!li||li===curLi)return;curLi=li;const o=scheme.parentElement,r=li.offsetTop-o.clientHeight/2+li.offsetHeight/2,rl=li.offsetLeft-o.clientWidth/2+li.offsetWidth/2;
+  if(o.scrollHeight>o.clientHeight+4)o.scrollTo({top:r,behavior:RM?'auto':'smooth'});else if(o.scrollWidth>o.clientWidth+4)o.scrollTo({left:rl,behavior:RM?'auto':'smooth'})}
+/* ---- sound: everything is synthesised here, no recordings ---- */
 let AC=null,rum=null,whine=null,clackAt=0;
 function audio(){if(AC)return AC;try{AC=new (window.AudioContext||window.webkitAudioContext)();const sr=AC.sampleRate,b=AC.createBuffer(1,sr*2,sr),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.5}
   const n=AC.createBufferSource();n.buffer=b;n.loop=true;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=160;rum=AC.createGain();rum.gain.value=0;n.connect(f).connect(rum).connect(AC.destination);n.start();
@@ -1177,30 +1213,42 @@ function burst(dur,freq,type,vol,delay=0){if(!AC)return;const sr=AC.sampleRate,l
   const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=AC.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(AC.destination);s.start(AC.currentTime+delay)}
 function bell(){if(!AC)return;[0,.32].forEach(dl=>{[[1180,1],[3260,.45],[5400,.2]].forEach(([fr,a])=>{const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime+dl;o.frequency.value=fr;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.18*a,t0+.005);g.gain.exponentialRampToValueAtTime(.0001,t0+.9);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+1)})})}
 const soundOn=()=>snd.getAttribute('aria-pressed')==='true'&&AC;
+let clackX=0;
 function sound(){if(!soundOn()){if(rum){rum.gain.value=0;whine.gain.value=0}return}const k=Math.min(1,v/VMAX),tt=AC.currentTime;
-  rum.gain.setTargetAtTime(playing&&inView?.05+.25*k:0,tt,.15);whine.gain.setTargetAtTime(playing&&inView&&dwell<=0?.025*Math.sin(Math.PI*Math.min(1,k*1.2)):0,tt,.2);whine.osc.frequency.setTargetAtTime(90+260*k,tt,.2);
-  if(playing&&dwell<=0&&t-clackAt>3.2&&v>VMAX*.15){clackAt=t;burst(.03,2200,'bandpass',.5);burst(.03,1900,'bandpass',.4,.11)}}
-/* motion */
-function step(ts){requestAnimationFrame(step);const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;if(!playing||!inView){sound();return}
-  if(dwell>0){dwell-=dt;if(dwell<=0&&at>=ST.length-1){playing=false;play.textContent=T('tr3');play.setAttribute('aria-pressed','false')}sound();render();return}
-  const ni=Math.min(ST.length-1,at+1),toNext=cum[ni]-t,fromPrev=t-cum[at];
-  const target=Math.max(VMAX*.12,Math.min(VMAX,Math.sqrt(2*ACC*Math.max(0,toNext)),Math.sqrt(2*ACC*Math.max(.5,fromPrev))+VMAX*.12));
-  v+=(target-v)*Math.min(1,dt*3);t=Math.min(cum[ni],t+v*dt);
-  if(t>=cum[ni]-.01){t=cum[ni];at=ni;v=0;dwell=DWELL;board(at,true);view(at);if(soundOn()){bell();burst(.45,3500,'highpass',.12,.5)}}
-  else if(shown!==at||now.dataset.m!==String(at)){now.dataset.m=at;board(at,false)}
-  sound();render()}
-function jump(i){i=Math.max(0,Math.min(ST.length-1,i));at=i;t=cum[i];v=0;dwell=playing?DWELL:0;board(i,true);view(i);render()}
-play.addEventListener('click',()=>{playing=!playing;if(playing){if(at>=ST.length-1){jump(0)}dwell=Math.min(dwell,.4)}play.textContent=T(playing?'tr4':'tr3');play.setAttribute('aria-pressed',String(playing));if(soundOn()&&AC.state==='suspended')AC.resume()});
+  rum.gain.setTargetAtTime(playing&&inView?.05+.25*k:0,tt,.15);whine.gain.setTargetAtTime(playing&&inView&&v>.5?.025*Math.sin(Math.PI*Math.min(1,k*1.2)):0,tt,.2);whine.osc.frequency.setTargetAtTime(90+260*k,tt,.2);
+  /* a rail joint every 25 m: the clack follows the real speed */
+  if(playing&&v>1.5&&x-clackX>25*Math.max(1,tf/12)){clackX=x;burst(.03,2200,'bandpass',.5);burst(.03,1900,'bandpass',.4,.11)}}
+/* ---- motion ---- */
+let arrived=-1;
+function step(ts){requestAnimationFrame(step);const rdt=Math.min(.05,(ts-(last||ts))/1000);last=ts;
+  if(!inView){sound();return}
+  if(playing){const dt=rdt*tf;let left=dt;
+    while(left>1e-4){const h=Math.min(left,.25);left-=h;
+      if(dwell>0){dwell-=h;tsim+=h;if(dwell<=0&&atStop()===ST.length-1){stop();break}continue}
+      const tv=targetV();v=tv>v?Math.min(tv,v+ACC*h):Math.max(tv,v-DEC*2*h);x=Math.min(LM,x+v*h);tsim+=h;
+      const k=nextStop(),s=SS[k];if(k>0&&s-x<1.2&&v<.6&&arrived!==k){x=s;v=0;arrived=k;dwell=k===ST.length-1?2:DWELL;if(soundOn()){bell();burst(.45,3500,'highpass',.12,.5)}}
+      else if(x>=LM){x=LM;v=0;stop();break}}}
+  board();gauges();camera(rdt);windowView(false);follow();sound()}
+function stop(){playing=false;setPlay()}
+function setPlay(){play.setAttribute('aria-pressed',String(playing));play.querySelector('span').textContent=T(playing?'tr4':'tr3');play.querySelector('path').setAttribute('d',playing?'M7 5h4v14H7zM13 5h4v14h-4z':'M8 5v14l11-7z')}
+function jump(k){k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
+play.addEventListener('click',()=>{playing=!playing;if(playing){if(x>=LM-1){x=0;tsim=0;arrived=0}dwell=Math.min(dwell,1.5);if(soundOn()&&AC.state==='suspended')AC.resume()}setPlay()});
 snd.addEventListener('click',()=>{const on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));if(on){audio();if(AC&&AC.state==='suspended')AC.resume();if(AC&&!playing)bell()}sound()});
-sec.querySelector('.tr-prev').addEventListener('click',()=>jump(t>cum[at]+.5?at:at-1));
-sec.querySelector('.tr-next-b').addEventListener('click',()=>jump(at+1));
-range.addEventListener('input',()=>{t=range.value/1000*L;let i=0;while(i<ST.length-1&&cum[i+1]<=t)i++;at=i;v=0;dwell=0;if(Math.abs(cum[i]-t)<1){board(i,true);view(i)}else{board(i,false);view(i)}render()});
-sec.querySelectorAll('.tr-stop').forEach((c,i)=>{c.style.cursor='pointer';c.addEventListener('click',()=>jump(i))});
-const base=svg.querySelector('.tr-base'),loadBase=()=>{if(base&&base.dataset.href&&!base.getAttribute('href'))base.setAttribute('href',new URL(base.dataset.href,document.baseURI).href)};
-if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].isIntersecting;if(!inView)sound()},{threshold:.15}).observe(box);new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){loadBase();o.disconnect()}},{rootMargin:'600px'}).observe(box)}else{inView=true;loadBase()}
-addEventListener('d11lang',()=>setTimeout(()=>{shown=-1;board(at,dwell>0||t===cum[at]);view(at);play.textContent=T(playing?'tr4':'tr3')},0));
-board(0,true);view(0);render();requestAnimationFrame(step);
-window.__tram={jump,state:()=>({t,at,playing,L})};
+fast.addEventListener('click',()=>{const on=fast.getAttribute('aria-pressed')!=='true';fast.setAttribute('aria-pressed',String(on));tf=on?48:12;fast.textContent=on?'×4':'×1'});
+$('.tr-prev').addEventListener('click',()=>{const s=atStop();let k=s>=0?s-1:nextStop()-1;jump(k)});
+$('.tr-next-b').addEventListener('click',()=>{const s=atStop();jump(s>=0?s+1:nextStop())});
+range.addEventListener('input',()=>{x=range.value/1000*LM;v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
+scheme.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)jump(+b.dataset.i)});
+$$('.tr-modes button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.v;$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));holdUntil=0;curPh=undefined;windowView(true)}));
+/* stop ticks on the map */
+const sg=$('.tr-stops');sg.innerHTML=ST.map(s=>{const [px,py]=at(s.s);return`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3.4"/>`}).join('');seg=1;
+/* the base map is the city SVG (150 KB): only load it when the ride is near */
+const base=$('.tr-base'),loadBase=()=>{if(base&&base.dataset.href&&!base.getAttribute('href'))base.setAttribute('href',new URL(base.dataset.href,document.baseURI).href)};
+if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].isIntersecting;if(!inView)sound()},{threshold:.1}).observe(box);new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){loadBase();o.disconnect()}},{rootMargin:'600px'}).observe(box)}else{inView=true;loadBase()}
+function names(){$$('.tr-scheme li span').forEach((sp,j)=>{sp.textContent=nm(ST[j])});$$('.tr-scheme li small').forEach((sm,j)=>{sm.textContent=dec(ST[j].s/100)});const r=$('.tr-route .mono');if(r)r.textContent=`${nm(ST[0])} → ${nm(ST[ST.length-1])}`}
+addEventListener('d11lang',()=>setTimeout(()=>{names();lastBoard='';board();curPh=undefined;windowView(true);setPlay();gauges()},0));
+names();arrived=0;board();gauges();camera(0);windowView(true);requestAnimationFrame(step);
+window.__tram={jump,state:()=>({x,v,playing,L:LM,tsim,ph:curPh&&curPh.k}),fast:f=>{tf=f}};
 })();
 
 ;(()=>{
