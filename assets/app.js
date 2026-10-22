@@ -1170,7 +1170,7 @@ const LIM=[];for(let i=1;i<P.length-1;i++){const a1=Math.atan2(P[i][1]-P[i-1][1]
   if(da>.35){const v=da>1.2?4.2:da>.7?6:8.5;LIM.push([cum[i]*10,v])}}
 const SS=ST.map(s=>s.s*10);
 /* ---- state ---- */
-let x=0,v=0,i0=0,dwell=0,playing=false,tsim=0,last=0,inView=false,mode=box.dataset.t3d?'3d':'win',tf=12;
+let x=0,v=0,i0=0,dwell=0,playing=false,tsim=0,last=0,inView=false,mode=box.dataset.t3d?'3d':'win',SPD=[1,2,5,15],si=1,tf=SPD[si];
 /* the stop we are at or heading to */
 const nextStop=()=>{let k=0;while(k<SS.length-1&&SS[k]<=x+.5)k++;return k};
 const atStop=()=>{for(let k=0;k<SS.length;k++)if(Math.abs(SS[k]-x)<1.5)return k;return -1};
@@ -1244,7 +1244,7 @@ function setPlay(){play.setAttribute('aria-pressed',String(playing));play.queryS
 function jump(k){dirty=true;k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
 play.addEventListener('click',()=>{playing=!playing;if(playing){if(x>=LM-1){x=0;tsim=0;arrived=0}dwell=Math.min(dwell,1.5);if(soundOn()&&AC.state==='suspended')AC.resume()}setPlay()});
 snd.addEventListener('click',()=>{const on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));if(on){audio();if(AC&&AC.state==='suspended')AC.resume();if(AC&&!playing)bell()}sound()});
-fast.addEventListener('click',()=>{const on=fast.getAttribute('aria-pressed')!=='true';fast.setAttribute('aria-pressed',String(on));tf=on?48:12;fast.textContent=on?'×4':'×1'});
+fast.addEventListener('click',()=>{si=(si+1)%SPD.length;tf=SPD[si];fast.textContent='×'+tf;fast.setAttribute('aria-pressed',String(si>1))});
 $('.tr-prev').addEventListener('click',()=>{const s=atStop();let k=s>=0?s-1:nextStop()-1;jump(k)});
 $('.tr-next-b').addEventListener('click',()=>{const s=atStop();jump(s>=0?s+1:nextStop())});
 range.addEventListener('input',()=>{dirty=true;x=range.value/1000*LM;v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
