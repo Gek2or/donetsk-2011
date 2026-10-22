@@ -182,7 +182,14 @@ function carMeshes(){const COLS=[[232,232,226],[214,200,170],[150,40,36],[60,84,
     lightBox(g,P,2.1,2.16,-.7,-.45,.55,.72,[220,220,210],7);lightBox(g,P,2.1,2.16,.45,.7,.55,.72,[220,220,210],7);
     lightBox(g,P,-2.16,-2.1,-.72,-.5,.58,.74,[120,30,24],8);lightBox(g,P,-2.16,-2.1,.5,.72,.58,.74,[120,30,24],8);
     CARM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
-function roadsFrom(D){for(const [c,w,surf,cls,f] of D.R){if(cls>1)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<120)continue;
+let PEDM=[],WALKS=[];
+function pedMeshes(){const COATS=[[60,62,70],[94,70,52],[120,40,40],[50,70,90],[150,140,120],[70,80,60],[30,30,32],[160,90,110]];
+  for(const col of COATS){const g=G();const P=(f,r,h)=>[f,h,r];box(g,P,-.16,.16,-.2,.2,.8,1.42,col);box(g,P,-.1,.1,-.1,.1,1.42,1.68,[200,164,140]);box(g,P,-.1,.1,-.18,-.04,0,.82,[40,40,44]);box(g,P,-.1,.1,.04,.18,0,.82,[40,40,44]);
+    PEDM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
+function walksFrom(D){for(const [c,w,surf,cls,f] of D.R){if(cls>2)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<60)continue;
+    const n=Math.max(1,Math.round(len/(LITE?140:70)));const ps=[];for(let k=0;k<n;k++){const h=((k+1)*2246822519+Math.round(len)*3266489917)>>>0;ps.push({o:(h%1000)/1000*len,dir:(h>>>3)&1?1:-1,v:1.1+((h>>>5)%6)/10,col:(h>>>9)%8,side:(h>>>13)&1?1:-1})}
+    let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}WALKS.push({p,cu,len,w:w/10,ps,mx:mx/p.length,my:my/p.length})}}
+function roadsFrom(D){walksFrom(D);for(const [c,w,surf,cls,f] of D.R){if(cls>1)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<120)continue;
     const n=Math.max(1,Math.round(len/90));const cars=[];for(let k=0;k<n;k++){const h=(k*2654435761+len*97)>>>0;cars.push({o:(h%1000)/1000*len,dir:(h>>>3)&1?1:-1,v:9+((h>>>5)%60)/10,col:(h>>>9)%8})}
     let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}ROADS.push({p,cu,len,w:w/10,cars,mx:mx/p.length,my:my/p.length})}}
 function roadAt(R,s){s=((s%R.len)+R.len)%R.len;let i=1;while(i<R.cu.length-1&&R.cu[i]<s)i++;const a=R.p[i-1],b=R.p[i],k=(s-R.cu[i-1])/((R.cu[i]-R.cu[i-1])||1);return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,Math.atan2(b[1]-a[1],b[0]-a[0])]}
@@ -245,7 +252,12 @@ function frame(f,speed,dt,t){if(!ready)return;resize();const s=f*TL;
   for(const R of ROADS){if(Math.abs(R.mx-E[0])>900||Math.abs(R.my+E[2])>900)continue;for(const c of R.cars){const ss=c.o+c.dir*c.v*t;const [cx,cy,ca]=roadAt(R,ss);
     if(Math.abs(cx-E[0])>450||Math.abs(cy+E[2])>450)continue;const ang=c.dir>0?ca:ca+Math.PI;const lo=Math.max(1.6,R.w/4);const rx=Math.sin(ang)*lo,ry=-Math.cos(ang)*lo;
     gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,cx+rx,HT(cx+rx,cy+ry)+.1,-(cy+ry),ang)));const m=CARM[c.col];bind(m.buf);gl.drawArrays(gl.TRIANGLES,0,m.n)}}
+  /* people walking along the pavements, within 250 m */
+  for(const R of WALKS){if(Math.abs(R.mx-E[0])>700||Math.abs(R.my+E[2])>700)continue;for(const q of R.ps){const ss=q.o+q.dir*q.v*t;const [px,py,pa]=roadAt(R,ss);
+    if(Math.abs(px-E[0])>250||Math.abs(py+E[2])>250)continue;const ang=q.dir>0?pa:pa+Math.PI;const lo=(R.w/2+2.1)*q.side*q.dir;const rx=Math.sin(ang)*lo,ry=-Math.cos(ang)*lo;
+    const bob=Math.abs(Math.sin(t*q.v*3.2+q.o))*.04;gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,px+rx,HT(px+rx,py+ry)+bob,-(py+ry),ang)));const m=PEDM[q.col];bind(m.buf);gl.drawArrays(gl.TRIANGLES,0,m.n)}}
   gl.uniformMatrix4fv(U.MO,false,ID);
+  for(const k in A)gl.disableVertexAttribArray(A[k]);drawSigns(MV,E,LL,c0);for(const k in A)gl.enableVertexAttribArray(A[k]);
   gl.uniform1f(U.MODE,1);for(const C of vis)if(C.tree.buf){bind(C.tree.buf);gl.drawArrays(gl.TRIANGLES,0,C.tree.n_)}gl.uniform1f(U.MODE,0);
   /* wires */
   gl.disableVertexAttribArray(A.n);gl.disableVertexAttribArray(A.c);gl.disableVertexAttribArray(A.f);gl.vertexAttrib3f(A.n,0,1,0);gl.vertexAttrib4f(A.c,.13,.13,.14,1);gl.vertexAttrib3f(A.f,0,0,0);gl.vertexAttrib3f(A.f,0,0,0);
@@ -256,6 +268,35 @@ let GB=null,MVc=null;function ground(E){if(!GB){const g=G();const R=7000;quad(g,
 /* ---------- load ---------- */
 async function load(url){const tu=new URL('photos/terrain/tram1.json',document.baseURI).href;
   const [D,Tt]=await Promise.all([fetch(url).then(r=>{if(!r.ok)throw new Error('tram3d '+r.status);return r.json()}),fetch(tu).then(r=>r.ok?r.json():null).catch(()=>null)]);
-  if(Tt&&Tt.h&&Tt.nx){TER=Tt;TER.z0=0;const T0=unflat(D.T);TER.z0=HT(T0[0][0],T0[0][1])}chSize=D.CH;build(D);oncomingMesh();carMeshes();roadsFrom(D);ready=true;return true}
+  if(Tt&&Tt.h&&Tt.nx){TER=Tt;TER.z0=0;const T0=unflat(D.T);TER.z0=HT(T0[0][0],T0[0][1])}chSize=D.CH;build(D);oncomingMesh();buildSigns(D);carMeshes();pedMeshes();roadsFrom(D);ready=true;return true}
+/* ---------- shop signs (OpenStreetMap as of Sept 2012): text drawn into one canvas atlas ---------- */
+const SVS2=`attribute vec3 p;attribute vec2 t;uniform mat4 M;varying vec2 vt;varying vec3 vw;void main(){vt=t;vw=p;gl_Position=M*vec4(p,1.);}`;
+const SFS2=`precision mediump float;varying vec2 vt;varying vec3 vw;uniform sampler2D TX;uniform vec3 E;uniform vec3 FOG;uniform float FD;uniform float NIGHT;uniform vec3 AMB;uniform vec3 SUNC;
+void main(){vec4 c=texture2D(TX,vt);vec3 l=mix(AMB*.8+SUNC*.55+.25,vec3(1.05),NIGHT*.9);vec3 col=c.rgb*l;float d=length(vw-E);col=mix(col,FOG,clamp(1.-exp(-pow(d/FD,1.6)),0.,1.)*(1.-NIGHT*.4));gl_FragColor=vec4(col,1.);}`;
+const SP=prog(SVS2,SFS2);const SA={p:gl.getAttribLocation(SP,'p'),t:gl.getAttribLocation(SP,'t')};
+const SU={M:gl.getUniformLocation(SP,'M'),E:gl.getUniformLocation(SP,'E'),FOG:gl.getUniformLocation(SP,'FOG'),FD:gl.getUniformLocation(SP,'FD'),NIGHT:gl.getUniformLocation(SP,'NIGHT'),AMB:gl.getUniformLocation(SP,'AMB'),SUNC:gl.getUniformLocation(SP,'SUNC'),TX:gl.getUniformLocation(SP,'TX')};
+let SGC=[],STEX=null;
+const SSTY={0:null,1:['#f4f6f0','#1d7a3a'],2:['#1f4f8f','#ffffff'],3:['#3a2418','#f2c66a'],4:['#c8231e','#ffd23a'],5:['#b8231e','#ffffff'],6:['#1b1b20','#e2c27a']};
+const SPAL=[['#1f3f7a','#ffffff'],['#f2efe6','#b8231e'],['#f3c63a','#1c1814'],['#226b3a','#ffffff'],['#5a1f5a','#ffe9a0'],['#0e0e10','#ffffff']];
+function buildSigns(D){const G_=D.SG||[];if(!G_.length)return;const W_=2048,CW=512,CHh=80,cols=4;const rows=Math.ceil(G_.length/cols);const H_=Math.min(2048,Math.pow(2,Math.ceil(Math.log2(rows*CHh))));
+  const cv=document.createElement('canvas');cv.width=W_;cv.height=H_;const x=cv.getContext('2d');
+  G_.forEach((g,i)=>{const [c,x1,y1,x2,y2,z0,name,sty,named,pid]=g;const cx=(i%cols)*CW,cy=Math.floor(i/cols)*CHh;
+    let st=/mcdonald/i.test(name)?['#d62418','#ffc72c']:SSTY[sty]||SPAL[(name.length*7+i)%SPAL.length];
+    x.fillStyle=st[0];x.fillRect(cx,cy,CW,CHh);x.strokeStyle='rgba(0,0,0,.35)';x.lineWidth=4;x.strokeRect(cx+2,cy+2,CW-4,CHh-4);
+    let pad=24;if(sty===1){x.fillStyle=st[1];x.fillRect(cx+20,cy+30,30,20);x.fillRect(cx+25,cy+25,20,30);x.fillRect(cx+30,cy+18,10,44);x.fillRect(cx+18,cy+34,34,12);pad=70}
+    const txt=named?name:name.toUpperCase();x.fillStyle=st[1];x.textBaseline='middle';let fs=50;x.font=`bold ${fs}px "Arial Narrow","Roboto Condensed",Arial,sans-serif`;let w=x.measureText(txt).width;const avail=CW-pad-24;
+    x.save();x.translate(cx+pad+(avail-Math.min(w,avail))/2,cy+CHh/2+2);if(w>avail)x.scale(avail/w,1);x.fillText(txt,0,0);x.restore()});
+  STEX=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,STEX);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  const per={};G_.forEach((g,i)=>{const [c,x1,y1,x2,y2,z0]=g;const ax=x1/10,ay=y1/10,bx=x2/10,by=y2/10,l=Math.hypot(bx-ax,by-ay)||1,ux=(bx-ax)/l,uy=(by-ay)/l,nx=uy*.16,ny=-ux*.16;
+    const Z=z0/10,hgt=Math.min(1.35,Math.max(.85,l/5.2));const base=HT((ax+bx)/2,(ay+by)/2);let B0=base;
+    const u0=(i%cols)*CW/W_,u1=u0+CW/W_,v0=Math.floor(i/cols)*CHh/H_,v1=v0+CHh/H_;
+    const P=[[ax+nx,Z+B0,-(ay+ny)],[bx+nx,Z+B0,-(by+ny)],[bx+nx,Z+hgt+B0,-(by+ny)],[ax+nx,Z+hgt+B0,-(ay+ny)]],T_=[[u0,v1],[u1,v1],[u1,v0],[u0,v0]];
+    const a=per[c]||(per[c]={p:[],t:[]});for(const k of [0,1,2,0,2,3]){a.p.push(...P[k]);a.t.push(...T_[k])}});
+  for(const c in per){SGC[c]={n:per[c].p.length/3,p:up(new Float32Array(per[c].p)),t:up(new Float32Array(per[c].t))}}}
+function drawSigns(MV,E,LL,c0){if(!STEX)return;gl.useProgram(SP);gl.uniformMatrix4fv(SU.M,false,new Float32Array(MV));gl.uniform3fv(SU.E,E);gl.uniform3fv(SU.FOG,LL.fog);gl.uniform1f(SU.FD,(LITE?520:720)*LL.fd);gl.uniform1f(SU.NIGHT,LL.night);gl.uniform3fv(SU.AMB,LL.amb);gl.uniform3fv(SU.SUNC,LL.sunc);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,STEX);gl.uniform1i(SU.TX,0);gl.enableVertexAttribArray(SA.p);gl.enableVertexAttribArray(SA.t);
+  for(let i=c0-2;i<=c0+7;i++){const g=SGC[i];if(!g)continue;gl.bindBuffer(gl.ARRAY_BUFFER,g.p);gl.vertexAttribPointer(SA.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,g.t);gl.vertexAttribPointer(SA.t,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,g.n)}
+  gl.disableVertexAttribArray(SA.p);gl.disableVertexAttribArray(SA.t);gl.useProgram(PR)}
 return{load,frame,resize,get ready(){return ready},stops:()=>STOPS,length:()=>TL,terrain:()=>!!TER,setLight:n=>{LIGHT=n;LT=Infinity},phase:()=>{const P=lightNow();return P.night>.8?'night':P.night>.2?'dusk':'day'}};
 };
