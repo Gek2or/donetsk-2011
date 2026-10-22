@@ -1898,3 +1898,37 @@ main:focus{outline:none}
 .tr-ctl .tr-snd span,.tr-ctl .tr-play span{display:inline}
 .tr-range{order:9;flex-basis:100%}
 }
+/* v6.6: the cab view */
+.tr-3d{position:absolute;inset:0;width:100%;height:100%;display:none;background:#cfd3d2}
+.tr-glass.m3d .tr-3d{display:block}
+.tr-glass.m3d .tr-ph,.tr-glass.m3d .tr-mapv,.tr-glass.m3d .tr-cap,.tr-glass.m3d .tr-nophoto{display:none}
+.tr-glass.m3d::after{display:none}
+.tr-cab{display:none;position:absolute;inset:0;z-index:2;pointer-events:none}
+.tr-glass.m3d .tr-cab{display:block}
+.tr-cab-top{position:absolute;left:0;right:0;top:0;height:7%;background:linear-gradient(#0e0b08,#0e0b08e0 70%,#0e0b0800)}
+.tr-cab-dash{position:absolute;left:0;right:0;bottom:0;height:13%;background:linear-gradient(#0e0b0800,#1c1814 38%,#241e18);border-top:1px solid #ffffff10}
+.tr-cab-dash::before{content:"";position:absolute;left:50%;top:38%;width:min(34%,220px);height:28%;transform:translateX(-50%);border-radius:40% 40% 0 0;background:#2e2720;box-shadow:inset 0 2px 0 #ffffff12}
+.tr-wiper{position:absolute;left:18%;bottom:11%;width:34%;height:2px;background:#0e0b08;transform-origin:0 50%;transform:rotate(-4deg);opacity:.75;border-radius:2px}
+.tr-load{display:none;position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:10px 16px;border-radius:99px;background:#0e0b08d9;color:var(--tr-amber);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.tr-glass.m3d.loading .tr-load{display:block;animation:trBlink 1.2s ease-in-out infinite}
+@keyframes trBlink{50%{opacity:.55}}
+.tr-phchip{all:unset;cursor:pointer;position:absolute;z-index:3;right:12px;bottom:calc(13% + 10px);display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;background:#f3ebdcee;color:#1c1814;font:600 13px var(--f-body);box-shadow:0 6px 16px -6px #000a;animation:trChip .5s ease}
+.tr-phchip[hidden]{display:none}
+.tr-phchip::before{content:"";width:9px;height:9px;border-radius:50%;background:#c8272f;box-shadow:0 0 0 3px #c8272f33}
+.tr-phchip:focus-visible{outline:2px solid var(--tr-amber);outline-offset:2px}
+@keyframes trChip{from{opacity:0;transform:translateY(6px)}}
+.tr-glass.m3d .tr-modes{top:calc(7% + 6px)}
+/* v6.7: time of day in the cab */
+.tr-time{all:unset;cursor:pointer;display:none;position:absolute;z-index:3;right:10px;top:calc(7% + 6px);align-items:center;gap:7px;padding:6px 12px 6px 9px;border-radius:99px;background:#0e0b08cc;color:#f3ebdc;font:600 12.5px var(--f-body);backdrop-filter:blur(4px)}
+.tr-glass.m3d .tr-time{display:inline-flex}
+.tr-time i{width:14px;height:14px;border-radius:50%;background:#ffd36b;box-shadow:0 0 8px #ffd36b88}
+.tr-time[data-ph="dusk"] i{background:linear-gradient(#ffb15a 55%,#5a4a6a 55%);box-shadow:0 0 8px #ff9a4a88}
+.tr-time[data-ph="night"] i{background:#0e0b08;box-shadow:inset -4px -2px 0 1px #e8e2cf}
+.tr-time:focus-visible{outline:2px solid var(--tr-amber);outline-offset:2px}
+/* v6.7: the dashboard of the cab */
+.tr-dash{position:absolute;left:0;right:0;bottom:0;width:100%;height:20%;display:block}
+.tr-glass.m3d .tr-cab-dash{display:none}
+.tr-dash .tr-needle,.tr-dash .tr-ctrl{transition:transform .25s linear}
+.tr-dash .on{filter:drop-shadow(0 0 4px currentColor)}
+.tr-l-door.on{fill:#6fe08a;color:#6fe08a}.tr-l-run.on{fill:#ffc04a;color:#ffc04a}.tr-l-brk.on{fill:#ff5a4a;color:#ff5a4a}
+.tr-glass.m3d .tr-phchip{bottom:calc(20% + 8px)}

@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-21-v66',d:'2026-10-21',ty:'site',v:'v6.6',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v65',d:'2026-10-21',ty:'site',v:'v6.5',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v64',d:'2026-10-21',ty:'site',v:'v6.4',cta:['city.html#guessing','ql3']},
  {id:'2026-10-20-v63',d:'2026-10-20',ty:'site',v:'v6.3',cta:['model.html#q3d','q74']},
@@ -1151,7 +1152,7 @@ const box=sec.querySelector('.tr-box');let R;try{R=JSON.parse(box.dataset.ride)}
 const P=R.P,ST=R.S,PH=R.F||[];
 const $=s=>sec.querySelector(s),$$=s=>[...sec.querySelectorAll(s)];
 const now=$('.tr-now'),nxt=$('.tr-next'),glass=$('.tr-glass'),imgs=$$('.tr-ph img'),cap=$('.tr-cap'),play=$('.tr-play'),snd=$('.tr-snd'),fast=$('.tr-fast'),range=$('.tr-range');
-const mapv=$('.tr-mapv'),car=$('.tr-car'),done=$('.tr-done'),gV=$('.tr-v'),gK=$('.tr-km'),gT=$('.tr-tm'),scheme=$('.tr-scheme ol');
+const nd=$('.tr-needle'),dsp=$('.tr-dsp'),ctl=$('.tr-ctrl'),ld=$('.tr-l-door'),lr=$('.tr-l-run'),lb=$('.tr-l-brk'),chip=$('.tr-phchip'),cv3=$('.tr-3d'),ld3=$('.tr-load'),mapv=$('.tr-mapv'),car=$('.tr-car'),done=$('.tr-done'),gV=$('.tr-v'),gK=$('.tr-km'),gT=$('.tr-tm'),scheme=$('.tr-scheme ol');
 const S=()=>window.__d11S||{};const T=k=>S()[k]||(sec.querySelector(`[data-t="${k}"]`)||document.querySelector(`[data-t="${k}"]`)||{}).textContent||'';
 const lang=()=>document.documentElement.dataset.plang||(document.documentElement.lang||'ru').slice(0,2);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1168,7 +1169,7 @@ const LIM=[];for(let i=1;i<P.length-1;i++){const a1=Math.atan2(P[i][1]-P[i-1][1]
   if(da>.35){const v=da>1.2?4.2:da>.7?6:8.5;LIM.push([cum[i]*10,v])}}
 const SS=ST.map(s=>s.s*10);
 /* ---- state ---- */
-let x=0,v=0,i0=0,dwell=0,playing=false,tsim=0,last=0,inView=false,mode='win',tf=12;
+let x=0,v=0,i0=0,dwell=0,playing=false,tsim=0,last=0,inView=false,mode=box.dataset.t3d?'3d':'win',tf=12;
 /* the stop we are at or heading to */
 const nextStop=()=>{let k=0;while(k<SS.length-1&&SS[k]<=x+.5)k++;return k};
 const atStop=()=>{for(let k=0;k<SS.length;k++)if(Math.abs(SS[k]-x)<1.5)return k;return -1};
@@ -1182,7 +1183,9 @@ function showPhoto(p){if(p===curPh)return;curPh=p;
   if(!p){glass.classList.add('none');cap.textContent='';return}
   const a=imgs[ib],b=imgs[1-ib];b.onload=()=>{b.classList.add('on');a.classList.remove('on')};b.src=p.img;b.alt=T(p.k);ib=1-ib;glass.classList.remove('none');
   cap.innerHTML=`<b>${esc(T('tr31'))}:</b> ${esc(T(p.k))} · ~${p.d} ${/^(ru|uk)$/.test(lang())?'м':'m'} ${esc(T('tr32'))} · ${esc(String(p.yr).slice(0,4))} · <a href="${esc(p.pg)}" target="_blank" rel="noopener">© ${esc(p.au)} · ${esc(p.li)} ↗</a>`}
-function windowView(force){const ts=performance.now();if(!force&&ts<holdUntil)return;const p=mode==='map'?null:pickPhoto();
+function windowView(force){const ts=performance.now();glass.classList.toggle('m3d',mode==='3d');
+  if(mode==='3d'){const p=pickPhoto();chip.hidden=!p;glass.classList.remove('maponly');return}
+  chip.hidden=true;if(!force&&ts<holdUntil)return;const p=mode==='map'?null:pickPhoto();
   if(p!==curPh){holdUntil=ts+(playing?2200:0);showPhoto(p)}glass.classList.toggle('maponly',mode==='map'||!p)}
 /* ---- the map camera ---- */
 let cx=null,cy=null,cz=330,camA=0;const CS=1.9;
@@ -1228,27 +1231,48 @@ function step(ts){requestAnimationFrame(step);const rdt=Math.min(.05,(ts-(last||
       const tv=targetV();v=tv>v?Math.min(tv,v+ACC*h):Math.max(tv,v-DEC*2*h);x=Math.min(LM,x+v*h);tsim+=h;
       const k=nextStop(),s=SS[k];if(k>0&&s-x<1.2&&v<.6&&arrived!==k){x=s;v=0;arrived=k;dwell=k===ST.length-1?2:DWELL;if(soundOn()){bell();burst(.45,3500,'highpass',.12,.5)}}
       else if(x>=LM){x=LM;v=0;stop();break}}}
-  board();gauges();camera(rdt);windowView(false);follow();sound()}
+  board();gauges();camera(rdt);windowView(false);follow();sound();
+  if(mode==='3d'&&T3&&t3state===2&&(playing||dirty)){T3.frame(x/LM,v,rdt,tsim);dirty=false;dashUpd()}}
+/* the dashboard: speedometer 0-80 km/h, controller position, door/run/brake lamps */
+let dashT=0,lastV=0;function dashUpd(){const ts=performance.now();if(ts-dashT<120)return;dashT=ts;const kmh=v*3.6;
+  if(nd)nd.setAttribute('transform',`rotate(${(-120+Math.min(80,kmh)/80*240).toFixed(1)})`);if(dsp)dsp.textContent=Math.round(kmh);
+  const acc=v-lastV;lastV=v;if(ctl)ctl.setAttribute('transform',`translate(0 ${acc>.02?-10:acc<-.02?10:0})`);
+  const atS=atStop()>=0&&v<.3&&dwell>0;if(ld)ld.classList.toggle('on',!atS);if(lr)lr.classList.toggle('on',playing&&acc>.02);if(lb)lb.classList.toggle('on',acc<-.02||(!playing&&v<.1))}
 function stop(){playing=false;setPlay()}
 function setPlay(){play.setAttribute('aria-pressed',String(playing));play.querySelector('span').textContent=T(playing?'tr4':'tr3');play.querySelector('path').setAttribute('d',playing?'M7 5h4v14H7zM13 5h4v14h-4z':'M8 5v14l11-7z')}
-function jump(k){k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
+function jump(k){dirty=true;k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
 play.addEventListener('click',()=>{playing=!playing;if(playing){if(x>=LM-1){x=0;tsim=0;arrived=0}dwell=Math.min(dwell,1.5);if(soundOn()&&AC.state==='suspended')AC.resume()}setPlay()});
 snd.addEventListener('click',()=>{const on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));if(on){audio();if(AC&&AC.state==='suspended')AC.resume();if(AC&&!playing)bell()}sound()});
 fast.addEventListener('click',()=>{const on=fast.getAttribute('aria-pressed')!=='true';fast.setAttribute('aria-pressed',String(on));tf=on?48:12;fast.textContent=on?'×4':'×1'});
 $('.tr-prev').addEventListener('click',()=>{const s=atStop();let k=s>=0?s-1:nextStop()-1;jump(k)});
 $('.tr-next-b').addEventListener('click',()=>{const s=atStop();jump(s>=0?s+1:nextStop())});
-range.addEventListener('input',()=>{x=range.value/1000*LM;v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
+range.addEventListener('input',()=>{dirty=true;x=range.value/1000*LM;v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
 scheme.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)jump(+b.dataset.i)});
-$$('.tr-modes button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.v;$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));holdUntil=0;curPh=undefined;windowView(true)}));
+$$('.tr-modes button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.v;dirty=true;if(mode==='3d')start3d();$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));holdUntil=0;curPh=undefined;windowView(true)}));
+/* ---- the cab view (v6.6): the renderer and the street data are loaded when the ride comes near ---- */
+let T3=null,t3state=0,dirty=true;
+function start3d(){if(t3state||!box.dataset.t3d)return;t3state=1;glass.classList.add('loading');
+  const sc=document.createElement('script');sc.src=new URL(box.dataset.t3d,document.baseURI).href;sc.async=true;
+  sc.onload=()=>{try{T3=window.__T3D&&window.__T3D(cv3,{lite:matchMedia('(pointer:coarse)').matches||(navigator.deviceMemory||8)<=4})}catch(e){T3=null}
+    if(!T3){fail3d();return}T3.load(new URL(box.dataset.t3dd,document.baseURI).href).then(()=>{t3state=2;glass.classList.remove('loading');dirty=true;T3.frame(0,0,0,0);tlabel()}).catch(fail3d)};
+  sc.onerror=fail3d;document.head.appendChild(sc)}
+function fail3d(){t3state=3;glass.classList.remove('loading');const b=$('.tr-modes [data-v="3d"]');if(b)b.remove();if(mode==='3d'){mode='win';$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v==='win')));windowView(true)}}
+chip.addEventListener('click',()=>{const b=$('.tr-modes [data-v="win"]');if(b)b.click()});
+/* time of day in the cab view: now (the real sun over Donetsk) → day → evening → night */
+const tbtn=$('.tr-time'),TORD=['now','day','dusk','night'],TKEY={now:'tr37',day:'tr38',dusk:'tr39',night:'tr40'};
+function tlabel(){const l=tbtn.dataset.l;tbtn.querySelector('span').textContent=T(TKEY[l]);const ph=l==='now'?(T3&&T3.phase?T3.phase():'day'):l;tbtn.dataset.ph=ph}
+if(tbtn)tbtn.addEventListener('click',()=>{const l=TORD[(TORD.indexOf(tbtn.dataset.l)+1)%TORD.length];tbtn.dataset.l=l;if(T3&&T3.setLight)T3.setLight(l);dirty=true;tlabel()});
+if(!box.dataset.t3d){const b=$('.tr-modes [data-v="3d"]');if(b)b.remove()}
+addEventListener('resize',()=>{dirty=true});
 /* stop ticks on the map */
 const sg=$('.tr-stops');sg.innerHTML=ST.map(s=>{const [px,py]=at(s.s);return`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3.4"/>`}).join('');seg=1;
 /* the base map is the city SVG (150 KB): only load it when the ride is near */
 const base=$('.tr-base'),loadBase=()=>{if(base&&base.dataset.href&&!base.getAttribute('href'))base.setAttribute('href',new URL(base.dataset.href,document.baseURI).href)};
-if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].isIntersecting;if(!inView)sound()},{threshold:.1}).observe(box);new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){loadBase();o.disconnect()}},{rootMargin:'600px'}).observe(box)}else{inView=true;loadBase()}
+if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].isIntersecting;dirty=true;if(!inView)sound()},{threshold:.1}).observe(box);new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){loadBase();if(mode==='3d')start3d();o.disconnect()}},{rootMargin:'500px'}).observe(box)}else{inView=true;loadBase();if(mode==='3d')start3d()}
 function names(){$$('.tr-scheme li span').forEach((sp,j)=>{sp.textContent=nm(ST[j])});$$('.tr-scheme li small').forEach((sm,j)=>{sm.textContent=dec(ST[j].s/100)});const r=$('.tr-route .mono');if(r)r.textContent=`${nm(ST[0])} → ${nm(ST[ST.length-1])}`}
-addEventListener('d11lang',()=>setTimeout(()=>{names();lastBoard='';board();curPh=undefined;windowView(true);setPlay();gauges()},0));
+addEventListener('d11lang',()=>setTimeout(()=>{if(tbtn)tlabel();names();lastBoard='';board();curPh=undefined;windowView(true);setPlay();gauges()},0));
 names();arrived=0;board();gauges();camera(0);windowView(true);requestAnimationFrame(step);
-window.__tram={jump,state:()=>({x,v,playing,L:LM,tsim,ph:curPh&&curPh.k}),fast:f=>{tf=f}};
+window.__tram={jump,state:()=>({x,v,playing,L:LM,tsim,ph:curPh&&curPh.k,t3:t3state}),fast:f=>{tf=f}};
 })();
 
 ;(()=>{

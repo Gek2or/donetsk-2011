@@ -58,3 +58,9 @@ try:
     runpy.run_path("tools/cache_terrain.py", run_name="__main__")
 except Exception as ex:  # noqa: BLE001
     print("terrain skipped:", ex, file=sys.stderr)
+
+# v6.7: SRTM relief along tram route 1, for the cab view
+try:
+    runpy.run_path("tools/cache_terrain_tram.py", run_name="__main__")
+except Exception as ex:  # noqa: BLE001
+    print("tram terrain skipped:", ex, file=sys.stderr)
