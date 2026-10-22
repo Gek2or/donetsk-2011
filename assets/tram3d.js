@@ -6,6 +6,7 @@ window.__T3D=function(canvas,opts){
 opts=opts||{};
 const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl');
 if(!gl)return null;
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();ready=false;if(opts.onlost)opts.onlost()});
 const LITE=opts.lite;
 /* ---------- shaders ---------- */
 const VS=`attribute vec3 p;attribute vec3 n;attribute vec4 c;attribute vec3 f;
@@ -77,13 +78,14 @@ function HT(x,y){if(!TER)return 0;const fx=(x-TER.x)/TER.s,fy=(y-TER.y)/TER.s;co
   return((h[j*n+i]*(1-u)+h[j*n+i+1]*u)*(1-v)+(h[(j+1)*n+i]*(1-u)+h[(j+1)*n+i+1]*u)*v)/10-TER.z0}
 const W=(x,y,h)=>[x,h+HT(x,y),-y];
 /* flat ribbon along a polyline (ground layer) */
-function ribbon(g,pts,w,y,col){if(TER)pts=dens(pts,9);const hw=w/2;for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i];const l=Math.hypot(bx-ax,by-ay);if(l<.05)continue;const nx=-(by-ay)/l*hw,ny=(bx-ax)/l*hw;
-  quad(g,W(ax+nx,ay+ny,y),W(ax-nx,ay-ny,y),W(bx-nx,by-ny,y),W(bx+nx,by+ny,y),[0,1,0],col);
-  if(i>1){/* round the joint */const r=[];for(let k=0;k<=6;k++){const t=k/6*Math.PI*2;r.push([ax+Math.cos(t)*hw,ay+Math.sin(t)*hw])}for(let k=0;k<6;k++)tri(g,W(ax,ay,y),W(r[k][0],r[k][1],y),W(r[k+1][0],r[k+1][1],y),[0,1,0],col)}}}
+function ribbon(g,pts,w,y,col){const hw=w/2;for(let i=1;i<pts.length;i++){let [ax,ay]=pts[i-1];const [bx,by]=pts[i];const l=Math.hypot(bx-ax,by-ay);if(l<.05)continue;const nx=-(by-ay)/l*hw,ny=(bx-ax)/l*hw;
+  const n=TER?Math.max(1,Math.ceil(l/14)):1;for(let k=0;k<n;k++){const x0=ax+(bx-ax)*k/n,y0=ay+(by-ay)*k/n,x1=ax+(bx-ax)*(k+1)/n,y1=ay+(by-ay)*(k+1)/n;
+    quad(g,W(x0+nx,y0+ny,y),W(x0-nx,y0-ny,y),W(x1-nx,y1-ny,y),W(x1+nx,y1+ny,y),[0,1,0],col)}
+  if(i>1&&hw>.3){/* round the joint */const r=[];for(let k=0;k<=6;k++){const t=k/6*Math.PI*2;r.push([ax+Math.cos(t)*hw,ay+Math.sin(t)*hw])}for(let k=0;k<6;k++)tri(g,W(ax,ay,y),W(r[k][0],r[k][1],y),W(r[k+1][0],r[k+1][1],y),[0,1,0],col)}}}
 function dens(p,m){const o=[p[0]];for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i];const n=Math.ceil(Math.hypot(bx-ax,by-ay)/m);for(let k=1;k<=n;k++)o.push([ax+(bx-ax)*k/n,ay+(by-ay)*k/n])}return o}
 /* split a ground triangle until it follows the relief */
 function gtri(g,a,b,c,y,col,d){const l1=Math.hypot(a[0]-b[0],a[1]-b[1]),l2=Math.hypot(b[0]-c[0],b[1]-c[1]),l3=Math.hypot(c[0]-a[0],c[1]-a[1]);
-  if(TER&&(d||0)<6&&Math.max(l1,l2,l3)>22){if(l1>=l2&&l1>=l3){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];gtri(g,a,m,c,y,col,(d||0)+1);gtri(g,m,b,c,y,col,(d||0)+1)}
+  if(TER&&(d||0)<6&&Math.max(l1,l2,l3)>34){if(l1>=l2&&l1>=l3){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];gtri(g,a,m,c,y,col,(d||0)+1);gtri(g,m,b,c,y,col,(d||0)+1)}
     else if(l2>=l3){const m=[(b[0]+c[0])/2,(b[1]+c[1])/2];gtri(g,a,b,m,y,col,(d||0)+1);gtri(g,a,m,c,y,col,(d||0)+1)}else{const m=[(c[0]+a[0])/2,(c[1]+a[1])/2];gtri(g,a,b,m,y,col,(d||0)+1);gtri(g,m,b,c,y,col,(d||0)+1)}return}
   tri(g,W(a[0],a[1],y),W(b[0],b[1],y),W(c[0],c[1],y),[0,1,0],col)}
 const off=(pts,d)=>pts.map((p,i)=>{const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];const l=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return[p[0]-(b[1]-a[1])/l*d,p[1]+(b[0]-a[0])/l*d]});
@@ -157,13 +159,13 @@ function build(D){
       quad(g,W(X-dx,Y-dy,0),W(X+dx,Y+dy,0),W(X+dx,Y+dy,S*1.15),W(X-dx,Y-dy,S*1.15),[0,1,0],col,[[0,0,0],[1,0,0],[1,1,0],[0,1,0]])}}
   /* the ground: 30 m cells within 700 m of the track, each given to the chunk of its nearest track point */
   if(TER){const s=TER.s;const near=(x,y)=>{let b=1e9,bs=0;for(let i=0;i<TR.length;i+=3){const d=Math.hypot(TR[i][0]-x,TR[i][1]-y);if(d<b){b=d;bs=TC[i]}}return[b,bs]};
-    for(let j=0;j<TER.ny-1;j++)for(let i=0;i<TER.nx-1;i++){const x=TER.x+i*s,y=TER.y+j*s;const [d,sa]=near(x+s/2,y+s/2);if(d>700)continue;const c=Math.floor(Math.min(TL-1,sa)/D.CH);const g=fl(c,0);
+    for(let j=0;j<TER.ny-1;j++)for(let i=0;i<TER.nx-1;i++){const x=TER.x+i*s,y=TER.y+j*s;const [d,sa]=near(x+s/2,y+s/2);if(d>480)continue;const c=Math.floor(Math.min(TL-1,sa)/D.CH);const g=fl(c,0);
       const P=[[x,y],[x+s,y],[x+s,y+s],[x,y+s]].map(q=>W(q[0],q[1],-.02));const e1=[P[1][0]-P[0][0],P[1][1]-P[0][1],P[1][2]-P[0][2]],e2=[P[3][0]-P[0][0],P[3][1]-P[0][1],P[3][2]-P[0][2]];
       let nn=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];const ln=Math.hypot(...nn)||1;nn=nn.map(v=>v/ln);if(nn[1]<0)nn=nn.map(v=>-v);
       const t=((i*7+j*13)%5)*3;quad(g,P[0],P[1],P[2],P[3],nn,[110+t,114+t,84+t/2])}}
   /* upload */
   for(const C of CH){const LS=[...C.fl.map((g,i)=>['fl',i,g]),['solid',0,C.solid],['tree',0,C.tree]];for(const [k,ix,g] of LS){g.n_=g.p.length/3;if(!g.n_){g.buf=null;continue}
-    g.buf={p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))};g.p=g.n=g.c=g.f=null}
+    g.buf={p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))};g.p=g.n=g.c=g.f=null}
     C.wn=C.wire.length;C.wbuf=C.wn?up(new Float32Array(C.wire.flat())):null;C.wire=null}
 }
 function area(p){let a=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length];a+=p[i][0]*q[1]-q[0]*p[i][1]}return a/2}
@@ -173,6 +175,7 @@ function box(g,P,f0,f1,r0,r1,h0,h1,col){const c=[[f0,r0],[f1,r0],[f1,r1],[f0,r1]
 function lightBox(g,P,f0,f1,r0,r1,h0,h1,col,kind){const n0=g.f.length;box(g,P,f0,f1,r0,r1,h0,h1,col);for(let i=n0;i<g.f.length;i+=3)g.f[i+2]=kind}
 function pole(g,x,y,h,r,col){for(let i=0;i<4;i++){const a=i/4*Math.PI*2+.78,b=(i+1)/4*Math.PI*2+.78;const ax=x+Math.cos(a)*r,ay=y+Math.sin(a)*r,bx=x+Math.cos(b)*r,by=y+Math.sin(b)*r;
   const nx=Math.cos((a+b)/2),ny=Math.sin((a+b)/2);quad(g,W(ax,ay,0),W(bx,by,0),W(bx,by,h),W(ax,ay,h),[nx,0,-ny],col)}}
+function i8(a){const o=new Int8Array(a.length);for(let i=0;i<a.length;i++)o[i]=Math.max(-127,Math.min(127,Math.round(a[i]*127)));return o}
 function up(a){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);return b}
 /* ---------- traffic on the main streets: Ladas and Volgas in the usual colours ---------- */
 let CARM=[],ROADS=[];
@@ -181,11 +184,11 @@ function carMeshes(){const COLS=[[232,232,226],[214,200,170],[150,40,36],[60,84,
     box(g,P,-1.9,-1.4,-.85,.85,0,.5,[24,24,24]);box(g,P,1.3,1.8,-.85,.85,0,.5,[24,24,24]);
     lightBox(g,P,2.1,2.16,-.7,-.45,.55,.72,[220,220,210],7);lightBox(g,P,2.1,2.16,.45,.7,.55,.72,[220,220,210],7);
     lightBox(g,P,-2.16,-2.1,-.72,-.5,.58,.74,[120,30,24],8);lightBox(g,P,-2.16,-2.1,.5,.72,.58,.74,[120,30,24],8);
-    CARM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
+    CARM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
 let PEDM=[],WALKS=[];
 function pedMeshes(){const COATS=[[60,62,70],[94,70,52],[120,40,40],[50,70,90],[150,140,120],[70,80,60],[30,30,32],[160,90,110]];
   for(const col of COATS){const g=G();const P=(f,r,h)=>[f,h,r];box(g,P,-.16,.16,-.2,.2,.8,1.42,col);box(g,P,-.1,.1,-.1,.1,1.42,1.68,[200,164,140]);box(g,P,-.1,.1,-.18,-.04,0,.82,[40,40,44]);box(g,P,-.1,.1,.04,.18,0,.82,[40,40,44]);
-    PEDM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
+    PEDM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
 function walksFrom(D){for(const [c,w,surf,cls,f] of D.R){if(cls>2)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<60)continue;
     const n=Math.max(1,Math.round(len/(LITE?140:70)));const ps=[];for(let k=0;k<n;k++){const h=((k+1)*2246822519+Math.round(len)*3266489917)>>>0;ps.push({o:(h%1000)/1000*len,dir:(h>>>3)&1?1:-1,v:1.1+((h>>>5)%6)/10,col:(h>>>9)%8,side:(h>>>13)&1?1:-1})}
     let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}WALKS.push({p,cu,len,w:w/10,ps,mx:mx/p.length,my:my/p.length})}}
@@ -200,7 +203,7 @@ function oncomingMesh(){const g=G();const P=(f,r,h)=>[f,h,r];
   box(g,P,-1.5,1.5,-.2,.2,3.35,4.4,[60,60,62]);
   lightBox(g,P,7.5,7.56,-.8,-.5,1.0,1.25,[230,230,215],7);lightBox(g,P,7.5,7.56,.5,.8,1.0,1.25,[230,230,215],7);lightBox(g,P,-7.56,-7.5,-.8,-.5,1.0,1.2,[130,30,24],8);lightBox(g,P,-7.56,-7.5,.5,.8,1.0,1.2,[130,30,24],8);
   for(let k=-6;k<=6;k+=2.4)lightBox(g,P,k-1,k+1,-1.27,1.27,1.55,2.15,[90,100,110],6);
-  ONC={n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}}}
+  ONC={n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}}}
 /* ---------- matrices ---------- */
 function persp(fy,as,n,f){const t=1/Math.tan(fy/2);return[t/as,0,0,0,0,t,0,0,0,0,(f+n)/(n-f),-1,0,0,2*f*n/(n-f),0]}
 function look(e,c,u){let z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]];let l=Math.hypot(...z);z=z.map(v=>v/l);let x=[u[1]*z[2]-u[2]*z[1],u[2]*z[0]-u[0]*z[2],u[0]*z[1]-u[1]*z[0]];l=Math.hypot(...x);x=x.map(v=>v/l);const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
@@ -221,7 +224,7 @@ function lightNow(){if(LIGHT!=='now')return LP[LIGHT];const S=window.__dn&&windo
   if(al>-1){P.el=Math.max(3,Math.min(40,al));P.az=S.am?120+al*2:240-al*1.5}return P}
 function sunVec(P){const el=P.el*Math.PI/180,az=P.az*Math.PI/180;return[Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Math.cos(el)]}
 let LT=Infinity;
-function bind(b){gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.vertexAttribPointer(A.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.n);gl.vertexAttribPointer(A.n,3,gl.FLOAT,false,0,0);
+function bind(b){gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.vertexAttribPointer(A.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.n);gl.vertexAttribPointer(A.n,3,gl.BYTE,true,0,0);
   gl.bindBuffer(gl.ARRAY_BUFFER,b.c);gl.vertexAttribPointer(A.c,4,gl.UNSIGNED_BYTE,true,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.f);gl.vertexAttribPointer(A.f,3,gl.FLOAT,false,0,0)}
 let ready=false,cam={s:0,a:null,bob:0},chSize=150;
 function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(LITE?1.25:2,window.devicePixelRatio||1);const w=Math.max(2,Math.round(r.width*dpr)),h=Math.max(2,Math.round(r.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}}
@@ -263,7 +266,7 @@ function frame(f,speed,dt,t){if(!ready)return;resize();const s=f*TL;
   gl.disableVertexAttribArray(A.n);gl.disableVertexAttribArray(A.c);gl.disableVertexAttribArray(A.f);gl.vertexAttrib3f(A.n,0,1,0);gl.vertexAttrib4f(A.c,.13,.13,.14,1);gl.vertexAttrib3f(A.f,0,0,0);gl.vertexAttrib3f(A.f,0,0,0);
   for(const C of vis)if(C.wbuf){gl.bindBuffer(gl.ARRAY_BUFFER,C.wbuf);gl.vertexAttribPointer(A.p,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.LINES,0,C.wn)}
   for(const k in A)gl.disableVertexAttribArray(A[k])}
-let GB=null,MVc=null;function ground(E){if(!GB){const g=G();const R=7000;quad(g,[-R,-.02,-R],[-R,-.02,R],[R,-.02,R],[R,-.02,-R],[0,1,0],[112,116,86]);GB={n:6,buf:{p:up(new Float32Array(g.p)),n:up(new Float32Array(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}}}
+let GB=null,MVc=null;function ground(E){if(!GB){const g=G();const R=7000;quad(g,[-R,-.02,-R],[-R,-.02,R],[R,-.02,R],[R,-.02,-R],[0,1,0],[112,116,86]);GB={n:6,buf:{p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}}}
   bind(GB.buf);gl.drawArrays(gl.TRIANGLES,0,6)}
 /* ---------- load ---------- */
 async function load(url){const tu=new URL('photos/terrain/tram1.json',document.baseURI).href;

@@ -1254,7 +1254,7 @@ $$('.tr-modes button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset
 let T3=null,t3state=0,dirty=true;
 function start3d(){if(t3state||!box.dataset.t3d)return;t3state=1;glass.classList.add('loading');
   const sc=document.createElement('script');sc.src=new URL(box.dataset.t3d,document.baseURI).href;sc.async=true;
-  sc.onload=()=>{try{T3=window.__T3D&&window.__T3D(cv3,{lite:matchMedia('(pointer:coarse)').matches||(navigator.deviceMemory||8)<=4})}catch(e){T3=null}
+  sc.onload=()=>{try{T3=window.__T3D&&window.__T3D(cv3,{onlost:()=>fail3d(),lite:matchMedia('(pointer:coarse)').matches||(navigator.deviceMemory||8)<=4})}catch(e){T3=null}
     if(!T3){fail3d();return}T3.load(new URL(box.dataset.t3dd,document.baseURI).href).then(()=>{t3state=2;glass.classList.remove('loading');dirty=true;T3.frame(0,0,0,0);tlabel()}).catch(fail3d)};
   sc.onerror=fail3d;document.head.appendChild(sc)}
 function fail3d(){t3state=3;glass.classList.remove('loading');const b=$('.tr-modes [data-v="3d"]');if(b)b.remove();if(mode==='3d'){mode='win';$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v==='win')));windowView(true)}}
