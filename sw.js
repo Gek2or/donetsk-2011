@@ -1,5 +1,5 @@
 /* Donetsk 2011 · service worker (v4.1). Pages you open stay readable offline. */
-const V='d6991150';
+const V='ff36ef28';
 const CORE='d11-core-'+V,PAGES='d11-pages',IMG='d11-img',IMG_MAX=240;
 const PRE=["offline.html", "assets/site.css?v=93c2fa06", "assets/app.js?v=7feda91e", "assets/fonts/fonts.css", "icon-192.png", "assets/fonts/alegreya-normal-cyrillic.woff2", "assets/fonts/alegreya-normal-latin.woff2", "assets/fonts/literata-normal-cyrillic.woff2", "assets/fonts/literata-normal-latin.woff2"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CORE).then(c=>c.addAll(PRE)).then(()=>self.skipWaiting()))});
