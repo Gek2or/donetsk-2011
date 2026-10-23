@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v66',d:'2026-10-21',ty:'site',v:'v6.6',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v65',d:'2026-10-21',ty:'site',v:'v6.5',cta:['city.html#tram','tr0']},
@@ -1273,7 +1274,7 @@ if('IntersectionObserver' in window){new IntersectionObserver(es=>{inView=es[0].
 function names(){$$('.tr-scheme li span').forEach((sp,j)=>{sp.textContent=nm(ST[j])});$$('.tr-scheme li small').forEach((sm,j)=>{sm.textContent=dec(ST[j].s/100)});const r=$('.tr-route .mono');if(r)r.textContent=`${nm(ST[0])} → ${nm(ST[ST.length-1])}`}
 addEventListener('d11lang',()=>setTimeout(()=>{if(tbtn)tlabel();names();lastBoard='';board();curPh=undefined;windowView(true);setPlay();gauges()},0));
 names();arrived=0;board();gauges();camera(0);windowView(true);requestAnimationFrame(step);
-window.__tram={jump,state:()=>({x,v,playing,L:LM,tsim,ph:curPh&&curPh.k,t3:t3state}),fast:f=>{tf=f}};
+window.__tram={seek:m=>{dirty=true;x=Math.max(0,Math.min(LM,m));v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true)},jump,state:()=>({x,v,playing,L:LM,tsim,ph:curPh&&curPh.k,t3:t3state}),fast:f=>{tf=f}};
 })();
 
 ;(()=>{

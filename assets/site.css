@@ -1803,7 +1803,7 @@ main:focus{outline:none}
 .st-body b{font:900 clamp(24px,2.6vw,36px)/1.02 var(--f-display);letter-spacing:-.01em}
 .st-body span:not(.st-k):not(.st-go){font-size:15px;line-height:1.5;color:#d9cdb8;max-width:44ch}
 .st-go{justify-self:start;margin-top:6px;padding:11px 18px;background:#f3ebdc;color:#1c1814;font:700 15px var(--f-body)}
-.st-card.st-game{grid-row:1/3;min-height:clamp(420px,46vw,560px)}
+.st-card.st-game{grid-row:1/4;min-height:clamp(420px,46vw,560px)}
 .st-game .st-go{background:#ef7f9c;padding:15px 24px;font-size:17px;box-shadow:4px 4px 0 #f3ebdc}
 .st-game .st-body b{font-size:clamp(32px,4.2vw,58px)}
 .st-q{position:absolute;right:clamp(16px,3vw,34px);top:clamp(16px,3vw,34px);width:clamp(64px,7vw,92px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:#ef7f9c;color:#1c1814;font:900 clamp(36px,4vw,52px)/1 var(--f-display);transform:rotate(12deg);box-shadow:0 10px 24px -6px #000a}

@@ -129,28 +129,33 @@ function build(D){
     else for(let i=0;i<tr.length;i+=3){const a=p[tr[i]],b=p[tr[i+1]],cc=p[tr[i+2]];tri(g,W(a[0],a[1],H),W(b[0],b[1],H),W(cc[0],cc[1],H),[0,1,0],rc)}}
   /* our own track, always: ballast, rails and the contact wire right above the route line */
   {const per=new Map();for(let i=1;i<TR.length;i++){const c=Math.floor(Math.min(TL-1,TC[i-1])/D.CH);if(!per.has(c))per.set(c,[TR[i-1]]);per.get(c).push(TR[i])}
-   for(const [c,p] of per){ribbon(fl(c,4),p,2.9,.12,[126,116,102]);for(const d of [-.762,.762])ribbon(fl(c,5),off(p,d),.09,.15,[66,64,62]);const w=ck(c).wire;const pw=TER?dens(p,20):p;for(let i=1;i<pw.length;i++)w.push(W(pw[i-1][0],pw[i-1][1],5.9),W(pw[i][0],pw[i][1],5.9))}}
-  {let acc=16;for(let i=1;i<TR.length;i++){const [ax,ay]=TR[i-1],[bx,by]=TR[i];const l=Math.hypot(bx-ax,by-ay);if(l<.1)continue;const ux=(bx-ax)/l,uy=(by-ay)/l;let t=(34-acc%34)%34;
-    while(t<l){const x=ax+ux*t,y=ay+uy*t,s_=TC[i-1]+t;const c=Math.floor(Math.min(TL-1,s_)/D.CH);const px=x+uy*3.1,py=y-ux*3.1;pole(ck(c).solid,px,py,7.6,.12,[78,80,82]);
-      ck(c).solid&&box(ck(c).solid,(f,r,h)=>W(px+ux*f-uy*r,py+uy*f+ux*r,h),-.05,.05,0,3.4,6.55,6.65,[78,80,82]);t+=34}acc+=l}}
+   for(const [c,p] of per){const w=ck(c).wire;const pw=TER?dens(p,20):p;for(let i=1;i<pw.length;i++)w.push(W(pw[i-1][0],pw[i-1][1],5.9),W(pw[i][0],pw[i][1],5.9))}
+   /* v6.9: ballast where the track has its own bed, concrete slabs where it runs in the carriageway (D.EM, every 4 m) */
+   const EM=D.EM||[];const segs=[];let cur=null;for(let q0=0;q0<TL+4;q0+=4){const q=Math.min(q0,TL);const e=EM[Math.round(q/4)]|0;const c=Math.floor(Math.min(TL-1,q)/D.CH);const [x,y]=trackAt(q);
+     if(!cur||cur.c!==c||cur.e!==e){const pv=cur&&cur.p[cur.p.length-1];cur={c,e,p:pv?[pv]:[]};segs.push(cur)}cur.p.push([x,y])}
+   for(const S of segs){if(S.p.length<2)continue;ribbon(fl(S.c,4),S.p,S.e?2.7:2.9,.12,S.e?[140,138,132]:[126,116,102]);for(const d of [-.762,.762])ribbon(fl(S.c,5),off(S.p,d),.09,.15,[66,64,62])}}
+  /* v6.9: catenary poles placed on free ground (D.PO): an arm over both wires, or a cross-span wire to a pole across the street */
+  for(const [c,a,b,e,f,sp] of (D.PO||[])){const px=a/10,py=b/10,ex=e/10,ey=f/10,g=ck(c).solid;pole(g,px,py,7.6,.12,[78,80,82]);
+    const l=Math.hypot(ex-px,ey-py)||1,ux=(ex-px)/l,uy=(ey-py)/l;const P=(f_,r_,h)=>W(px+ux*f_-uy*r_,py+uy*f_+ux*r_,h);
+    if(sp===2){pole(g,ex,ey,7.6,.12,[78,80,82]);box(g,P,0,l,-.025,.025,6.95,7.0,[46,46,48])}else box(g,P,0,l,-.05,.05,6.55,6.65,[78,80,82])}
   /* street lamps: a pole and a sodium lamp over the kerb, every 34 m (68 m on phones) */
-  for(const [c,w,surf,cls,f] of D.R){if(cls>2)continue;const p=unflat(f);const sp=LITE?68:34;let acc=sp/2,k=0;
-    for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i];const l=Math.hypot(bx-ax,by-ay);if(l<.1)continue;const ux=(bx-ax)/l,uy=(by-ay)/l;let t=(sp-acc%sp)%sp;
-      while(t<l){const sd=(k++%2)?1:-1,o=w/20+1.1;const x=ax+ux*t-uy*o*sd,y=ay+uy*t+ux*o*sd;const g=ck(c).solid;pole(g,x,y,8.6,.08,[96,98,100]);
-        const P=(f_,r_,h)=>W(x+ux*f_+uy*r_*sd,y+uy*f_-ux*r_*sd,h);box(g,P,-.04,.04,0,1.4,8.45,8.55,[96,98,100]);lightBox(g,P,-.22,.22,1.2,1.9,8.2,8.45,[200,196,180],6);t+=sp}acc+=l}}
+  (D.LP||[]).forEach(([c,a,b,nx_,ny_],i)=>{if(LITE&&i%2)return;const x=a/10,y=b/10,nx=nx_/100,ny=ny_/100,g=ck(c).solid;pole(g,x,y,8.6,.08,[96,98,100]);
+    const P=(f_,r_,h)=>W(x+nx*f_-ny*r_,y+ny*f_+nx*r_,h);box(g,P,0,1.4,-.04,.04,8.45,8.55,[96,98,100]);lightBox(g,P,1.2,1.9,-.22,.22,8.2,8.45,[200,196,180],6)});
   /* stops: a raised platform on the right of the track and a shelter */
   STOPS.forEach((s,i)=>{const c=Math.floor(Math.min(TL-1,s)/D.CH);const g=ck(c).solid;const [x,y,a]=trackAt(s);const ux=Math.cos(a),uy=Math.sin(a),rx=uy,ry=-ux;
     const P=(f,r,h)=>W(x+ux*f+rx*r,y+uy*f+ry*r,h);
     {const a1=trackAt(s-18)[2],a2=trackAt(s+30)[2];let da=Math.abs(a2-a1);if(da>Math.PI)da=2*Math.PI-da;if(da>.22)return}
-    box(g,P,-14,14,2.3,4.6,0,.25,[178,174,166]);
-    box(g,P,-3,3,4.3,4.45,0,2.4,[150,170,180]);box(g,P,-3,-2.9,3.4,4.4,0,2.4,[150,170,180]);box(g,P,2.9,3,3.4,4.4,0,2.4,[150,170,180]);box(g,P,-3.3,3.3,3.3,4.6,2.4,2.55,[208,206,200]);
-    pole(g,x+ux*5+rx*2.6,y+uy*5+ry*2.6,2.8,.05,[90,90,92]);
-    box(g,P,4.7,5.3,2.55,2.65,2.1,2.75,[245,245,240]);
+    /* v6.9: D.SP = free strip right of the track [r0,r1,platform,shelter]; on a street people wait on the pavement */
+    const sp=(D.SP||[])[i]||[23,46,1,1];if(!sp[1])return;const R0=sp[0]/10,R1=Math.min(sp[1]/10,R0+2.3),z=sp[2]?.25:.08,o=R1-4.6;
+    if(sp[2])box(g,P,-14,14,2.3,R1,0,.25,[178,174,166]);
+    if(sp[3]){const Q=(f,r,h)=>P(f,r+o,h+z);box(g,Q,-3,3,4.3,4.45,0,2.4,[150,170,180]);box(g,Q,-3,-2.9,3.4,4.4,0,2.4,[150,170,180]);box(g,Q,2.9,3,3.4,4.4,0,2.4,[150,170,180]);box(g,Q,-3.3,3.3,3.3,4.6,2.4,2.55,[208,206,200])}
+    pole(g,x+ux*5+rx*(R0+.3),y+uy*5+ry*(R0+.3),2.8+z,.05,[90,90,92]);
+    box(g,P,4.7,5.3,R0+.25,R0+.35,2.1+z,2.75+z,[245,245,240]);
     /* people waiting: 2-6 figures in autumn coats */
     const COATS=[[60,62,70],[94,70,52],[120,40,40],[50,70,90],[150,140,120],[70,80,60],[30,30,32]];const n=2+((i*7919)%5);
-    for(let q=0;q<n;q++){const h=(i*131+q*977)%1000/1000,f0=-9+h*18,r0=2.8+((q*37+i)%10)/10*1.4,col=COATS[(i+q*3)%COATS.length],tall=1.55+((q*13+i)%7)*.04;
-      box(g,P,f0-.18,f0+.18,r0-.14,r0+.14,.25,.25+tall*.55,col);box(g,P,f0-.15,f0+.15,r0-.12,r0+.12,.25+tall*.55,.25+tall*.83,col);box(g,P,f0-.1,f0+.1,r0-.1,r0+.1,.25+tall*.84,.25+tall,[200,164,140]);
-      box(g,P,f0-.14,f0-.03,r0-.08,r0+.08,.25,.25+tall*.46,[40,40,44]);box(g,P,f0+.03,f0+.14,r0-.08,r0+.08,.25,.25+tall*.46,[40,40,44])}});
+    for(let q=0;q<n;q++){const h=(i*131+q*977)%1000/1000,f0=-9+h*18,r0=R0+.45+((q*37+i)%10)/10*Math.max(.1,R1-R0-.9),col=COATS[(i+q*3)%COATS.length],tall=1.55+((q*13+i)%7)*.04;
+      box(g,P,f0-.18,f0+.18,r0-.14,r0+.14,z,z+tall*.55,col);box(g,P,f0-.15,f0+.15,r0-.12,r0+.12,z+tall*.55,z+tall*.83,col);box(g,P,f0-.1,f0+.1,r0-.1,r0+.1,z+tall*.84,z+tall,[200,164,140]);
+      box(g,P,f0-.14,f0-.03,r0-.08,r0+.08,z,z+tall*.46,[40,40,44]);box(g,P,f0+.03,f0+.14,r0-.08,r0+.08,z,z+tall*.46,[40,40,44])}});
   /* trees */
   const AUT=[[96,120,60],[110,128,56],[150,140,60],[176,138,58],[160,100,50],[120,130,70]];
   const TRs=LITE?D.TR.filter((_,i)=>i%2===0):D.TR;
@@ -189,15 +194,26 @@ let PEDM=[],WALKS=[];
 function pedMeshes(){const COATS=[[60,62,70],[94,70,52],[120,40,40],[50,70,90],[150,140,120],[70,80,60],[30,30,32],[160,90,110]];
   for(const col of COATS){const g=G();const P=(f,r,h)=>[f,h,r];box(g,P,-.16,.16,-.2,.2,.8,1.42,col);box(g,P,-.1,.1,-.1,.1,1.42,1.68,[200,164,140]);box(g,P,-.1,.1,-.18,-.04,0,.82,[40,40,44]);box(g,P,-.1,.1,.04,.18,0,.82,[40,40,44]);
     PEDM.push({n:g.p.length/3,buf:{p:up(new Float32Array(g.p)),n:up(i8(g.n)),c:up(new Uint8Array(g.c)),f:up(new Float32Array(g.f))}})}}
+/* v6.8: what is near the rails - cars and people never stand on the tracks */
+const TG=new Map();const tkey=(x,y)=>Math.floor(x/10)*100003+Math.floor(y/10);
+function trackGrid(D){const add=p=>{for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i];const l=Math.hypot(bx-ax,by-ay);const n=Math.max(1,Math.ceil(l/2));for(let k=0;k<=n;k++){const x=ax+(bx-ax)*k/n,y=ay+(by-ay)*k/n,K=tkey(x,y);let a=TG.get(K);if(!a)TG.set(K,a=[]);a.push(x,y)}}};
+  add(TR);for(const [c,kind,emb,f] of (D.RL||[]))if(kind===0)add(unflat(f))}
+function nearTrack(x,y,r){const cx=Math.floor(x/10),cy=Math.floor(y/10);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const a=TG.get((cx+i)*100003+cy+j);if(!a)continue;for(let k=0;k<a.length;k+=2){const dx=a[k]-x,dy=a[k+1]-y;if(dx*dx+dy*dy<r*r)return true}}return false}
+/* per 5 m of a road: bit b set when lateral offset offs[b] (right of the way's direction) is clear of the rails */
+function clearMask(p,cu,len,offs,r){const n=Math.ceil(len/5)+1,m=new Uint8Array(n);let i=1;for(let k=0;k<n;k++){const s=Math.min(len,k*5);while(i<cu.length-1&&cu[i]<s)i++;const a=p[i-1],b=p[i],t=(s-cu[i-1])/((cu[i]-cu[i-1])||1);const x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t,an=Math.atan2(b[1]-a[1],b[0]-a[0]);
+  offs.forEach((o,bit)=>{if(!nearTrack(x+Math.sin(an)*o,y-Math.cos(an)*o,r))m[k]|=1<<bit})}return m}
+const mAt=(R,s)=>R.m[Math.max(0,Math.min(R.m.length-1,Math.round((((s%R.len)+R.len)%R.len)/5)))];
 function walksFrom(D){for(const [c,w,surf,cls,f] of D.R){if(cls>2)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<60)continue;
     const n=Math.max(1,Math.round(len/(LITE?140:70)));const ps=[];for(let k=0;k<n;k++){const h=((k+1)*2246822519+Math.round(len)*3266489917)>>>0;ps.push({o:(h%1000)/1000*len,dir:(h>>>3)&1?1:-1,v:1.1+((h>>>5)%6)/10,col:(h>>>9)%8,side:(h>>>13)&1?1:-1})}
-    let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}WALKS.push({p,cu,len,w:w/10,ps,mx:mx/p.length,my:my/p.length})}}
-function roadsFrom(D){walksFrom(D);for(const [c,w,surf,cls,f] of D.R){if(cls>1)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<120)continue;
-    const n=Math.max(1,Math.round(len/90));const cars=[];for(let k=0;k<n;k++){const h=(k*2654435761+len*97)>>>0;cars.push({o:(h%1000)/1000*len,dir:(h>>>3)&1?1:-1,v:9+((h>>>5)%60)/10,col:(h>>>9)%8})}
-    let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}ROADS.push({p,cu,len,w:w/10,cars,mx:mx/p.length,my:my/p.length})}}
+    let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}const wo=w/20+2.1;WALKS.push({p,cu,len,w:w/10,ps,mx:mx/p.length,my:my/p.length,m:clearMask(p,cu,len,[wo,-wo],2.6)})}}
+function roadsFrom(D){trackGrid(D);walksFrom(D);for(const [c,w,surf,cls,f,br,ow] of D.R){if(cls>1)continue;const p=unflat(f);const cu=[0];for(let i=1;i<p.length;i++)cu.push(cu[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));const len=cu[cu.length-1];if(len<120)continue;
+    const n=Math.max(1,Math.round(len/90));const cars=[];for(let k=0;k<n;k++){const h=(k*2654435761+len*97)>>>0;cars.push({o:(h%1000)/1000*len,dir:ow?ow:((h>>>3)&1?1:-1),v:9+((h>>>5)%60)/10,col:(h>>>9)%8})}
+    let mx=0,my=0;for(const q of p){mx+=q[0];my+=q[1]}const lo=ow?0:Math.max(1.6,w/40),lo2=ow?1.7:lo+2.4;ROADS.push({p,cu,len,w:w/10,ow,lo,lo2,cars,mx:mx/p.length,my:my/p.length,m:clearMask(p,cu,len,[lo,lo2,-lo,-lo2],2.7)})}}
 function roadAt(R,s){s=((s%R.len)+R.len)%R.len;let i=1;while(i<R.cu.length-1&&R.cu[i]<s)i++;const a=R.p[i-1],b=R.p[i],k=(s-R.cu[i-1])/((R.cu[i]-R.cu[i-1])||1);return[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,Math.atan2(b[1]-a[1],b[0]-a[0])]}
 /* ---------- the oncoming tram on the other track ---------- */
-let ONC=null;
+let ONC=null,TWN=null;
+/* the other track, as measured from OSM every 4 m (null where there is no second track) */
+function twinAt(s){if(!TWN||s<0||s>TL)return null;const i=Math.floor(s/4),k=s/4-i,a=TWN[i],b=TWN[i+1];if(!a||!b)return null;const [x,y]=trackAt(s);return[x+(a[0]+(b[0]-a[0])*k)/10,y+(a[1]+(b[1]-a[1])*k)/10]}
 function oncomingMesh(){const g=G();const P=(f,r,h)=>[f,h,r];
   box(g,P,-7.5,7.5,-1.25,1.25,.35,3.1,[196,44,48]);box(g,P,-7.5,7.5,-1.26,1.26,1.3,2.35,[232,220,190]);box(g,P,-7.3,7.3,-1.1,1.1,3.1,3.35,[160,160,160]);
   box(g,P,-1.5,1.5,-.2,.2,3.35,4.4,[60,60,62]);
@@ -249,15 +265,15 @@ function frame(f,speed,dt,t){if(!ready)return;resize();const s=f*TL;
   gl.disable(gl.POLYGON_OFFSET_FILL);
   for(const C of vis)if(C.solid.buf){bind(C.solid.buf);gl.drawArrays(gl.TRIANGLES,0,C.solid.n_)}
   /* the oncoming tram: one passes every 1.6 km of the ride */
-  if(ONC){const per=1600,ph=(t*7+s*1.0)%per;const so=s+260-ph*1.0;if(so>s-40&&so<s+700){const [ox,oy,oa]=trackAt(so);const rx=Math.sin(oa)*3.3,ry=-Math.cos(oa)*3.3;
-    gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,ox-rx,HT(ox-rx,oy-ry),-(oy-ry),oa)));bind(ONC.buf);gl.drawArrays(gl.TRIANGLES,0,ONC.n);gl.uniformMatrix4fv(U.MO,false,ID)}}
+  if(ONC&&TWN){const per=1600,ph=(t*7+s*1.0)%per;const so=s+260-ph*1.0;if(so>s-40&&so<s+700&&twinAt(so-8)&&twinAt(so+8)){const [ox,oy]=twinAt(so),[ax,ay]=twinAt(so-3),[bx,by]=twinAt(so+3);const oa=Math.atan2(ay-by,ax-bx);
+    gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,ox,HT(ox,oy),-oy,oa)));bind(ONC.buf);gl.drawArrays(gl.TRIANGLES,0,ONC.n);gl.uniformMatrix4fv(U.MO,false,ID)}}
   /* cars within 450 m */
   for(const R of ROADS){if(Math.abs(R.mx-E[0])>900||Math.abs(R.my+E[2])>900)continue;for(const c of R.cars){const ss=c.o+c.dir*c.v*t;const [cx,cy,ca]=roadAt(R,ss);
-    if(Math.abs(cx-E[0])>450||Math.abs(cy+E[2])>450)continue;const ang=c.dir>0?ca:ca+Math.PI;const lo=Math.max(1.6,R.w/4);const rx=Math.sin(ang)*lo,ry=-Math.cos(ang)*lo;
+    if(Math.abs(cx-E[0])>450||Math.abs(cy+E[2])>450)continue;const ang=c.dir>0?ca:ca+Math.PI;const mk=mAt(R,ss)>>(c.dir>0?0:2);const lo=mk&1?R.lo:mk&2?R.lo2:null;if(lo===null)continue;const lx=c.dir>0?lo:-lo;const rx=Math.sin(ca)*lx,ry=-Math.cos(ca)*lx;
     gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,cx+rx,HT(cx+rx,cy+ry)+.1,-(cy+ry),ang)));const m=CARM[c.col];bind(m.buf);gl.drawArrays(gl.TRIANGLES,0,m.n)}}
   /* people walking along the pavements, within 250 m */
   for(const R of WALKS){if(Math.abs(R.mx-E[0])>700||Math.abs(R.my+E[2])>700)continue;for(const q of R.ps){const ss=q.o+q.dir*q.v*t;const [px,py,pa]=roadAt(R,ss);
-    if(Math.abs(px-E[0])>250||Math.abs(py+E[2])>250)continue;const ang=q.dir>0?pa:pa+Math.PI;const lo=(R.w/2+2.1)*q.side*q.dir;const rx=Math.sin(ang)*lo,ry=-Math.cos(ang)*lo;
+    if(Math.abs(px-E[0])>250||Math.abs(py+E[2])>250)continue;const ang=q.dir>0?pa:pa+Math.PI;const mk=mAt(R,ss);let sd=q.side;if(!(mk&(sd>0?1:2)))sd=-sd;if(!(mk&(sd>0?1:2)))continue;const lo=(R.w/2+2.1)*sd;const rx=Math.sin(pa)*lo,ry=-Math.cos(pa)*lo;
     const bob=Math.abs(Math.sin(t*q.v*3.2+q.o))*.04;gl.uniformMatrix4fv(U.MO,false,new Float32Array(trs(ID,px+rx,HT(px+rx,py+ry)+bob,-(py+ry),ang)));const m=PEDM[q.col];bind(m.buf);gl.drawArrays(gl.TRIANGLES,0,m.n)}}
   gl.uniformMatrix4fv(U.MO,false,ID);
   for(const k in A)gl.disableVertexAttribArray(A[k]);drawSigns(MV,E,LL,c0);for(const k in A)gl.enableVertexAttribArray(A[k]);
@@ -271,7 +287,7 @@ let GB=null,MVc=null;function ground(E){if(!GB){const g=G();const R=7000;quad(g,
 /* ---------- load ---------- */
 async function load(url){const tu=new URL('photos/terrain/tram1.json',document.baseURI).href;
   const [D,Tt]=await Promise.all([fetch(url).then(r=>{if(!r.ok)throw new Error('tram3d '+r.status);return r.json()}),fetch(tu).then(r=>r.ok?r.json():null).catch(()=>null)]);
-  if(Tt&&Tt.h&&Tt.nx){TER=Tt;TER.z0=0;const T0=unflat(D.T);TER.z0=HT(T0[0][0],T0[0][1])}chSize=D.CH;build(D);oncomingMesh();buildSigns(D);carMeshes();pedMeshes();roadsFrom(D);ready=true;return true}
+  if(Tt&&Tt.h&&Tt.nx){TER=Tt;TER.z0=0;const T0=unflat(D.T);TER.z0=HT(T0[0][0],T0[0][1])}chSize=D.CH;build(D);TWN=D.TW||null;oncomingMesh();buildSigns(D);carMeshes();pedMeshes();roadsFrom(D);ready=true;return true}
 /* ---------- shop signs (OpenStreetMap as of Sept 2012): text drawn into one canvas atlas ---------- */
 const SVS2=`attribute vec3 p;attribute vec2 t;uniform mat4 M;varying vec2 vt;varying vec3 vw;void main(){vt=t;vw=p;gl_Position=M*vec4(p,1.);}`;
 const SFS2=`precision mediump float;varying vec2 vt;varying vec3 vw;uniform sampler2D TX;uniform vec3 E;uniform vec3 FOG;uniform float FD;uniform float NIGHT;uniform vec3 AMB;uniform vec3 SUNC;
