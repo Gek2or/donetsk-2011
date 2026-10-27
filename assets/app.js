@@ -795,7 +795,7 @@ const E=[
  {id:'2026-09-21-panoramas',d:'2026-09-21',ty:'research',v:'M01'},
  {id:'2026-09-14-origin',d:'2026-09-14',ty:'research',v:'M01'},
  {id:'2026-09-13-osm',d:'2026-09-13',ty:'research',v:'M01'}];
-const SITE_V='v4.0',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
+const SITE_V=(E.find(e=>e.ty==='site'&&e.v)||{}).v||'',START='2026-09-13',LATEST=E[0].d,TY={game:'u6',site:'u7',research:'u8'};
 let S=window.__d11S||{};const T=k=>S[k]||'';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='d11-upd-seen';let seen=null;try{seen=localStorage.getItem(KEY)}catch(e){}
