@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
  {id:'2026-10-21-v66',d:'2026-10-21',ty:'site',v:'v6.6',cta:['city.html#tram','tr0']},
@@ -1450,3 +1451,8 @@ route();addEventListener('hashchange',route);
 addEventListener('d11lang',()=>setTimeout(()=>{labelPhotos();upd();if(rc&&got)fill(rc,got)},0));
 window.__pc={enc,dec,valid};
 })();
+;(()=>{/* v6.9: the King's Tower hero follows the Donetsk time of day */
+const im=document.getElementById('ktImg');if(!im)return;
+const set=()=>{const p=document.documentElement.dataset.phase,k=p==='day'?'day':p==='night'?'night':'dusk';
+  if(im.src.indexOf('kt-'+k)>=0)return;im.srcset=im.srcset.replace(/kt-(day|dusk|night)/g,'kt-'+k);im.src=im.src.replace(/kt-(day|dusk|night)/,'kt-'+k)};
+document.addEventListener('d11phase',set);document.addEventListener('d11theme',set);set()})();
