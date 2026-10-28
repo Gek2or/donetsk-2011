@@ -548,7 +548,7 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
   if(!want||want===P)return;
   const TX={ru:['Эта страница есть на русском','Читать по-русски'],uk:['Ця сторінка є українською','Читати українською'],en:['This page is also in English','Read in English'],fi:['Sivu on myös suomeksi','Lue suomeksi']}[want];
   const bar=document.createElement('div');bar.className='lang-hint';bar.setAttribute('role','region');bar.setAttribute('aria-label',TX[0]);
-  bar.innerHTML=`<span>${TX[0]}</span><a href="${window.__langURL?window.__langURL(want):''}" lang="${want}">${TX[1]} →</a><button type="button" aria-label="×">×</button>`;
+  bar.innerHTML=`<span>${TX[0]}</span><a href="${window.__langURL?window.__langURL(want):''}" lang="${want}" hreflang="${want}">${TX[1]} →</a><button type="button" aria-label="×">×</button>`;
   bar.querySelector('a').addEventListener('click',()=>{try{localStorage.setItem('d11-lang-pick',want)}catch(e){}});
   bar.querySelector('button').addEventListener('click',()=>{bar.remove();try{localStorage.setItem('d11-lang-hint','off')}catch(e){}});
   setTimeout(()=>document.body.appendChild(bar),900);
