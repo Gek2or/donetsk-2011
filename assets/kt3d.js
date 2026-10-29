@@ -88,11 +88,58 @@ function earcut(p) {
   return tris;
 }
 
+/* ---------- relief (v7.2): SRTM3 heights relative to the tower yard; the yard is a level platform; the shore dips to the water ---------- */
+let TERR = null;
+const tzS = (x, y) => TERR ? TERR.Ts(x, y) : 0;
+function makeTerrain(D) {
+  const tr = D.ter;
+  if (!tr) return { Ts: () => 0, Tg: () => 0, WZ: -1.0, wl: () => -1.0, inPlat: () => false };
+  const WZ = tr.wz / 10, nx = tr.nx, ny = tr.ny, H = tr.h;
+  const srtm = (x, y) => { let gx = (x - tr.x0) / tr.s, gy = (y - tr.y0) / tr.s; gx = Math.max(0, Math.min(nx - 1.001, gx)); gy = Math.max(0, Math.min(ny - 1.001, gy));
+    const i = Math.floor(gx), j = Math.floor(gy), fx = gx - i, fy = gy - j, k = j * nx + i;
+    return ((H[k] * (1 - fx) + H[k + 1] * fx) * (1 - fy) + (H[k + nx] * (1 - fx) + H[k + nx + 1] * fx) * fy) / 10; };
+  // water level of each water polygon: the flattened SRTM surface inside it (the reservoir by the tower is the reference)
+  const WP = [], wl = [];
+  for (const w of D.water) { const p = pts(w, 0, 10); WP.push(p); const t = earcut(p), hs = [];
+    for (let q = 0; q + 2 < t.length && hs.length < 40; q += 3) { const a = p[t[q]], b = p[t[q + 1]], c = p[t[q + 2]]; hs.push(srtm((a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3)); }
+    hs.sort((a, b) => a - b); const med = hs.length ? hs[hs.length >> 1] : WZ; wl.push(Math.abs(med - WZ) < 1.5 ? WZ : med); }
+  // 4 m grid around the tower: water mask by scanlines, distance to the shore by a two-pass chamfer, the shore blend
+  const S = 4, E = 720, N = E * 2 / S + 1, mask = new Int16Array(N * N).fill(-1);
+  WP.forEach((p, id) => { if (p.length < 3) return; for (let j = 0; j < N; j++) { const y = -E + j * S, xs = [];
+      for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; if ((a[1] > y) !== (b[1] > y)) xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0])); }
+      xs.sort((a, b) => a - b); for (let k = 0; k + 1 < xs.length; k += 2) { const i0 = Math.max(0, Math.ceil((xs[k] + E) / S)), i1 = Math.min(N - 1, Math.floor((xs[k + 1] + E) / S)); for (let i = i0; i <= i1; i++) mask[j * N + i] = id; } } });
+  const dist = (inside) => { const d = new Float32Array(N * N); for (let k = 0; k < N * N; k++) d[k] = ((mask[k] >= 0) === inside) ? 1e9 : 0;
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const k = j * N + i; if (!d[k]) continue; let v = d[k];
+      if (i > 0) v = Math.min(v, d[k - 1] + 1); if (j > 0) { v = Math.min(v, d[k - N] + 1); if (i > 0) v = Math.min(v, d[k - N - 1] + 1.414); if (i < N - 1) v = Math.min(v, d[k - N + 1] + 1.414); } d[k] = v; }
+    for (let j = N - 1; j >= 0; j--) for (let i = N - 1; i >= 0; i--) { const k = j * N + i; if (!d[k]) continue; let v = d[k];
+      if (i < N - 1) v = Math.min(v, d[k + 1] + 1); if (j < N - 1) { v = Math.min(v, d[k + N] + 1); if (i < N - 1) v = Math.min(v, d[k + N + 1] + 1.414); if (i > 0) v = Math.min(v, d[k + N - 1] + 1.414); } d[k] = v; }
+    return d; };
+  const dLand = dist(false), dWat = dist(true), TB = new Float32Array(N * N), sm = t => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const k = j * N + i, x = -E + i * S, y = -E + j * S, h = srtm(x, y);
+    if (mask[k] >= 0) { TB[k] = wl[mask[k]] - 0.8 - Math.min(dWat[k] * S, 10) * 0.3; continue; }
+    const d = dLand[k] * S; TB[k] = d < 24 && d < 1e8 ? WZ + 0.25 + (Math.max(h, WZ + 0.25) - WZ - 0.25) * sm(d / 24) : h; }
+  const tb = (x, y) => { const gx = (x + E) / S, gy = (y + E) / S; if (gx < 0 || gy < 0 || gx >= N - 1 || gy >= N - 1) return srtm(x, y);
+    const i = Math.floor(gx), j = Math.floor(gy), fx = gx - i, fy = gy - j, k = j * N + i;
+    return (TB[k] * (1 - fx) + TB[k + 1] * fx) * (1 - fy) + (TB[k + N] * (1 - fx) + TB[k + N + 1] * fx) * fy; };
+  // the yard platform: level 0 inside; walled edges drop straight to the ground, the others blend over 12 m
+  const PL = D.plat ? pts(D.plat.p, 0, 10) : null, PW = D.plat ? D.plat.w : [], FE = 12;
+  let bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9; if (PL) for (const q of PL) { bx0 = Math.min(bx0, q[0]); bx1 = Math.max(bx1, q[0]); by0 = Math.min(by0, q[1]); by1 = Math.max(by1, q[1]); }
+  const inPlat = (x, y) => { if (!PL || x < bx0 || x > bx1 || y < by0 || y > by1) return false; let c = false;
+    for (let i = 0, j = PL.length - 1; i < PL.length; j = i++) { const a = PL[i], b = PL[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+  const Ts = (x, y) => {
+    if (!PL || x < bx0 - FE || x > bx1 + FE || y < by0 - FE || y > by1 + FE) return tb(x, y);
+    if (inPlat(x, y)) return 0;
+    let best = 1e9, wall = 0; for (let i = 0; i < PL.length; i++) { const a = PL[i], b = PL[(i + 1) % PL.length], dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)), d = Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy); if (d < best) { best = d; wall = PW[i]; } }
+    const h = tb(x, y); return wall ? h : h * sm(best / FE); };
+  const Tg = (x, y) => inPlat(x, y) ? Math.min(0, tb(x, y)) - 0.45 : Ts(x, y);
+  return { Ts, Tg, WZ, wl: i => wl[i], inPlat, PL, PW, tb };
+}
+
 /* ---------- geometry buffer: pos3 nrm3 uv2 mat1 col3 = 12 floats ---------- */
 const STRIDE = 12;
 class Geo {
   constructor() { this.a = []; }
-  v(p, n, uv, m, c) { this.a.push(p[0], p[1], p[2], n[0], n[1], n[2], uv[0], uv[1], m, c[0], c[1], c[2]); }
+  v(p, n, uv, m, c) { this.a.push(p[0], p[1], p[2] + (this.zf ? this.zf(p[0], p[1]) : this.zc || 0), n[0], n[1], n[2], uv[0], uv[1], m, c[0], c[1], c[2]); }
   tri(p0, p1, p2, m, c, uv0, uv1, uv2, nrm) {
     const n = nrm || V.norm(V.cross(V.sub(p1, p0), V.sub(p2, p0)));
     this.v(p0, n, uv0 || [0, 0], m, c); this.v(p1, n, uv1 || [0, 0], m, c); this.v(p2, n, uv2 || [0, 0], m, c);
@@ -182,12 +229,17 @@ function buildTower(G) {
       G.quad(P(g0[0], g0[1], T.shaft), P(g1[0], g1[1], T.shaft), P(g1[0], g1[1], T.top), P(g0[0], g0[1], T.top), M.GLASSRING, [0.1, 0.13, 0.16], uv(T.shaft, T.top), n);
     }
   }
-  // paved apron around the tower, 7 m wide (typical; the real layout to be checked on panoramas)
+  // plinth (v7.2): the yard is level with the ground floor; on the east the ground is 2-4 m lower and a grey-tiled lower storey shows (panoramas, Oct 2011)
+  for (let i = 0; i < 96; i++) { const s0 = T.per * i / 96, s1 = T.per * (i + 1) / 96, [p0, n0] = capsule(s0, T.R + 0.04), [p1] = capsule(s1, T.R + 0.04);
+    G.quad(P(p0[0], p0[1], -8), P(p1[0], p1[1], -8), P(p1[0], p1[1], 0.02), P(p0[0], p0[1], 0.02), M.HOUSEWALL, [0.5, 0.5, 0.48], [[s0, -0.6], [s1, -0.6], [s1, 7.42], [s0, 7.42]], N(n0[0], n0[1])); }
+  // paved apron around the tower, 7 m wide: level with the yard, following the ground where the yard ends
+  G.zf = tzS;
   for (let i = 0; i < 72; i++) {
     const s0 = T.per * i / 72, s1 = T.per * (i + 1) / 72, [p0] = capsule(s0, T.R), [p1] = capsule(s1, T.R), [q0] = capsule(s0, T.R + 7), [q1] = capsule(s1, T.R + 7);
     G.quad(P(p0[0], p0[1], 0.12), P(q0[0], q0[1], 0.12), P(q1[0], q1[1], 0.12), P(p1[0], p1[1], 0.12), M.PAVE, [0.6, 0.58, 0.55], [[s0, 0], [s0, 7], [s1, 7], [s1, 0]], [0, 0, 1]);
     const [n0] = [capsule(s0, T.R + 7)[1]]; G.quad(P(q0[0], q0[1], 0), P(q1[0], q1[1], 0), P(q1[0], q1[1], 0.12), P(q0[0], q0[1], 0.12), M.CURB, [0.68, 0.67, 0.64], null, N(n0[0], n0[1]));
   }
+  G.zf = null; G.zc = 0;
   // belts, cornice: capsule rings
   const ring = (z0, z1, r, m, c) => {
     const n = 72;
@@ -243,6 +295,7 @@ function buildTower(G) {
 }
 
 /* ---------- city from kt3d.json ---------- */
+function subdiv(p, m) { const o = p.length ? [p[0]] : []; for (let i = 1; i < p.length; i++) { const a = p[i - 1], b = p[i], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / m)); for (let k = 1; k <= n; k++) o.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]); } return o; }
 function pts(a, from, sc) { const o = []; for (let i = from; i + 1 < a.length; i += 2) o.push([a[i] / sc, a[i + 1] / sc]); return o; }
 function obb(p) { // oriented bounding box from the edge directions
   let best = null;
@@ -271,9 +324,10 @@ function buildCity(G, D, F) {
   const ent = []; for (let i = 0; i + 2 < (D.ent || []).length; i += 3) ent.push([D.ent[i] / 10, D.ent[i + 1] / 10, D.ent[i + 2] * Math.PI / 180]);
   let bi = 0;
   for (const b of D.bld) {
-    bi++;
+    bi++; G.zf = tzS; G.zc = 0;
     let p = pts(b, 5, 10); if (p.length < 3) continue;
     if (area2(p) < 0) p = p.reverse();
+    let bSkirt = 0; { const zz = p.map(q => tzS(q[0], q[1])), z0 = Math.min(...zz), z1 = Math.max(...zz); G.zf = null; G.zc = z0 + Math.min(1.2, 0.3 * (z1 - z0)); bSkirt = z0 - G.zc - 0.4; }
     const ty = Math.floor(b[1] / 10), h = Math.max(3, b[0] / 10), hk = hashS('b' + bi + ':' + b[5] + ',' + b[6]);
     const near = p.some(q => Math.hypot(q[0], q[1]) < NEAR);
     let col = (ty === 1 || ty === 4) ? APAL[hk % 4] : (ty === 0 || ty === 8) ? PAL[hk % 5] : ty === 2 ? [0.84, 0.82, 0.76] : [0.8, 0.79, 0.75];
@@ -289,6 +343,7 @@ function buildCity(G, D, F) {
       const a = p[i], q = p[(i + 1) % p.length], L = Math.hypot(q[0] - a[0], q[1] - a[1]); if (L < 0.05) continue;
       const nn = [(q[1] - a[1]) / L, -(q[0] - a[0]) / L, 0];
       G.quad([a[0], a[1], 0], [q[0], q[1], 0], [q[0], q[1], h + parapet], [a[0], a[1], h + parapet], house ? M.HOUSEWALL : M.WALL, col, [[u, 0], [u + L, 0], [u + L, h + parapet], [u, h + parapet]], nn);
+      if (bSkirt < -0.05) G.quad([a[0], a[1], bSkirt], [q[0], q[1], bSkirt], [q[0], q[1], 0.01], [a[0], a[1], 0.01], M.STONE, col.map(v => v * 0.62), null, nn);   // plinth down to the ground on slopes
       if (near && h >= 6) { // plinth: darker band at the foot of the wall
         const o = 0.06; G.quad([a[0] + nn[0] * o, a[1] + nn[1] * o, 0], [q[0] + nn[0] * o, q[1] + nn[1] * o, 0], [q[0] + nn[0] * o, q[1] + nn[1] * o, 0.9], [a[0] + nn[0] * o, a[1] + nn[1] * o, 0.9], M.STONE, [0.42, 0.4, 0.37], null, nn);
       }
@@ -353,9 +408,10 @@ function buildCity(G, D, F) {
       F.props.push([bp[0], bp[1]]);
     }
   }
-  // roads: asphalt, pavements with kerbs near the tower, a dashed centre line on the wide ones
+  G.zf = tzS; G.zc = 0;
+  // roads: asphalt, pavements with kerbs near the tower, a dashed centre line on the wide ones (cut into short pieces to follow the relief)
   for (const rd of D.roads) {
-    const w = Math.max(4, rd[0] / 10), p = pts(rd, 3, 10), near = p.some(q => Math.hypot(q[0], q[1]) < NEAR + 60);
+    const w = Math.max(4, rd[0] / 10), p0 = pts(rd, 3, 10), near = p0.some(q => Math.hypot(q[0], q[1]) < NEAR + 60), p = subdiv(p0, near ? 5 : 20);
     let s = 0;
     for (let i = 0; i + 1 < p.length; i++) {
       const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.05) continue;
@@ -377,17 +433,7 @@ function buildCity(G, D, F) {
       s += L;
     }
   }
-  // water banks: a slope from the shore down under the water line (grass to the waterline, as on the October 2011 panoramas)
-  for (const wa of D.water) {
-    const p = pts(wa, 0, 10); if (p.length < 3) continue;
-    const ccw = area2(p) > 0;
-    for (let i = 0; i < p.length; i++) {
-      const a = p[i], b = p[(i + 1) % p.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.1) continue;
-      const nx = -(b[1] - a[1]) / L * (ccw ? 1 : -1), ny = (b[0] - a[0]) / L * (ccw ? 1 : -1), o = 5; // into the water
-      const nrm = V.norm([-nx * 1.6, -ny * 1.6, o]);
-      G.quad([a[0], a[1], 0.02], [b[0], b[1], 0.02], [b[0] + nx * o, b[1] + ny * o, -1.7], [a[0] + nx * o, a[1] + ny * o, -1.7], M.BANK, [0.42, 0.4, 0.36], [[0, 0], [L, 0], [L, o], [0, o]], nrm);
-    }
-  }
+  // water banks: the relief runs down to the water (makeTerrain); the ground shader colours the strip at the waterline
   // trees: detailed ones near the tower go to the foliage builder, simple crowns further away
   const ico = (() => {
     const t = (1 + Math.sqrt(5)) / 2, v = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(V.norm);
@@ -421,8 +467,11 @@ function buildCity(G, D, F) {
   const ACOL = { dirt: [0.42, 0.36, 0.28], waste: [0.55, 0.5, 0.33], sand: [0.68, 0.6, 0.45], pave: [0.6, 0.53, 0.5] };
   for (const ar of D.areas || []) { const t = ar[0]; let p = pts(ar, 1, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse();
     const road = t === 'parking' || t === 'asphalt', z = road ? 0.05 : t === 'pave' ? 0.11 : 0.025, m = road ? M.ROAD : t === 'pave' ? M.PAVE : M.ROOF, c = ACOL[t] || [0.4, 0.4, 0.4];
-    for (const [i, j, k] of (() => { const o = [], tt = earcut(p); for (let q = 0; q + 2 < tt.length; q += 3) o.push([tt[q], tt[q + 1], tt[q + 2]]); return o; })())
-      G.tri([p[i][0], p[i][1], z], [p[j][0], p[j][1], z], [p[k][0], p[k][1], z], m, c, [p[i][0], p[i][1]], [p[j][0], p[j][1]], [p[k][0], p[k][1]], [0, 0, 1]);
+    const tess = (A, B, C) => { const ab = Math.hypot(B[0] - A[0], B[1] - A[1]), bc = Math.hypot(C[0] - B[0], C[1] - B[1]), ca = Math.hypot(A[0] - C[0], A[1] - C[1]), mx = Math.max(ab, bc, ca);
+      if (mx <= 6) { G.tri([A[0], A[1], z], [B[0], B[1], z], [C[0], C[1], z], m, c, A, B, C, [0, 0, 1]); return; }
+      const mid = (U, W) => [(U[0] + W[0]) / 2, (U[1] + W[1]) / 2];
+      if (mx === ab) { const D2 = mid(A, B); tess(A, D2, C); tess(D2, B, C); } else if (mx === bc) { const D2 = mid(B, C); tess(A, B, D2); tess(A, D2, C); } else { const D2 = mid(C, A); tess(A, B, D2); tess(D2, B, C); } };
+    { const tt = earcut(p); for (let q = 0; q + 2 < tt.length; q += 3) tess(p[tt[q]], p[tt[q + 1]], p[tt[q + 2]]); }
     if (t === 'parking') for (let i = 0; i < p.length; i++) { // bays: white lines square to the long edges, 2.6 m apart, 5 m deep
       const a = p[i], b = p[(i + 1) % p.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 9) continue;
       const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, nx = -uy, ny = ux;   // inward normal (polygon is counter-clockwise)
@@ -444,10 +493,11 @@ function buildCity(G, D, F) {
       const c = q[4] ? rgbi(q[4]) : [0.55, 0.2, 0.15]; G.box(x, y, 0, 2.0, 2.2, 2.3, a, M.STONE, c); G.box(x, y, 1.15, 2.04, 2.24, 0.75, a, M.BALCG, [0.45, 0.5, 0.52]); G.box(x, y, 2.3, 2.5, 2.7, 0.14, a, M.STONE, c.map(v => v * 0.7)); }
     else if (t === 'cont20') { const c = q[4] ? rgbi(q[4]) : [0.2, 0.33, 0.6]; G.box(x, y, 0, 2.44, 6.06, 2.6, a, M.STONE, c); for (let s = -2.9; s <= 2.9; s += 0.3) { const r = P(s, 0); G.box(r[0], r[1], 0.05, 2.47, 0.06, 2.5, a, M.STONE, c.map(v => v * 0.85)); } }
     else if (t === 'stair') { // outdoor flight of steps up to the first-floor terrace, red railings
-      const L = (q[4] || 40) / 10, H = (q[5] || 25) / 10, n = Math.max(3, Math.round(H / 0.16)), W = 1.6;
+      const L = (q[4] || 40) / 10, W = 1.6, bot = P(-L / 2 - 0.3, 0), zb = tzS(bot[0], bot[1]), H = q[5] ? q[5] / 10 : Math.max(0.5, -zb), n = Math.max(3, Math.round(H / 0.16)); G.zf = null; G.zc = zb;
       for (let k = 0; k < n; k++) { const r = P(-L / 2 + (k + 0.5) * L / n, 0); G.box(r[0], r[1], 0, W, L / n + 0.02, (k + 1) * H / n, a, M.STONE, [0.68, 0.66, 0.62]); }
       for (const w of [-W / 2, W / 2]) { for (let k = 0; k <= 4; k++) { const r = P(-L / 2 + k * L / 4, w); G.box(r[0], r[1], k * H / 4, 0.05, 0.05, 1.0, a, M.POLE, [0.55, 0.12, 0.1]); }
         const r0 = P(-L / 2, w), r1 = P(L / 2, w); G.quad([r0[0], r0[1], 0.95], [r1[0], r1[1], H + 0.95], [r1[0], r1[1], H + 1.02], [r0[0], r0[1], 1.02], M.POLE, [0.55, 0.12, 0.1]); }
+      G.zf = tzS; G.zc = 0;
     }
     else if (t === 'globe') { F.globes = F.globes || []; F.globes.push([x, y]); }
     else if (t === 'pole') { // utility pole: tapered concrete post, a cross-arm with insulators
@@ -456,7 +506,7 @@ function buildCity(G, D, F) {
     }
     else if (t === 'zebra') { // pedestrian crossing: stripes along the traffic, 0.5 m wide, 1 m apart, across the carriageway
       const W = (q[4] || 70) / 10, len = (q[5] || 30) / 10;
-      for (let w = -W / 2 + 0.5; w <= W / 2 - 0.4; w += 1.0) { const r = P(0, w); G.box(r[0], r[1], 0.082, 0.5, len, 0.004, a, M.CURB, [0.86, 0.86, 0.82]); }
+      for (let w = -W / 2 + 0.5; w <= W / 2 - 0.4; w += 1.0) { const r = P(0, w); G.box(r[0], r[1], 0.1, 0.5, len, 0.004, a, M.CURB, [0.86, 0.86, 0.82]); }
     }
     else if (t === 'climb') { const c = [0.15, 0.45, 0.22], H = 2.2; for (const s of [-1.2, 0, 1.2]) for (const w of [-0.9, 0.9]) { const r = P(s, w); G.box(r[0], r[1], 0, 0.07, 0.07, H, a, M.POLE, c); }
       for (const z of [0.7, 1.4, 2.15]) for (const w of [-0.9, 0.9]) { const r = P(0, w); G.box(r[0], r[1], z, 0.05, 2.45, 0.05, a, M.POLE, c); }
@@ -485,15 +535,16 @@ function buildCity(G, D, F) {
           G.box((pA[0] + pB[0]) / 2, (pA[1] + pB[1]) / 2, 0, 0.12, e - s2, h, ang, M.STONE, [0.6, 0.59, 0.56].map(v => v * (0.94 + 0.08 * ((s2 / 2) % 2)))); G.box(pA[0], pA[1], 0, 0.22, 0.22, h + 0.1, ang, M.STONE, [0.55, 0.54, 0.52]); } }
       else if (t === 'path') G.quad([a[0] + n[0] * h / 2, a[1] + n[1] * h / 2, 0.06], [b[0] + n[0] * h / 2, b[1] + n[1] * h / 2, 0.06], [b[0] - n[0] * h / 2, b[1] - n[1] * h / 2, 0.06], [a[0] - n[0] * h / 2, a[1] - n[1] * h / 2, 0.06], M.PAVE, [0.55, 0.53, 0.5], null, [0, 0, 1]);
       else if (t === 'parapet') G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0, 0.4, L + 0.4, h, ang, M.STONE, [0.7, 0.68, 0.64]);
-      else if (t === 'podium') { G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0, 0.35, L + 0.35, h * 0.55, ang, M.STONE, [0.42, 0.42, 0.4]); G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, h * 0.55, 0.4, L + 0.4, h * 0.45, ang, M.STONE, [0.8, 0.72, 0.66]); }
+      else if (t === 'podium') { const lo = Math.min(...[[a, 1.6], [b, 1.6], [a, -1.6], [b, -1.6]].map(([q, o]) => tzS(q[0] + n[0] * o, q[1] + n[1] * o))) - 0.3, mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        G.zf = null; G.zc = 0; G.box(mx, my, Math.min(lo, -0.3), 0.35, L + 0.35, -Math.min(lo, -0.3) + 0.06, ang, M.STONE, [0.43, 0.43, 0.41]); G.box(mx, my, 0.06, 0.4, L + 0.4, h, ang, M.STONE, [0.8, 0.72, 0.66]); G.zf = tzS; }
       else if (t === 'chain') { // anchor chain hung between low posts (embankment)
         for (let s2 = 0; s2 <= L; s2 += 2.5) { const x = a[0] + (b[0] - a[0]) * s2 / L, y = a[1] + (b[1] - a[1]) * s2 / L; G.box(x, y, 0, 0.14, 0.14, h, 0, M.POLE, [0.12, 0.12, 0.12]); }
         for (let s2 = 0; s2 < L; s2 += 0.25) { const e = Math.min(L, s2 + 0.25), f = v => h - 0.12 - 0.3 * Math.sin(Math.PI * ((v % 2.5) / 2.5)), x0 = a[0] + (b[0] - a[0]) * s2 / L, y0 = a[1] + (b[1] - a[1]) * s2 / L, x1 = a[0] + (b[0] - a[0]) * e / L, y1 = a[1] + (b[1] - a[1]) * e / L;
           G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(s2), f(e)) - 0.03, 0.06, e - s2 + 0.03, Math.abs(f(s2) - f(e)) + 0.06, ang, M.POLE, [0.1, 0.1, 0.1]); } }
       else if (t === 'wire') { // overhead line between pole tops, sagging
-        const N = Math.max(4, Math.round(L / 3)), f = u => h - 0.5 - 0.9 * 4 * u * (1 - u);
+        const N = Math.max(4, Math.round(L / 3)), za = tzS(a[0], a[1]), zb2 = tzS(b[0], b[1]), f = u => za + (zb2 - za) * u + h - 0.5 - 0.9 * 4 * u * (1 - u); G.zf = null; G.zc = 0;
         for (const off of [-0.7, 0, 0.7]) for (let k = 0; k < N; k++) { const u0 = k / N, u1 = (k + 1) / N, x0 = a[0] + (b[0] - a[0]) * u0 + n[0] * off, y0 = a[1] + (b[1] - a[1]) * u0 + n[1] * off, x1 = a[0] + (b[0] - a[0]) * u1 + n[0] * off, y1 = a[1] + (b[1] - a[1]) * u1 + n[1] * off;
-          G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(u0), f(u1)), 0.025, L / N + 0.02, Math.abs(f(u0) - f(u1)) + 0.025, ang, M.POLE, [0.08, 0.08, 0.08]); } }
+          G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(u0), f(u1)), 0.025, L / N + 0.02, Math.abs(f(u0) - f(u1)) + 0.025, ang, M.POLE, [0.08, 0.08, 0.08]); } G.zf = tzS; }
     } }
   // parked cars (estimated placements of the 3D quarter)
   const PK = [[0.75, 0.75, 0.73], [0.5, 0.08, 0.08], [0.12, 0.2, 0.4], [0.1, 0.1, 0.11], [0.62, 0.62, 0.6], [0.2, 0.36, 0.22], [0.82, 0.8, 0.7], [0.45, 0.4, 0.3]];
@@ -582,7 +633,7 @@ const SPEC = {
 };
 const SPK = { 0: ['chestnut', 'linden', 'maple', 'poplar', 'acacia'], 1: ['acacia', 'poplar', 'birch', 'maple', 'chestnut'], 2: ['chestnut', 'linden', 'maple', 'linden', 'chestnut'], 3: ['willow', 'wpoplar', 'poplar', 'willow', 'wpoplar'] };
 function treeDetailed(G, F, x, y, kind, R, species) {
-  const name = species && SPEC[species] ? species : SPK[kind] ? SPK[kind][Math.floor(R() * 5)] : 'linden', S = SPEC[name], sc = S.thin ? 0.9 + R() * 0.2 : 0.8 + R() * 0.45;
+  const name = species && SPEC[species] ? species : SPK[kind] ? SPK[kind][Math.floor(R() * 5)] : 'linden', S = SPEC[name], sc = S.thin ? 0.9 + R() * 0.2 : 0.8 + R() * 0.45, zg = tzS(x, y);
   const rx = S.rx * sc, rz = S.rz * sc, th = S.th * (0.85 + R() * 0.3), cz = th + rz * 0.55;
   // trunk: tapered octagon
   const seg = 6, r0 = S.thin ? 0.035 : 0.16 + 0.05 * sc, r1 = S.thin ? 0.015 : 0.09, top = th + rz * 0.5;
@@ -622,12 +673,12 @@ function treeDetailed(G, F, x, y, kind, R, species) {
     const uv = [[tu + 0.005, tv + 0.01], [tu + 0.245, tv + 0.01], [tu + 0.245, tv + 0.49], [tu + 0.005, tv + 0.49]];
     const col = [tint * (0.9 + R() * 0.2), tint * (0.9 + R() * 0.2), tint];
     const sway = Math.max(0, c[2] - th);
-    for (const i of [0, 1, 2, 0, 2, 3]) F.push(q[i][0], q[i][1], q[i][2], radial[0], radial[1], radial[2], uv[i][0], uv[i][1], col[0], col[1], col[2], sway);
+    for (const i of [0, 1, 2, 0, 2, 3]) F.push(q[i][0], q[i][1], q[i][2] + zg, radial[0], radial[1], radial[2], uv[i][0], uv[i][1], col[0], col[1], col[2], sway);
   }
   // fallen leaves on the ground under the crown
   const lr = rx * 1.2, tu6 = 0.5, tv6 = 0.5, lc = [1, 1, 1];
   const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.5], [tu6, tv6 + 0.5]];
-  for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2], 0, 0, 1, Luv[i][0], Luv[i][1], 1, 1, 1, 0);
+  for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2] + tzS(L[i][0], L[i][1]), 0, 0, 1, Luv[i][0], Luv[i][1], 1, 1, 1, 0);
 }
 /* leaf atlas drawn in the browser: 4x2 tiles of 128 px (6 species, fallen leaves, spare) */
 function leafAtlas() {
@@ -735,7 +786,7 @@ void main(){
 const FS = HDR + `
 varying vec3 vW; varying vec3 vN; varying vec2 vU; varying float vM; varying vec3 vC; varying vec4 vL;
 uniform vec3 uCam; uniform vec3 uSun; uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec3 uFog; uniform float uFogD;
-uniform float uNight; uniform float uLit; uniform float uSlot; uniform float uFlood; uniform float uWet; uniform float uClipZ;
+uniform float uNight; uniform float uLit; uniform float uSlot; uniform float uFlood; uniform float uWet; uniform float uClipZ; uniform float uWZ;
 uniform sampler2D uSh; uniform float uShOn; uniform float uPitch; uniform float uT;
 uniform sampler2D uLU; uniform vec2 uLUo; uniform float uLUs; uniform vec3 uLUd;
 float h21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
@@ -780,6 +831,7 @@ void main(){
     vec2 lu=(vW.xy-uLUo)/uLUs; vec3 lc=uLUd; if(lu.x>0.0&&lu.x<1.0&&lu.y>0.0&&lu.y<1.0) lc=texture2D(uLU,lu).rgb;
     float n=n2(vW.xy*0.06)*0.5+n2(vW.xy*0.5)*0.3+n2(vW.xy*3.0)*0.2; col=lc*(0.75+0.5*n);
     col=mix(col,vec3(0.33,0.29,0.2),smoothstep(0.62,0.8,n2(vW.xy*0.11+7.0))*0.5);
+    float bz=vW.z-uWZ; if(bz<1.4){ float nb=n2(vW.xy*2.5); col=mix(col,vec3(0.26,0.29,0.14)*(0.8+0.4*nb),smoothstep(1.4,0.7,bz)); col=mix(col,vec3(0.34,0.3,0.23)*(0.75+0.45*nb),smoothstep(0.55,0.15,bz)); }
   } else if(m<1.5||abs(m-19.0)<0.5){ // asphalt: patches and cracks; centre dashes on the wide streets
     float n=n2(vW.xy*0.7); col=vec3(0.15,0.15,0.16)*(0.8+0.35*n);
     col*=0.92+0.12*step(0.7,n2(vW.xy*0.12+3.0));
@@ -1032,10 +1084,14 @@ async function open(host, opt) {
   };
 
   /* static geometry */
-  const G = new Geo(), FOL = []; buildCity(G, D, FOL); buildTower(G);
+  TERR = makeTerrain(D);
+  const G = new Geo(), FOL = []; G.zf = tzS; buildCity(G, D, FOL); G.zf = null; G.zc = 0; buildTower(G);
+  // the yard platform: its surface at the yard level (the ground mesh dips below it)
+  if (TERR.PL) { const p = TERR.PL.slice(), t = earcut(area2(p) < 0 ? p.reverse() : p); for (let q = 0; q + 2 < t.length; q += 3) G.tri([p[t[q]][0], p[t[q]][1], 0], [p[t[q + 1]][0], p[t[q + 1]][1], 0], [p[t[q + 2]][0], p[t[q + 2]][1], 0], M.GROUND, [0.2, 0.24, 0.12], null, null, null, [0, 0, 1]); }
   /* soft contact darkening on the ground: around building walls, under trees and parked cars (cheap ambient occlusion) */
   const AO = [];
-  const aoq = (p0, p1, p2, p3, a0, a1, a2, a3) => { AO.push(...p0, a0, ...p1, a1, ...p2, a2, ...p0, a0, ...p2, a2, ...p3, a3); };
+  const gz = q => [q[0], q[1], q[2] + tzS(q[0], q[1])];
+  const aoq = (p0, p1, p2, p3, a0, a1, a2, a3) => { p0 = gz(p0); p1 = gz(p1); p2 = gz(p2); p3 = gz(p3); AO.push(...p0, a0, ...p1, a1, ...p2, a2, ...p0, a0, ...p2, a2, ...p3, a3); };
   for (const b of D.bld) {
     let p = pts(b, 5, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse();
     const h = Math.max(3, b[0] / 10), R = Math.min(4.5, 1.2 + h * 0.12), z = 0.03, k = 0.5;
@@ -1044,7 +1100,7 @@ async function open(host, opt) {
       aoq([a[0], a[1], z], [q[0], q[1], z], [q[0] + nx, q[1] + ny, z], [a[0] + nx, a[1] + ny, z], k, k, 0, 0); }
   }
   { const tr = D.trees; for (let i = 0; i + 2 < tr.length; i += 3) { const x = tr[i] / 10, y = tr[i + 1] / 10, r = 3.2, z = 0.03; const n = 8;
-      for (let j = 0; j < n; j++) { const a = TAU * j / n, b = TAU * (j + 1) / n; AO.push(x, y, z, 0.35, x + Math.cos(a) * r, y + Math.sin(a) * r, z, 0, x + Math.cos(b) * r, y + Math.sin(b) * r, z, 0); } } }
+      for (let j = 0; j < n; j++) { const a = TAU * j / n, b = TAU * (j + 1) / n; AO.push(...gz([x, y, z]), 0.35, ...gz([x + Math.cos(a) * r, y + Math.sin(a) * r, z]), 0, ...gz([x + Math.cos(b) * r, y + Math.sin(b) * r, z]), 0); } } }
   { const pk = D.cars; for (let i = 0; i + 3 < pk.length; i += 4) { const x = pk[i] / 10, y = pk[i + 1] / 10, a = pk[i + 2] * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), z = 0.2;
       const P = (s, t) => [x + ca * s - sa * t, y + sa * s + ca * t, z]; aoq(P(-2.6, -1.2), P(2.6, -1.2), P(2.6, 1.2), P(-2.6, 1.2), 0.45, 0.45, 0.45, 0.45); } }
   const aoB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, aoB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(AO), gl.STATIC_DRAW); const nAO = AO.length / 4;
@@ -1054,8 +1110,18 @@ async function open(host, opt) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
   /* ground: one big quad; inside the water polygons it is masked out with the stencil */
-  const GG = new Geo(); { const R0 = 4000; GG.quad([-R0, -R0, 0], [R0, -R0, 0], [R0, R0, 0], [-R0, R0, 0], M.GROUND, [0.2, 0.24, 0.12], null, [0, 0, 1]); }
-  const gndB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, gndB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(GG.a), gl.STATIC_DRAW);
+  const GG = new Geo(); { // ground: the relief as nested grids (4 m near the tower, 12 m and 100 m further out)
+    const gc = [0.2, 0.24, 0.12];
+    const ring = (st, ext, hole, drop) => { const n = Math.round(ext * 2 / st), Hs = new Float32Array((n + 1) * (n + 1));
+      for (let j = 0; j <= n; j++) for (let i = 0; i <= n; i++) Hs[j * (n + 1) + i] = TERR.Tg(-ext + i * st, -ext + j * st) - drop;
+      const hv = (i, j) => Hs[Math.max(0, Math.min(n, j)) * (n + 1) + Math.max(0, Math.min(n, i))];
+      const nv = (i, j) => V.norm([(hv(i - 1, j) - hv(i + 1, j)) / (2 * st), (hv(i, j - 1) - hv(i, j + 1)) / (2 * st), 1]);
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const x = -ext + i * st, y = -ext + j * st;
+        if (hole && x >= -hole + st && x + st <= hole - st && y >= -hole + st && y + st <= hole - st) continue;
+        const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j], [i + 1, j + 1], [i, j + 1]];
+        for (const [a, b] of c) GG.v([-ext + a * st, -ext + b * st, hv(a, b)], nv(a, b), [0, 0], M.GROUND, gc); } };
+    ring(4, 168, 0, 0); ring(12, 600, 168, 0.04); ring(100, 4000, 600, 0.1); }
+  const gndB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, gndB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(GG.a), gl.STATIC_DRAW); const nGnd = GG.n;
   /* land use from the map grid (20 m cells) as a small texture */
   const LU = D.lu, LUC = { h: [0.27, 0.29, 0.15], c: [0.36, 0.35, 0.32], i: [0.34, 0.32, 0.27], g: [0.22, 0.3, 0.12], p: [0.19, 0.29, 0.11], f: [0.14, 0.22, 0.09], s: [0.45, 0.41, 0.3], w: [0.24, 0.28, 0.13], '.': [0.25, 0.28, 0.14] };
   const luTex = gl.createTexture(); let luO = [0, 0], luS = 1;
@@ -1068,16 +1134,16 @@ async function open(host, opt) {
   const stat = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, stat); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(G.a), gl.STATIC_DRAW);
   const nStat = G.n; G.a = null;
   /* water: the surface lies 1 m below the street level, the banks slope down to it */
-  const WZ = -1.0;
+  const WZ = TERR.WZ;   // the reservoir by the tower (SRTM level relative to the yard)
   const WA = [];
-  for (const w of D.water) { const p = pts(w, 0, 10), t = earcut(p); for (const i of t) WA.push(p[i][0], p[i][1], WZ); }
+  D.water.forEach((w, wi) => { const p = pts(w, 0, 10), t = earcut(p), z = TERR.wl(wi); for (const i of t) WA.push(p[i][0], p[i][1], z); });
   const wbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, wbuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(WA), gl.STATIC_DRAW);
   const nWat = WA.length / 3;
   const waterPts = []; for (const w of D.water) for (const q of pts(w, 0, 10)) waterPts.push(q);
   /* sky quad */
   const quadB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quadB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1]), gl.STATIC_DRAW);
   /* street lamps along roads near the tower (generic: every ~30 m) */
-  const lamps = [], LG = new Geo();
+  const lamps = [], LG = new Geo(); LG.zf = tzS;
   for (const rd of D.roads) {
     const w = Math.max(4, rd[0] / 10), p = pts(rd, 3, 10); if (w < 5 || !p.some(q => Math.hypot(q[0], q[1]) < 600)) continue;
     let acc = 15;
@@ -1085,21 +1151,21 @@ async function open(host, opt) {
       const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.1) continue;
       let t = acc;
       while (t < L) { const x = a[0] + (b[0] - a[0]) * t / L, y = a[1] + (b[1] - a[1]) * t / L, nx = -(b[1] - a[1]) / L, ny = (b[0] - a[0]) / L, o = w / 2 + 1.2;
-        const lx = x + nx * o, ly = y + ny * o; if (Math.hypot(lx, ly) < 650) { lamps.push(lampModel(LG, lx, ly, -nx, -ny)); }
+        const lx = x + nx * o, ly = y + ny * o; if (Math.hypot(lx, ly) < 650) { const hd = lampModel(LG, lx, ly, -nx, -ny); hd[2] += tzS(hd[0], hd[1]); lamps.push(hd); }
         t += 30; }
       acc = t - L;
     }
   }
   // globe lamps at the tower (placed from the 2011 panoramas, kt3d.json props "globe")
-  for (const g of FOL.globes || []) { const x = g[0], y = g[1], c = [0.14, 0.14, 0.15]; LG.box(x, y, 0, 0.12, 0.12, 3.6, 0, M.POLE, c); LG.box(x, y, 0, 0.3, 0.3, 0.45, 0, M.POLE, c); LG.box(x, y, 3.55, 0.44, 0.44, 0.48, 0, M.LAMPG, [0.95, 0.92, 0.85]); lamps.push([x, y, 3.8]); }
+  for (const g of FOL.globes || []) { const x = g[0], y = g[1], c = [0.14, 0.14, 0.15]; LG.box(x, y, 0, 0.12, 0.12, 3.6, 0, M.POLE, c); LG.box(x, y, 0, 0.3, 0.3, 0.45, 0, M.POLE, c); LG.box(x, y, 3.55, 0.44, 0.44, 0.48, 0, M.LAMPG, [0.95, 0.92, 0.85]); lamps.push([x, y, 3.8 + tzS(x, y)]); }
   const lampB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, lampB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(LG.a), gl.STATIC_DRAW); const nLampGeo = LG.n;
   // light pools under lamps
-  const PL = []; for (const l of lamps) { const r = 9, x = l[0], y = l[1], z = 0.1; const c = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]; for (const [a, b] of c) PL.push(x + a * r, y + b * r, z, a, b, 1); }
+  const PL = []; for (const l of lamps) { const r = 9, x = l[0], y = l[1], z = 0.1; const c = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]; for (const [a, b] of c) PL.push(x + a * r, y + b * r, tzS(x + a * r, y + b * r) + 0.3, a, b, 1); }
   const poolB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, poolB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(PL), gl.STATIC_DRAW); const nPool = PL.length / 6;
   // static glow points: lamp heads, far city lights (generic beyond the data), red light on the mast
   const GP = []; const rr = rng(77);
   for (const l of lamps) GP.push(l[0], l[1], l[2], 1.0, 0.62, 0.28, 0.9, 4.5);
-  for (let i = 0; i < 1600; i++) { const a = rr() * TAU, d = 950 + Math.pow(rr(), 0.6) * 2400; GP.push(Math.cos(a) * d, Math.sin(a) * d, 2 + rr() * 25, 1.0, 0.7 + rr() * 0.2, 0.4 + rr() * 0.3, 0.35 + rr() * 0.4, 6); }
+  for (let i = 0; i < 1600; i++) { const a = rr() * TAU, d = 950 + Math.pow(rr(), 0.6) * 2400; GP.push(Math.cos(a) * d, Math.sin(a) * d, 2 + rr() * 25 + tzS(Math.cos(a) * d, Math.sin(a) * d), 1.0, 0.7 + rr() * 0.2, 0.4 + rr() * 0.3, 0.35 + rr() * 0.4, 6); }
   GP.push(0, 0, T.mast, 1.0, 0.08, 0.04, 1.0, -9);
   const glowB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, glowB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(GP), gl.STATIC_DRAW); const nGlow = GP.length / 8;
   // rain streaks
@@ -1265,21 +1331,23 @@ async function open(host, opt) {
       const c = cars[i], q = along(c.e, c.s), dx = q[2], dy = q[3], ang = Math.atan2(dy, dx);
       const lane = c.e.one ? 0 : Math.min(3.5, c.e.w * 0.25), x = q[0] + dy * lane, y = q[1] - dx * lane;
       const L = c.big ? 9.5 : 4.3, W = c.big ? 2.4 : 1.75, H = c.big ? 2.6 : 0.75;
+      const zg = tzS(x, y); DG.zc = zg;
       carModel(DG, x, y, ang, c.col, c.big, Math.hypot(x - cam0[0], y - cam0[1]) > 120);
       if (nightK > 0.05 || st.rainK > 0.5 || st.fogK > 0.5) {
         const k = Math.max(nightK, st.rainK * 0.6, st.fogK * 0.6), fx = x + dx * L / 2, fy = y + dy * L / 2, bx = x - dx * L / 2, by = y - dy * L / 2;
-        glow.push(fx - dy * W * 0.38, fy + dx * W * 0.38, 0.7, 1, 0.95, 0.8, k, 2.2, fx + dy * W * 0.38, fy - dx * W * 0.38, 0.7, 1, 0.95, 0.8, k, 2.2);
-        glow.push(bx - dy * W * 0.4, by + dx * W * 0.4, 0.8, 1, 0.08, 0.05, k * 0.8, 1.5, bx + dy * W * 0.4, by - dx * W * 0.4, 0.8, 1, 0.08, 0.05, k * 0.8, 1.5);
+        glow.push(fx - dy * W * 0.38, fy + dx * W * 0.38, 0.7 + zg, 1, 0.95, 0.8, k, 2.2, fx + dy * W * 0.38, fy - dx * W * 0.38, 0.7 + zg, 1, 0.95, 0.8, k, 2.2);
+        glow.push(bx - dy * W * 0.4, by + dx * W * 0.4, 0.8 + zg, 1, 0.08, 0.05, k * 0.8, 1.5, bx + dy * W * 0.4, by - dx * W * 0.4, 0.8 + zg, 1, 0.08, 0.05, k * 0.8, 1.5);
         const px = x + dx * (L / 2 + 6), py = y + dy * (L / 2 + 6), r = 5.5;
         const ca = Math.cos(ang), sa = Math.sin(ang), Pp = (a, b) => [px + ca * a * r * 1.4 - sa * b * r * 0.8, py + sa * a * r * 1.4 + ca * b * r * 0.8];
-        for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]) { const pp = Pp(a, b); pool.push(pp[0], pp[1], 0.12, a, b, k * 0.6); }
+        for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]) { const pp = Pp(a, b); pool.push(pp[0], pp[1], tzS(pp[0], pp[1]) + 0.3, a, b, k * 0.6); }
       }
     }
+    DG.zc = 0;
     for (const p of people) {
       const q = along(p.w, p.s), dx = q[2] * p.dir, dy = q[3] * p.dir, x = q[0] - dy * p.side, y = q[1] + dx * p.side, ang = Math.atan2(dy, dx);
       const bob = p.stop > 0 ? 0 : Math.abs(Math.sin(p.ph)) * 0.06;
       const far = Math.hypot(x - cam0[0], y - cam0[1], cam0[2]) > 160;
-      personModel(DG, x, y, p.w.z, ang, p.ph, p.stop <= 0, p.look, st.rainK > 0.5 && p.umb, far);
+      DG.zc = tzS(x, y); personModel(DG, x, y, p.w.z, ang, p.ph, p.stop <= 0, p.look, st.rainK > 0.5 && p.umb, far);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, dynB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(DG.a), gl.DYNAMIC_DRAW); nDyn = DG.n;
     gl.bindBuffer(gl.ARRAY_BUFFER, dynGlowB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(glow), gl.DYNAMIC_DRAW); nDynGlow = glow.length / 8;
@@ -1312,7 +1380,7 @@ async function open(host, opt) {
     gl.uniform3fv(u.uSun, E.sun); gl.uniform3fv(u.uSunC, E.sunC); gl.uniform3fv(u.uSkyC, E.skyAmb); gl.uniform3fv(u.uGndC, E.gnd);
     gl.uniform3fv(u.uFog, E.fog); gl.uniform1f(u.uFogD, E.fogD); gl.uniform1f(u.uNight, E.night); gl.uniform1f(u.uLit, E.litF);
     gl.uniform1f(u.uSlot, Math.floor(st.hour * 60 / 9)); gl.uniform1f(u.uFlood, E.night * 1.1); gl.uniform1f(u.uWet, st.rainK);
-    gl.uniform1f(u.uClipZ, clipZ); gl.uniform1f(u.uPitch, T.pitch); gl.uniform1f(u.uT, t); gl.uniform1f(u.uWind, st.wind + st.rainK * 0.6);
+    gl.uniform1f(u.uClipZ, clipZ); gl.uniform1f(u.uWZ, WZ); gl.uniform1f(u.uPitch, T.pitch); gl.uniform1f(u.uT, t); gl.uniform1f(u.uWind, st.wind + st.rainK * 0.6);
     gl.uniform1f(u.uShOn, (shOn && E.sunC[0] > 0.05) ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(u.uSh, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, luTex); gl.uniform1i(u.uLU, 1);
@@ -1325,7 +1393,7 @@ async function open(host, opt) {
       gl.bindBuffer(gl.ARRAY_BUFFER, wbuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0); off(1); gl.drawArrays(gl.TRIANGLES, 0, nWat);
       gl.colorMask(true, true, true, true); gl.depthMask(true); gl.enable(gl.DEPTH_TEST);
       gl.stencilFunc(gl.NOTEQUAL, 1, 0xff); gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-      gl.useProgram(p.p); bindMain(gndB); gl.drawArrays(gl.TRIANGLES, 0, 6);
+      gl.useProgram(p.p); bindMain(gndB); gl.drawArrays(gl.TRIANGLES, 0, nGnd);
       gl.disable(gl.STENCIL_TEST);
     }
     bindMain(stat); gl.drawArrays(gl.TRIANGLES, 0, nStat);
@@ -1392,7 +1460,7 @@ async function open(host, opt) {
     const nCars = step(dt, E);
     // camera
     const ch = Math.cos(st.pitch), tz = Math.min(48, Math.max(6, st.dist * 0.16));
-    const tgt = [0, 0, tz], cam = [tgt[0] + Math.cos(st.yaw) * ch * st.dist, tgt[1] + Math.sin(st.yaw) * ch * st.dist, Math.max(2.5, tgt[2] + Math.sin(st.pitch) * st.dist)];
+    const tgt = [0, 0, tz], cam = [tgt[0] + Math.cos(st.yaw) * ch * st.dist, tgt[1] + Math.sin(st.yaw) * ch * st.dist, Math.max(2.5, tgt[2] + Math.sin(st.pitch) * st.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
     const W = canvas.width, H = canvas.height, asp = W / H;
     const fov = (asp < 0.8 ? 62 : 46) * Math.PI / 180;
     cam0 = cam; const proj = persp(fov, asp, 0.5, 6000), view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view);
