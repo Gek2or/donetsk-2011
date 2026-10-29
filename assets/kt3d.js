@@ -377,7 +377,7 @@ function buildCity(G, D, F) {
       s += L;
     }
   }
-  // water banks: a slope from the shore down under the water line (riprap and grass; type to be checked on panoramas)
+  // water banks: a slope from the shore down under the water line (grass to the waterline, as on the October 2011 panoramas)
   for (const wa of D.water) {
     const p = pts(wa, 0, 10); if (p.length < 3) continue;
     const ccw = area2(p) > 0;
@@ -396,9 +396,13 @@ function buildCity(G, D, F) {
   })();
   const leafCols = [[0.3, 0.36, 0.12], [0.42, 0.42, 0.13], [0.55, 0.46, 0.14], [0.36, 0.38, 0.12], [0.6, 0.38, 0.1], [0.26, 0.32, 0.12]];
   const tr = D.trees;
+  // trees by the water: willows and poplars (October 2011 panoramas of the embankment); the species mix is an estimate
+  const segD = (x, y, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)); return Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy); };
+  const WE = []; for (const wa of D.water) { const p = pts(wa, 0, 10); for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; if (segD(0, 0, a, b) < NEAR + 60) WE.push([a, b]); } }
+  const byWater = (x, y, d) => WE.some(e => segD(x, y, e[0], e[1]) < d);
   for (let i = 0; i + 2 < tr.length; i += 3) {
     const x = tr[i] / 10, y = tr[i + 1] / 10, k = tr[i + 2];
-    if (Math.hypot(x, y) < NEAR) { treeDetailed(G, F, x, y, k, rng(hashS('t' + i))); continue; }
+    if (Math.hypot(x, y) < NEAR) { treeDetailed(G, F, x, y, byWater(x, y, 24) ? 3 : k, rng(hashS('t' + i))); continue; }
     const s = (k === 2 ? 2.6 : 3.2) + r() * 1.6, h = s * 1.5;
     G.box(x, y, 0, 0.35, 0.35, h, 0, M.TRUNK, [0.22, 0.17, 0.13]);
     const lc = leafCols[Math.floor(r() * leafCols.length)];
@@ -412,24 +416,84 @@ function buildCity(G, D, F) {
       }
     }
   }
-  // objects placed from street panoramas and OSM (kt3d.json "props" / "lines"); empty until that pass is done
+  // objects placed from the October 2011 street panoramas (looked at, never copied) and raw OSM: kt3d.json "areas", "props", "lines"
+  const PK0 = [[0.75, 0.75, 0.73], [0.5, 0.08, 0.08], [0.12, 0.2, 0.4], [0.1, 0.1, 0.11], [0.62, 0.62, 0.6], [0.2, 0.36, 0.22], [0.82, 0.8, 0.7], [0.45, 0.4, 0.3]];
+  const ACOL = { dirt: [0.42, 0.36, 0.28], waste: [0.55, 0.5, 0.33], sand: [0.68, 0.6, 0.45], pave: [0.6, 0.53, 0.5] };
+  for (const ar of D.areas || []) { const t = ar[0]; let p = pts(ar, 1, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse();
+    const road = t === 'parking' || t === 'asphalt', z = road ? 0.05 : t === 'pave' ? 0.11 : 0.025, m = road ? M.ROAD : t === 'pave' ? M.PAVE : M.ROOF, c = ACOL[t] || [0.4, 0.4, 0.4];
+    for (const [i, j, k] of (() => { const o = [], tt = earcut(p); for (let q = 0; q + 2 < tt.length; q += 3) o.push([tt[q], tt[q + 1], tt[q + 2]]); return o; })())
+      G.tri([p[i][0], p[i][1], z], [p[j][0], p[j][1], z], [p[k][0], p[k][1], z], m, c, [p[i][0], p[i][1]], [p[j][0], p[j][1]], [p[k][0], p[k][1]], [0, 0, 1]);
+    if (t === 'parking') for (let i = 0; i < p.length; i++) { // bays: white lines square to the long edges, 2.6 m apart, 5 m deep
+      const a = p[i], b = p[(i + 1) % p.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 9) continue;
+      const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, nx = -uy, ny = ux;   // inward normal (polygon is counter-clockwise)
+      for (let d = 1.2; d <= L - 1.2; d += 2.6) { const x = a[0] + ux * d, y = a[1] + uy * d;
+        G.quad([x - ux * 0.06, y - uy * 0.06, 0.065], [x + ux * 0.06, y + uy * 0.06, 0.065], [x + ux * 0.06 + nx * 5, y + uy * 0.06 + ny * 5, 0.065], [x - ux * 0.06 + nx * 5, y - uy * 0.06 + ny * 5, 0.065], M.CURB, [0.8, 0.8, 0.76], null, [0, 0, 1]); }
+    }
+  }
   const PR = D.props || [];
-  for (const q of PR) { const t = q[0], x = q[1] / 10, y = q[2] / 10, a = (q[3] || 0) * Math.PI / 180;
+  for (const q of PR) { const t = q[0], x = q[1] / 10, y = q[2] / 10, a = (q[3] || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), P = (s, w) => [x + ca * s - sa * w, y + sa * s + ca * w];
     if (t === 'bench') bench(G, x, y, a); else if (t === 'urn') urn(G, x, y);
     else if (t === 'kiosk') { G.box(x, y, 0, 2.4, 3.2, 2.5, a, M.STONE, [0.75, 0.75, 0.72]); G.box(x, y, 2.5, 2.8, 3.6, 0.12, a, M.STONE, [0.55, 0.15, 0.12]); }
-    else if (t === 'stop') { const ca = Math.cos(a), sa = Math.sin(a); G.box(x, y, 2.4, 1.8, 4.2, 0.1, a, M.STONE, [0.5, 0.55, 0.58]); G.box(x + sa * 0.8, y - ca * 0.8, 0, 0.08, 4.0, 2.4, a, M.BALCG, [0.6, 0.65, 0.68]); bench(G, x + sa * 0.4, y - ca * 0.4, a); }
-    else if (t === 'container') G.box(x, y, 0, 1.2, 1.8, 1.3, a, M.STONE, [0.3, 0.38, 0.3]);
+    else if (t === 'stop') { G.box(x, y, 2.4, 1.8, 4.2, 0.1, a, M.STONE, [0.5, 0.55, 0.58]); G.box(x + sa * 0.8, y - ca * 0.8, 0, 0.08, 4.0, 2.4, a, M.BALCG, [0.6, 0.65, 0.68]); bench(G, x + sa * 0.4, y - ca * 0.4, a); }
+    else if (t === 'container') { const c = q[4] ? rgbi(q[4]) : [0.3, 0.38, 0.3]; G.box(x, y, 0.12, 1.2, 1.3, 1.05, a, M.STONE, c); G.box(x, y, 1.17, 1.25, 1.35, 0.1, a, M.STONE, c.map(v => v * 0.8)); for (const s of [-0.5, 0.5]) for (const w of [-0.45, 0.45]) { const r = P(s, w); G.box(r[0], r[1], 0, 0.1, 0.1, 0.13, a, M.TRUNK, [0.06, 0.06, 0.06]); } }
     else if (t === 'bollard') G.box(x, y, 0, 0.2, 0.2, 0.8, a, M.POLE, [0.3, 0.3, 0.3]);
     else if (t === 'sign') { G.box(x, y, 0, 0.06, 0.06, 2.6, a, M.POLE, [0.6, 0.6, 0.6]); G.box(x, y, 2.0, 0.04, 0.6, 0.6, a, M.STONE, [0.85, 0.85, 0.85]); }
-    else if (t === 'tree') treeDetailed(G, F, x, y, q[4] in SPK ? q[4] : 0, rng(q[1] * 31 + q[2]), q[5]);
+    else if (t === 'tree') treeDetailed(G, F, x, y, !q[5] && byWater(x, y, 24) ? 3 : q[4] in SPK ? q[4] : 0, rng(q[1] * 31 + q[2]), q[5]);
+    else if (t === 'car') carModel(G, x, y, a, PK0[(q[4] || 0) % PK0.length], false);
+    else if (t === 'booth') { // small guard booth: walls, a window band, a flat roof with an overhang
+      const c = q[4] ? rgbi(q[4]) : [0.55, 0.2, 0.15]; G.box(x, y, 0, 2.0, 2.2, 2.3, a, M.STONE, c); G.box(x, y, 1.15, 2.04, 2.24, 0.75, a, M.BALCG, [0.45, 0.5, 0.52]); G.box(x, y, 2.3, 2.5, 2.7, 0.14, a, M.STONE, c.map(v => v * 0.7)); }
+    else if (t === 'cont20') { const c = q[4] ? rgbi(q[4]) : [0.2, 0.33, 0.6]; G.box(x, y, 0, 2.44, 6.06, 2.6, a, M.STONE, c); for (let s = -2.9; s <= 2.9; s += 0.3) { const r = P(s, 0); G.box(r[0], r[1], 0.05, 2.47, 0.06, 2.5, a, M.STONE, c.map(v => v * 0.85)); } }
+    else if (t === 'stair') { // outdoor flight of steps up to the first-floor terrace, red railings
+      const L = (q[4] || 40) / 10, H = (q[5] || 25) / 10, n = Math.max(3, Math.round(H / 0.16)), W = 1.6;
+      for (let k = 0; k < n; k++) { const r = P(-L / 2 + (k + 0.5) * L / n, 0); G.box(r[0], r[1], 0, W, L / n + 0.02, (k + 1) * H / n, a, M.STONE, [0.68, 0.66, 0.62]); }
+      for (const w of [-W / 2, W / 2]) { for (let k = 0; k <= 4; k++) { const r = P(-L / 2 + k * L / 4, w); G.box(r[0], r[1], k * H / 4, 0.05, 0.05, 1.0, a, M.POLE, [0.55, 0.12, 0.1]); }
+        const r0 = P(-L / 2, w), r1 = P(L / 2, w); G.quad([r0[0], r0[1], 0.95], [r1[0], r1[1], H + 0.95], [r1[0], r1[1], H + 1.02], [r0[0], r0[1], 1.02], M.POLE, [0.55, 0.12, 0.1]); }
+    }
+    else if (t === 'globe') { F.globes = F.globes || []; F.globes.push([x, y]); }
+    else if (t === 'pole') { // utility pole: tapered concrete post, a cross-arm with insulators
+      const H = (q[4] || 85) / 10; G.box(x, y, 0, 0.26, 0.26, H * 0.5, a, M.STONE, [0.55, 0.54, 0.5]); G.box(x, y, H * 0.5, 0.18, 0.18, H * 0.5, a, M.STONE, [0.55, 0.54, 0.5]);
+      G.box(x, y, H - 0.6, 0.1, 1.6, 0.1, a, M.POLE, [0.25, 0.25, 0.25]); for (const s of [-0.7, 0, 0.7]) { const r = P(s, 0); G.box(r[0], r[1], H - 0.5, 0.08, 0.08, 0.16, 0, M.STONE, [0.85, 0.85, 0.8]); }
+    }
+    else if (t === 'zebra') { // pedestrian crossing: stripes along the traffic, 0.5 m wide, 1 m apart, across the carriageway
+      const W = (q[4] || 70) / 10, len = (q[5] || 30) / 10;
+      for (let w = -W / 2 + 0.5; w <= W / 2 - 0.4; w += 1.0) { const r = P(0, w); G.box(r[0], r[1], 0.082, 0.5, len, 0.004, a, M.CURB, [0.86, 0.86, 0.82]); }
+    }
+    else if (t === 'climb') { const c = [0.15, 0.45, 0.22], H = 2.2; for (const s of [-1.2, 0, 1.2]) for (const w of [-0.9, 0.9]) { const r = P(s, w); G.box(r[0], r[1], 0, 0.07, 0.07, H, a, M.POLE, c); }
+      for (const z of [0.7, 1.4, 2.15]) for (const w of [-0.9, 0.9]) { const r = P(0, w); G.box(r[0], r[1], z, 0.05, 2.45, 0.05, a, M.POLE, c); }
+      for (let s = -1.2; s <= 1.21; s += 0.4) { const r = P(s, 0); G.box(r[0], r[1], 2.15, 1.85, 0.05, 0.05, a, M.POLE, c); } }
+    else if (t === 'swing') { const c = [0.5, 0.5, 0.52]; for (const s of [-1.4, 1.4]) for (const w of [-0.7, 0.7]) { const r = P(s, w * 0.35); G.box(r[0] + (w > 0 ? 1 : -1) * 0.0, r[1], 0, 0.07, 0.07, 2.4, a, M.POLE, c); }
+      G.box(x, y, 2.35, 0.08, 3.0, 0.08, a, M.POLE, c); for (const s of [-0.6, 0.6]) { const r = P(s, 0); G.box(r[0], r[1], 0.45, 0.03, 0.03, 1.9, a, M.POLE, [0.3, 0.3, 0.3]); G.box(r[0], r[1], 0.42, 0.25, 0.5, 0.05, a, M.TRUNK, [0.6, 0.25, 0.15]); } }
+    else if (t === 'slide') { const c = [0.25, 0.4, 0.7]; G.box(x, y, 0, 1.0, 1.0, 1.4, a, M.STONE, [0.7, 0.6, 0.2]); const r0 = P(0.5, -0.35), r1 = P(3.0, -0.35), r2 = P(3.0, 0.35), r3 = P(0.5, 0.35);
+      G.quad([r0[0], r0[1], 1.4], [r1[0], r1[1], 0.25], [r2[0], r2[1], 0.25], [r3[0], r3[1], 1.4], M.METAL, c, null, V.norm([ca * 0.45, sa * 0.45, 1])); const s0 = P(-1.4, 0); G.box(s0[0], s0[1], 0, 0.6, 1.0, 0.05, a, M.POLE, c); }
+    else if (t === 'sandbox') { const c = [0.5, 0.33, 0.2]; for (const [s, w, l, ww] of [[0, -1.2, 2.5, 0.1], [0, 1.2, 2.5, 0.1], [-1.2, 0, 0.1, 2.5], [1.2, 0, 0.1, 2.5]]) { const r = P(s, w); G.box(r[0], r[1], 0, ww, l, 0.3, a, M.TRUNK, c); }
+      G.box(x, y, 0, 2.3, 2.3, 0.2, a, M.ROOF, [0.72, 0.64, 0.46]); }
   }
-  for (const l of D.lines || []) { const t = l[0], h = l[1] / 10, p = pts(l, 2, 10);
-    for (let i = 0; i + 1 < p.length; i++) { const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.05) continue; const n = [-(b[1] - a[1]) / L, (b[0] - a[0]) / L, 0];
-      if (t === 'fence_metal') { for (let s2 = 0; s2 <= L; s2 += 2.5) { const x = a[0] + (b[0] - a[0]) * s2 / L, y = a[1] + (b[1] - a[1]) * s2 / L; G.box(x, y, 0, 0.05, 0.05, h, 0, M.POLE, [0.2, 0.22, 0.2]); }
-        G.quad([a[0], a[1], h - 0.08], [b[0], b[1], h - 0.08], [b[0], b[1], h], [a[0], a[1], h], M.POLE, [0.2, 0.22, 0.2], null, n); G.quad([a[0], a[1], 0.1], [b[0], b[1], 0.1], [b[0], b[1], 0.18], [a[0], a[1], 0.18], M.POLE, [0.2, 0.22, 0.2], null, n); }
-      else if (t === 'fence_concrete') G.quad([a[0], a[1], 0], [b[0], b[1], 0], [b[0], b[1], h], [a[0], a[1], h], M.STONE, [0.62, 0.61, 0.58], null, n);
+  const FCOL = { fence_metal: [0.2, 0.22, 0.2], fence_green: [0.16, 0.42, 0.22], fence_blue: [0.18, 0.32, 0.55] };
+  const SCOL = { fence_sheet: [0.6, 0.62, 0.63], fence_sheet_blue: [0.18, 0.33, 0.62], fence_sheet_old: [0.68, 0.68, 0.66] };
+  for (const l of D.lines || []) { const t = l[0], h = l[1] / 10, p = pts(l, 2, 10), wires = [];
+    for (let i = 0; i + 1 < p.length; i++) { const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.05) continue; const n = [-(b[1] - a[1]) / L, (b[0] - a[0]) / L, 0], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      if (FCOL[t]) { const fc = FCOL[t]; for (let s2 = 0; s2 <= L; s2 += 2.5) { const x = a[0] + (b[0] - a[0]) * s2 / L, y = a[1] + (b[1] - a[1]) * s2 / L; G.box(x, y, 0, 0.05, 0.05, h, 0, M.POLE, fc); }
+        G.quad([a[0], a[1], h - 0.08], [b[0], b[1], h - 0.08], [b[0], b[1], h], [a[0], a[1], h], M.POLE, fc, null, n); G.quad([a[0], a[1], 0.1], [b[0], b[1], 0.1], [b[0], b[1], 0.18], [a[0], a[1], 0.18], M.POLE, fc, null, n);
+        for (let s2 = 0.25; s2 < L; s2 += 0.25) { const x = a[0] + (b[0] - a[0]) * s2 / L, y = a[1] + (b[1] - a[1]) * s2 / L; G.box(x, y, 0.18, 0.02, 0.02, h - 0.26, 0, M.POLE, fc); } }   // vertical bars
+      else if (SCOL[t]) { // corrugated sheet fence: ribs as alternating strips, posts behind
+        const c = SCOL[t]; for (let s2 = 0; s2 < L; s2 += 0.6) { const e = Math.min(L, s2 + 0.6), k = (Math.floor(s2 / 0.6) % 2) ? 0.9 : 1.04;
+          const pA = [a[0] + (b[0] - a[0]) * s2 / L, a[1] + (b[1] - a[1]) * s2 / L], pB = [a[0] + (b[0] - a[0]) * e / L, a[1] + (b[1] - a[1]) * e / L];
+          G.quad([pA[0], pA[1], 0.08], [pB[0], pB[1], 0.08], [pB[0], pB[1], h], [pA[0], pA[1], h], M.STONE, c.map(v => v * k), null, n); }
+        for (let s2 = 0; s2 <= L; s2 += 3) { const x = a[0] + (b[0] - a[0]) * s2 / L - n[0] * 0.08, y = a[1] + (b[1] - a[1]) * s2 / L - n[1] * 0.08; G.box(x, y, 0, 0.08, 0.08, h, ang, M.POLE, [0.25, 0.22, 0.2]); } }
+      else if (t === 'fence_concrete') { // precast panels 2 m long with posts
+        for (let s2 = 0; s2 < L; s2 += 2) { const e = Math.min(L, s2 + 2), pA = [a[0] + (b[0] - a[0]) * s2 / L, a[1] + (b[1] - a[1]) * s2 / L], pB = [a[0] + (b[0] - a[0]) * e / L, a[1] + (b[1] - a[1]) * e / L];
+          G.box((pA[0] + pB[0]) / 2, (pA[1] + pB[1]) / 2, 0, 0.12, e - s2, h, ang, M.STONE, [0.6, 0.59, 0.56].map(v => v * (0.94 + 0.08 * ((s2 / 2) % 2)))); G.box(pA[0], pA[1], 0, 0.22, 0.22, h + 0.1, ang, M.STONE, [0.55, 0.54, 0.52]); } }
       else if (t === 'path') G.quad([a[0] + n[0] * h / 2, a[1] + n[1] * h / 2, 0.06], [b[0] + n[0] * h / 2, b[1] + n[1] * h / 2, 0.06], [b[0] - n[0] * h / 2, b[1] - n[1] * h / 2, 0.06], [a[0] - n[0] * h / 2, a[1] - n[1] * h / 2, 0.06], M.PAVE, [0.55, 0.53, 0.5], null, [0, 0, 1]);
-      else if (t === 'parapet') G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0, 0.4, L + 0.4, h, Math.atan2(b[1] - a[1], b[0] - a[0]), M.STONE, [0.7, 0.68, 0.64]);
+      else if (t === 'parapet') G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0, 0.4, L + 0.4, h, ang, M.STONE, [0.7, 0.68, 0.64]);
+      else if (t === 'podium') { G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0, 0.35, L + 0.35, h * 0.55, ang, M.STONE, [0.42, 0.42, 0.4]); G.box((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, h * 0.55, 0.4, L + 0.4, h * 0.45, ang, M.STONE, [0.8, 0.72, 0.66]); }
+      else if (t === 'chain') { // anchor chain hung between low posts (embankment)
+        for (let s2 = 0; s2 <= L; s2 += 2.5) { const x = a[0] + (b[0] - a[0]) * s2 / L, y = a[1] + (b[1] - a[1]) * s2 / L; G.box(x, y, 0, 0.14, 0.14, h, 0, M.POLE, [0.12, 0.12, 0.12]); }
+        for (let s2 = 0; s2 < L; s2 += 0.25) { const e = Math.min(L, s2 + 0.25), f = v => h - 0.12 - 0.3 * Math.sin(Math.PI * ((v % 2.5) / 2.5)), x0 = a[0] + (b[0] - a[0]) * s2 / L, y0 = a[1] + (b[1] - a[1]) * s2 / L, x1 = a[0] + (b[0] - a[0]) * e / L, y1 = a[1] + (b[1] - a[1]) * e / L;
+          G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(s2), f(e)) - 0.03, 0.06, e - s2 + 0.03, Math.abs(f(s2) - f(e)) + 0.06, ang, M.POLE, [0.1, 0.1, 0.1]); } }
+      else if (t === 'wire') { // overhead line between pole tops, sagging
+        const N = Math.max(4, Math.round(L / 3)), f = u => h - 0.5 - 0.9 * 4 * u * (1 - u);
+        for (const off of [-0.7, 0, 0.7]) for (let k = 0; k < N; k++) { const u0 = k / N, u1 = (k + 1) / N, x0 = a[0] + (b[0] - a[0]) * u0 + n[0] * off, y0 = a[1] + (b[1] - a[1]) * u0 + n[1] * off, x1 = a[0] + (b[0] - a[0]) * u1 + n[0] * off, y1 = a[1] + (b[1] - a[1]) * u1 + n[1] * off;
+          G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(u0), f(u1)), 0.025, L / N + 0.02, Math.abs(f(u0) - f(u1)) + 0.025, ang, M.POLE, [0.08, 0.08, 0.08]); } }
     } }
   // parked cars (estimated placements of the 3D quarter)
   const PK = [[0.75, 0.75, 0.73], [0.5, 0.08, 0.08], [0.12, 0.2, 0.4], [0.1, 0.1, 0.11], [0.62, 0.62, 0.6], [0.2, 0.36, 0.22], [0.82, 0.8, 0.7], [0.45, 0.4, 0.3]];
@@ -511,22 +575,27 @@ const SPEC = {
   maple: { rx: 3.8, rz: 3.8, th: 2.2, tile: 3, dens: 0.5, shape: 'round', bark: [0.24, 0.21, 0.18] },
   birch: { rx: 2.6, rz: 4.8, th: 2.6, tile: 4, dens: 0.55, shape: 'egg', bark: [0.82, 0.8, 0.76] },
   acacia: { rx: 3.4, rz: 3.4, th: 2.8, tile: 5, dens: 0.75, shape: 'round', bark: [0.28, 0.24, 0.2] },
+  // v7.1, seen on the October 2011 panoramas: weeping willows and white poplars on the embankment, saplings along Kovalya St
+  willow: { rx: 4.4, rz: 5.2, th: 2.0, tile: 7, dens: 0.8, shape: 'weep', bark: [0.3, 0.27, 0.22] },
+  wpoplar: { rx: 4.0, rz: 7.5, th: 3.4, tile: 2, dens: 0.55, shape: 'egg', bark: [0.72, 0.72, 0.68] },
+  sapling: { rx: 0.9, rz: 1.7, th: 1.5, tile: 1, dens: 0.45, shape: 'egg', bark: [0.32, 0.27, 0.22], thin: 1 },
 };
-const SPK = { 0: ['chestnut', 'linden', 'maple', 'poplar', 'acacia'], 1: ['acacia', 'poplar', 'birch', 'maple', 'chestnut'], 2: ['chestnut', 'linden', 'maple', 'linden', 'chestnut'] };
+const SPK = { 0: ['chestnut', 'linden', 'maple', 'poplar', 'acacia'], 1: ['acacia', 'poplar', 'birch', 'maple', 'chestnut'], 2: ['chestnut', 'linden', 'maple', 'linden', 'chestnut'], 3: ['willow', 'wpoplar', 'poplar', 'willow', 'wpoplar'] };
 function treeDetailed(G, F, x, y, kind, R, species) {
-  const name = species && SPEC[species] ? species : SPK[kind] ? SPK[kind][Math.floor(R() * 5)] : 'linden', S = SPEC[name], sc = 0.8 + R() * 0.45;
+  const name = species && SPEC[species] ? species : SPK[kind] ? SPK[kind][Math.floor(R() * 5)] : 'linden', S = SPEC[name], sc = S.thin ? 0.9 + R() * 0.2 : 0.8 + R() * 0.45;
   const rx = S.rx * sc, rz = S.rz * sc, th = S.th * (0.85 + R() * 0.3), cz = th + rz * 0.55;
   // trunk: tapered octagon
-  const seg = 6, r0 = 0.16 + 0.05 * sc, r1 = 0.09, top = th + rz * 0.5;
+  const seg = 6, r0 = S.thin ? 0.035 : 0.16 + 0.05 * sc, r1 = S.thin ? 0.015 : 0.09, top = th + rz * 0.5;
+  if (S.thin) { G.box(x + 0.25, y, 0, 0.04, 0.04, 1.3, 0, M.TRUNK, [0.5, 0.42, 0.3]); G.box(x - 0.25, y, 0, 0.04, 0.04, 1.3, 0, M.TRUNK, [0.5, 0.42, 0.3]); G.box(x, y, 1.15, 0.03, 0.55, 0.03, 0, M.TRUNK, [0.5, 0.42, 0.3]); } // two stakes and a strap
   const ring = (z, rr) => { const o = []; for (let i = 0; i < seg; i++) { const a = TAU * i / seg; o.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr, z]); } return o; };
   const A = ring(0, r0), B = ring(top, r1);
   for (let i = 0; i < seg; i++) { const j = (i + 1) % seg, n = V.norm([Math.cos(TAU * (i + 0.5) / seg), Math.sin(TAU * (i + 0.5) / seg), 0]); G.quad(A[i], A[j], B[j], B[i], M.TRUNK, S.bark, [[0, 0], [1, 0], [1, top], [0, top]], n); }
   // branches: from the trunk outwards and up
   const nb = 4 + Math.floor(R() * 3), br = [];
   for (let k = 0; k < nb; k++) {
-    const a = R() * TAU, z0 = th + (top - th) * R() * 0.8, len = rx * (0.6 + R() * 0.35), up = name === 'poplar' ? 2.2 : 0.7 + R() * 0.5;
+    const a = R() * TAU, z0 = th + (top - th) * R() * 0.8, len = rx * (0.6 + R() * 0.35), up = name === 'poplar' ? 2.2 : name === 'willow' ? 0.9 : 0.7 + R() * 0.5;
     const p0 = [x, y, z0], p1 = [x + Math.cos(a) * len, y + Math.sin(a) * len, z0 + len * up * 0.6];
-    const d = V.norm(V.sub(p1, p0)), s1 = V.norm(V.cross(d, [0, 0, 1])), s2 = V.cross(s1, d), w0 = 0.07, w1 = 0.025;
+    const d = V.norm(V.sub(p1, p0)), s1 = V.norm(V.cross(d, [0, 0, 1])), s2 = V.cross(s1, d), w0 = S.thin ? 0.015 : 0.07, w1 = S.thin ? 0.008 : 0.025;
     const c0 = [V.add(p0, V.mul(s1, w0)), V.add(p0, V.mul(s2, w0)), V.sub(p0, V.mul(s1, w0)), V.sub(p0, V.mul(s2, w0))];
     const c1 = [V.add(p1, V.mul(s1, w1)), V.add(p1, V.mul(s2, w1)), V.sub(p1, V.mul(s1, w1)), V.sub(p1, V.mul(s2, w1))];
     for (let i = 0; i < 4; i++) G.quad(c0[i], c0[(i + 1) % 4], c1[(i + 1) % 4], c1[i], M.TRUNK, S.bark, [[0, 0], [1, 0], [1, top], [0, top]]);
@@ -542,7 +611,8 @@ function treeDetailed(G, F, x, y, kind, R, species) {
     const rr = Math.pow(dx * dx + dy * dy + dz * dz, 0.25);   // push outwards
     const shape = S.shape === 'column' ? 1 : S.shape === 'egg' ? 0.9 : 1;
     const c = [x + dx * rx / (rr || 1) * 0.95, y + dy * rx / (rr || 1) * 0.95, cz + dz * rz * 0.5 * shape / (rr || 1)];
-    const sz = (name === 'poplar' ? 1.5 : 2.0) * (0.75 + R() * 0.5);
+    if (S.shape === 'weep') c[2] -= (dx * dx + dy * dy) * rz * 0.75;   // the outer twigs hang down
+    const sz = (name === 'poplar' ? 1.5 : S.thin ? 0.8 : 2.0) * (0.75 + R() * 0.5);
     const nrm = V.norm([dx + (R() - 0.5), dy + (R() - 0.5), dz * 0.6 + 0.4]);
     const t1 = V.norm(V.cross(nrm, Math.abs(nrm[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0])), t2 = V.cross(nrm, t1);
     const rot = R() * TAU, ca = Math.cos(rot), sa = Math.sin(rot);
@@ -571,20 +641,22 @@ function leafAtlas() {
     [[220, 190, 60], [200, 175, 50], [230, 200, 80], [170, 160, 50]],    // birch: yellow
     [[110, 130, 45], [140, 150, 50], [170, 160, 55], [95, 115, 40]],     // acacia: still greenish
     [[170, 120, 40], [200, 160, 50], [140, 90, 35], [190, 100, 35]],     // fallen leaves
+    [[150, 160, 60], [175, 170, 70], [125, 140, 50], [195, 185, 85]],    // willow: narrow yellow-green
   ];
-  for (let t = 0; t < 7; t++) {
+  for (let t = 0; t < 8; t++) {
     const ox = (t % 4) * 128, oy = Math.floor(t / 4) * 128;
     c.save(); c.beginPath(); c.rect(ox, oy, 128, 128); c.clip();
-    if (t < 6) { c.strokeStyle = 'rgba(70,55,40,0.9)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ox + 64, oy + 124); c.quadraticCurveTo(ox + 60, oy + 70, ox + 40 + R() * 40, oy + 12); c.stroke();
+    if (t !== 6) { c.strokeStyle = 'rgba(70,55,40,0.9)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ox + 64, oy + 124); c.quadraticCurveTo(ox + 60, oy + 70, ox + 40 + R() * 40, oy + 12); c.stroke();
       for (let k = 0; k < 4; k++) { c.lineWidth = 1; c.beginPath(); const sy = oy + 30 + R() * 80; c.moveTo(ox + 62, sy); c.lineTo(ox + 20 + R() * 88, sy - 10 - R() * 20); c.stroke(); } }
-    const n = t === 6 ? 140 : t === 2 || t === 4 || t === 5 ? 110 : 70;
+    const n = t === 6 ? 140 : t === 7 ? 150 : t === 2 || t === 4 || t === 5 ? 110 : 70;
     for (let k = 0; k < n; k++) {
       const p = pal[t][Math.floor(R() * 4)], v = 0.8 + R() * 0.35;
       c.fillStyle = `rgba(${Math.min(255, p[0] * v) | 0},${Math.min(255, p[1] * v) | 0},${Math.min(255, p[2] * v) | 0},${t === 6 ? 0.85 : 1})`;
-      let x, y; do { x = R() * 128; y = R() * 128; } while (t < 6 && Math.hypot(x - 64, y - 64) > 60);
+      let x, y; do { x = R() * 128; y = R() * 128; } while (t !== 6 && Math.hypot(x - 64, y - 64) > 60);
       const s = t === 0 || t === 3 ? 7 + R() * 6 : t === 1 ? 6 + R() * 4 : 3.5 + R() * 3;
       c.save(); c.translate(ox + x, oy + y); c.rotate(R() * TAU);
       if (t === 3 || t === 0) { for (let l = 0; l < 5; l++) { c.beginPath(); c.ellipse(0, -s * 0.5, s * 0.28, s * 0.65, 0, 0, TAU); c.fill(); c.rotate(TAU / 7); } }
+      else if (t === 7) { c.beginPath(); c.ellipse(0, 0, s * 0.22, s * 1.5, 0, 0, TAU); c.fill(); }
       else { c.beginPath(); c.ellipse(0, 0, s * 0.55, s, 0, 0, TAU); c.fill(); }
       c.restore();
     }
@@ -748,9 +820,9 @@ void main(){
     vec2 t=fract(vU*vec2(1.0/0.5,1.0/0.5)); float g=step(t.x,0.05)+step(t.y,0.05);
     col=vC*(0.88+0.2*n2(vW.xy*1.3))*(1.0-0.12*clamp(g,0.0,1.0)); spec=uWet*0.4; rough=0.5;
   } else if(m<13.5){ spec=0.5; rough=0.3;
-  } else if(abs(m-17.0)<0.5){ // bank: stones near the water, grass higher up
-    float n=n2(vW.xy*2.5+vW.z), st=step(0.45,n2(vW.xy*1.6))*0.25; float wet=smoothstep(-0.7,-1.1,vW.z);
-    col=mix(vec3(0.24,0.28,0.13)*(0.8+0.4*n),vec3(0.45,0.42,0.37)*(0.7+0.5*n),smoothstep(-0.2,-0.7,vW.z)+st);
+  } else if(abs(m-17.0)<0.5){ // bank: grass down to the waterline, bare earth and a few stones at it (panoramas, Oct 2011)
+    float n=n2(vW.xy*2.5+vW.z), st=step(0.6,n2(vW.xy*1.6))*0.2; float wet=smoothstep(-0.7,-1.1,vW.z);
+    col=mix(vec3(0.26,0.29,0.14)*(0.8+0.4*n),vec3(0.36,0.32,0.25)*(0.7+0.5*n),smoothstep(-0.65,-0.95,vW.z)+st);
     col*=1.0-0.35*wet; spec=wet*0.4; rough=0.4;
   } else if(abs(m-18.0)<0.5){ col=vC*(0.9+0.15*n2(vW.xy*4.0));
   } else if(abs(m-20.0)<0.5){ // private houses: plaster, one floor of windows with painted frames
@@ -1018,6 +1090,8 @@ async function open(host, opt) {
       acc = t - L;
     }
   }
+  // globe lamps at the tower (placed from the 2011 panoramas, kt3d.json props "globe")
+  for (const g of FOL.globes || []) { const x = g[0], y = g[1], c = [0.14, 0.14, 0.15]; LG.box(x, y, 0, 0.12, 0.12, 3.6, 0, M.POLE, c); LG.box(x, y, 0, 0.3, 0.3, 0.45, 0, M.POLE, c); LG.box(x, y, 3.55, 0.44, 0.44, 0.48, 0, M.LAMPG, [0.95, 0.92, 0.85]); lamps.push([x, y, 3.8]); }
   const lampB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, lampB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(LG.a), gl.STATIC_DRAW); const nLampGeo = LG.n;
   // light pools under lamps
   const PL = []; for (const l of lamps) { const r = 9, x = l[0], y = l[1], z = 0.1; const c = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]; for (const [a, b] of c) PL.push(x + a * r, y + b * r, z, a, b, 1); }
