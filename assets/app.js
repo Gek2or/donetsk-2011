@@ -739,6 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
+ {id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
@@ -1456,3 +1457,44 @@ const im=document.getElementById('ktImg');if(!im)return;
 const set=()=>{const p=document.documentElement.dataset.phase,k=p==='day'?'day':p==='night'?'night':'dusk';
   if(im.src.indexOf('kt-'+k)>=0)return;im.srcset=im.srcset.replace(/kt-(day|dusk|night)/g,'kt-'+k);im.src=im.src.replace(/kt-(day|dusk|night)/,'kt-'+k)};
 document.addEventListener('d11phase',set);document.addEventListener('d11theme',set);set()})();
+;(()=>{/* v7.0: King's Tower live 3D scene: loads only when asked */
+const btns=document.querySelectorAll('.kt3d-open');if(!btns.length)return;
+const L=(document.documentElement.lang||'ru').slice(0,2);
+const TX={
+ ru:{title:"King's Tower · живой квартал у Кальмиуса",close:'Закрыть',now:'Сейчас',lapse:'Ускорить время',clear:'Ясно',rain:'Дождь',fog:'Туман',sound:'Звук',time:'Время в Донецке',hint:'Тяни, чтобы вращать · колесо или два пальца — ближе и дальше',load:'Загружаю сцену…',fail:'На этом устройстве не работает WebGL, поэтому 3D-сцену показать нельзя.',note:"Башня, дома, улицы и вода — по OpenStreetMap, фото и справочникам. Машины, люди, окна, фонари и погода — симуляция, а не запись 2011 года; дальние огни города условные. Породы деревьев, балконы, крыши частных домов и берег типовые — уточняются по панорамам улиц."},
+ uk:{title:"King's Tower · живий квартал біля Кальміуса",close:'Закрити',now:'Зараз',lapse:'Пришвидшити час',clear:'Ясно',rain:'Дощ',fog:'Туман',sound:'Звук',time:'Час у Донецьку',hint:'Тягни, щоб обертати · коліщатко або два пальці — ближче й далі',load:'Завантажую сцену…',fail:'На цьому пристрої не працює WebGL, тому 3D-сцену показати не можна.',note:"Вежа, будинки, вулиці й вода — за OpenStreetMap, фото та довідниками. Машини, люди, вікна, ліхтарі й погода — симуляція, а не запис 2011 року; далекі вогні міста умовні. Породи дерев, балкони, дахи приватних будинків і берег типові — уточнюються за панорамами вулиць."},
+ en:{title:"King's Tower · a living block on the Kalmius",close:'Close',now:'Now',lapse:'Speed up time',clear:'Clear',rain:'Rain',fog:'Fog',sound:'Sound',time:'Time in Donetsk',hint:'Drag to rotate · wheel or two fingers to zoom',load:'Loading the scene…',fail:'WebGL does not work on this device, so the 3D scene cannot be shown.',note:"The tower, houses, streets and water follow OpenStreetMap, photos and public listings. Cars, people, windows, street lamps and weather are a simulation, not a recording of 2011; the far city lights are generic. Tree species, balconies, the roofs of the private houses and the river bank are typical and will be checked against street panoramas."},
+ fi:{title:"King's Tower · elävä kortteli Kalmiusjoen rannalla",close:'Sulje',now:'Nyt',lapse:'Nopeuta aikaa',clear:'Selkeää',rain:'Sade',fog:'Sumu',sound:'Ääni',time:'Aika Donetskissa',hint:'Vedä kääntääksesi · rulla tai kaksi sormea lähentää',load:'Ladataan näkymää…',fail:'WebGL ei toimi tällä laitteella, joten 3D-näkymää ei voi näyttää.',note:"Torni, talot, kadut ja vesi perustuvat OpenStreetMapiin, valokuviin ja julkisiin lähteisiin. Autot, ihmiset, ikkunat, katuvalot ja sää ovat simulaatiota, eivät tallenne vuodelta 2011; kaukaiset kaupungin valot ovat yleisiä. Puulajit, parvekkeet, omakotitalojen katot ja ranta ovat tyypillisiä, ja ne tarkistetaan katunäkymistä."}}[L]||null;
+const T=TX||{};let box=null,ctl=null,last=null,loading=null;
+const fmt=h=>{h=((h%24)+24)%24;const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')};
+function load(){if(window.KT3D)return Promise.resolve();if(loading)return loading;loading=new Promise((ok,no)=>{const s=document.createElement('script');s.src='assets/kt3d.js?v=99bd8897';s.onload=ok;s.onerror=no;document.head.appendChild(s)});return loading}
+function build(){
+  box=document.createElement('div');box.className='kt3d';box.hidden=true;box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label',T.title);
+  box.innerHTML=`<div class="kt3d-top"><h2>${T.title}</h2><button type="button" class="kt3d-x" aria-label="${T.close}">×</button></div>
+<div class="kt3d-host"><p class="kt3d-load">${T.load}</p><p class="kt3d-hint">${T.hint}</p><p class="kt3d-note">${T.note}</p></div>
+<div class="kt3d-bar"><label class="kt3d-time"><span>${T.time}</span><input type="range" min="0" max="24" step="0.05" value="12" aria-label="${T.time}"><output>--:--</output></label>
+<button type="button" class="kt3d-now" aria-pressed="true">${T.now}</button><button type="button" class="kt3d-lapse" aria-pressed="false">${T.lapse}</button>
+<span class="kt3d-seg" role="group"><button type="button" data-w="clear" aria-pressed="true">${T.clear}</button><button type="button" data-w="rain" aria-pressed="false">${T.rain}</button><button type="button" data-w="fog" aria-pressed="false">${T.fog}</button></span>
+<button type="button" class="kt3d-snd" aria-pressed="false">♪ ${T.sound}</button></div>`;
+  document.body.appendChild(box);
+  const q=s=>box.querySelector(s),rg=q('.kt3d-time input'),out=q('.kt3d-time output'),now=q('.kt3d-now'),lap=q('.kt3d-lapse'),snd=q('.kt3d-snd');
+  q('.kt3d-x').addEventListener('click',close);
+  box.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close()}});
+  rg.addEventListener('input',()=>{if(ctl){ctl.setHour(+rg.value);now.setAttribute('aria-pressed','false');lap.setAttribute('aria-pressed','false')}});
+  now.addEventListener('click',()=>{if(ctl){ctl.setAuto(true);now.setAttribute('aria-pressed','true');lap.setAttribute('aria-pressed','false')}});
+  lap.addEventListener('click',()=>{if(!ctl)return;const on=lap.getAttribute('aria-pressed')!=='true';ctl.setLapse(on);lap.setAttribute('aria-pressed',String(on));if(on)now.setAttribute('aria-pressed','false')});
+  box.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>{if(!ctl)return;ctl.setWeather(b.dataset.w);box.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}));
+  snd.addEventListener('click',()=>{if(!ctl)return;const on=snd.getAttribute('aria-pressed')!=='true';const ok=ctl.sound(on);snd.setAttribute('aria-pressed',String(on&&ok!==false))});
+  box._ui={rg,out};
+}
+async function open(e){
+  last=e&&e.currentTarget;if(!box)build();box.hidden=false;document.documentElement.classList.add('kt3d-on');box.querySelector('.kt3d-x').focus();
+  const host=box.querySelector('.kt3d-host'),ld=host.querySelector('.kt3d-load'),hint=host.querySelector('.kt3d-hint');ld.hidden=false;hint.style.opacity=1;
+  try{await load();ctl=await window.KT3D.open(host,{data:'assets/kt3d.json?v=80ece862ON',text:{fail:T.fail},onHour:(h,auto)=>{const u=box._ui;if(auto||document.activeElement!==u.rg)u.rg.value=h.toFixed(2);u.out.textContent=fmt(h)}});
+    ld.hidden=true;const c=host.querySelector('canvas');if(c)c.focus({preventScroll:true});setTimeout(()=>{hint.style.opacity=0},6000)}
+  catch(err){ld.textContent=T.fail}
+}
+function close(){if(ctl){ctl.destroy();ctl=null}box.hidden=true;document.documentElement.classList.remove('kt3d-on');
+  box.querySelectorAll('[aria-pressed]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('kt3d-now')||b.dataset.w==='clear')));if(last)last.focus()}
+btns.forEach(b=>b.addEventListener('click',open));
+})();
