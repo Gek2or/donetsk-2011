@@ -326,6 +326,7 @@ function buildCity(G, D, F) {
   for (const b of D.bld) {
     bi++; G.zf = tzS; G.zc = 0;
     let p = pts(b, 5, 10); if (p.length < 3) continue;
+    if (D._far && p.every(q => Math.hypot(q[0], q[1]) > D._far)) continue;
     if (area2(p) < 0) p = p.reverse();
     let bSkirt = 0; { const zz = p.map(q => tzS(q[0], q[1])), z0 = Math.min(...zz), z1 = Math.max(...zz); G.zf = null; G.zc = z0 + Math.min(1.2, 0.3 * (z1 - z0)); bSkirt = z0 - G.zc - 0.4; }
     const ty = Math.floor(b[1] / 10), h = Math.max(3, b[0] / 10), hk = hashS('b' + bi + ':' + b[5] + ',' + b[6]);
@@ -411,7 +412,7 @@ function buildCity(G, D, F) {
   G.zf = tzS; G.zc = 0;
   // roads: asphalt, pavements with kerbs near the tower, a dashed centre line on the wide ones (cut into short pieces to follow the relief)
   for (const rd of D.roads) {
-    const w = Math.max(4, rd[0] / 10), p0 = pts(rd, 3, 10), near = p0.some(q => Math.hypot(q[0], q[1]) < NEAR + 60), p = subdiv(p0, near ? 5 : 20);
+    const w = Math.max(4, rd[0] / 10), p0 = pts(rd, 3, 10), near = p0.some(q => Math.hypot(q[0], q[1]) < NEAR + 60), p = subdiv(p0, near ? 5 : D._mob ? 40 : 20);
     let s = 0;
     for (let i = 0; i + 1 < p.length; i++) {
       const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.05) continue;
@@ -449,6 +450,7 @@ function buildCity(G, D, F) {
   for (let i = 0; i + 2 < tr.length; i += 3) {
     const x = tr[i] / 10, y = tr[i + 1] / 10, k = tr[i + 2];
     if (Math.hypot(x, y) < NEAR) { treeDetailed(G, F, x, y, byWater(x, y, 24) ? 3 : k, rng(hashS('t' + i))); continue; }
+    if (F.imp) { F.imp.push([x, y, k]); continue; }
     const s = (k === 2 ? 2.6 : 3.2) + r() * 1.6, h = s * 1.5;
     G.box(x, y, 0, 0.35, 0.35, h, 0, M.TRUNK, [0.22, 0.17, 0.13]);
     const lc = leafCols[Math.floor(r() * leafCols.length)];
@@ -546,6 +548,28 @@ function buildCity(G, D, F) {
         for (const off of [-0.7, 0, 0.7]) for (let k = 0; k < N; k++) { const u0 = k / N, u1 = (k + 1) / N, x0 = a[0] + (b[0] - a[0]) * u0 + n[0] * off, y0 = a[1] + (b[1] - a[1]) * u0 + n[1] * off, x1 = a[0] + (b[0] - a[0]) * u1 + n[0] * off, y1 = a[1] + (b[1] - a[1]) * u1 + n[1] * off;
           G.box((x0 + x1) / 2, (y0 + y1) / 2, Math.min(f(u0), f(u1)), 0.025, L / N + 0.02, Math.abs(f(u0) - f(u1)) + 0.025, ang, M.POLE, [0.08, 0.08, 0.08]); } G.zf = tzS; }
     } }
+  // v7.3: more of the district map (OSM via the site's district.json): fences, rails, sports pitches, chimneys, tanks, water towers
+  { const FH = [1.7, 2.3, 1.2], FC = [[0.6, 0.6, 0.57], [0.72, 0.7, 0.66], [0.6, 0.55, 0.47]];
+    for (const f of D.fe || []) { const k = f[0], p0 = pts(f, 1, 10); if (!p0.some(q => Math.hypot(q[0], q[1]) < (D._mob ? 900 : 1900)) || p0.every(q => Math.hypot(q[0], q[1]) < 120)) continue; const p = subdiv(p0, D._mob ? 20 : 10), h = FH[k] || 1.7;
+      for (let i = 0; i + 1 < p.length; i++) { const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.2) continue; const n = [-(b[1] - a[1]) / L, (b[0] - a[0]) / L, 0];
+        G.quad([a[0], a[1], -0.1], [b[0], b[1], -0.1], [b[0], b[1], h], [a[0], a[1], h], M.STONE, FC[k] || FC[0], null, n); } }
+    for (const r of D.rl || []) { const tram = r[0] === 1, emb = r[2], p0 = pts(r, 3, 10); if (!p0.some(q => Math.hypot(q[0], q[1]) < (D._mob ? 900 : 1600))) continue; const p = subdiv(p0, D._mob ? 25 : 12);
+      for (let i = 0; i + 1 < p.length; i++) { const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.2) continue; const nx = -(b[1] - a[1]) / L, ny = (b[0] - a[0]) / L, w = tram ? 1.25 : 1.75, zb = emb ? 0.085 : 0.12;
+        if (!emb) G.quad([a[0] + nx * w, a[1] + ny * w, zb], [b[0] + nx * w, b[1] + ny * w, zb], [b[0] - nx * w, b[1] - ny * w, zb], [a[0] - nx * w, a[1] - ny * w, zb], M.STONE, [0.36, 0.33, 0.29], null, [0, 0, 1]);
+        for (const o of [-0.76, 0.76]) { const ax = a[0] + nx * o, ay = a[1] + ny * o, bx = b[0] + nx * o, by = b[1] + ny * o, h = zb + 0.09;
+          G.quad([ax + nx * 0.04, ay + ny * 0.04, h], [bx + nx * 0.04, by + ny * 0.04, h], [bx - nx * 0.04, by - ny * 0.04, h], [ax - nx * 0.04, ay - ny * 0.04, h], M.METAL, [0.42, 0.4, 0.38], null, [0, 0, 1]); } } }
+    const PC = [[0.36, 0.52, 0.3], [0.62, 0.36, 0.28], [0.56, 0.55, 0.5], [0.72, 0.64, 0.48]];
+    for (const f of D.pt || []) { let p = pts(f, 1, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse(); const t = earcut(p), c = PC[f[0]] || PC[0];
+      for (let q = 0; q + 2 < t.length; q += 3) G.tri([p[t[q]][0], p[t[q]][1], 0.07], [p[t[q + 1]][0], p[t[q + 1]][1], 0.07], [p[t[q + 2]][0], p[t[q + 2]][1], 0.07], M.ROOF, c, null, null, null, [0, 0, 1]); }
+    const cyl = (x, y, r0, r1, z0, z1, n, c, m) => { const zg = tzS(x, y); G.zf = null; G.zc = zg; for (let i = 0; i < n; i++) { const a = TAU * i / n, b = TAU * (i + 1) / n, nn = [Math.cos((a + b) / 2), Math.sin((a + b) / 2), 0];
+      G.quad([x + Math.cos(a) * r0, y + Math.sin(a) * r0, z0], [x + Math.cos(b) * r0, y + Math.sin(b) * r0, z0], [x + Math.cos(b) * r1, y + Math.sin(b) * r1, z1], [x + Math.cos(a) * r1, y + Math.sin(a) * r1, z1], m || M.STONE, c, null, nn); } G.zf = tzS; G.zc = 0; };
+    for (const c of D.ch || []) { const x = c[0] / 10, y = c[1] / 10, rb = c[2] > 0 ? c[2] / 10 : 2.6, H = Math.min(130, Math.max(30, rb * 9)), rt = Math.max(1, rb * 0.42), bands = H >= 60 ? 6 : 1;
+      for (let k = 0; k < bands; k++) { const z0 = -1 + (H + 1) * k / bands, z1 = -1 + (H + 1) * (k + 1) / bands, r0 = rb + (rt - rb) * k / bands, r1 = rb + (rt - rb) * (k + 1) / bands;
+        cyl(x, y, r0, r1, z0, z1, 12, bands > 1 && k % 2 ? [0.82, 0.8, 0.76] : bands > 1 ? [0.62, 0.22, 0.17] : [0.55, 0.4, 0.32]); } }
+    for (const t of D.tk || []) { const x = t[0] / 10, y = t[1] / 10, r = t[2] / 10, h = t[3] / 10; cyl(x, y, r, r, -0.3, h, 18, [0.72, 0.72, 0.7], M.METAL);
+      for (let i = 0; i < 18; i++) { const a = TAU * i / 18, b = TAU * (i + 1) / 18; G.zf = null; G.zc = tzS(x, y); G.tri([x, y, h + r * 0.15], [x + Math.cos(a) * r, y + Math.sin(a) * r, h], [x + Math.cos(b) * r, y + Math.sin(b) * r, h], M.METAL, [0.66, 0.66, 0.64], null, null, null, [0, 0, 1]); G.zf = tzS; G.zc = 0; } }
+    if (D.wt && D.wt.length >= 2) { const x = D.wt[0] / 10, y = D.wt[1] / 10; cyl(x, y, 2.2, 1.6, -0.5, 26, 12, [0.6, 0.45, 0.36]); cyl(x, y, 5.5, 5.5, 26, 33, 16, [0.7, 0.7, 0.68], M.METAL); cyl(x, y, 5.5, 0.4, 33, 36, 16, [0.5, 0.52, 0.5], M.METAL); }
+  }
   // parked cars (estimated placements of the 3D quarter)
   const PK = [[0.75, 0.75, 0.73], [0.5, 0.08, 0.08], [0.12, 0.2, 0.4], [0.1, 0.1, 0.11], [0.62, 0.62, 0.6], [0.2, 0.36, 0.22], [0.82, 0.8, 0.7], [0.45, 0.4, 0.3]];
   const pk = D.cars;
@@ -654,7 +678,7 @@ function treeDetailed(G, F, x, y, kind, R, species) {
   }
   // leaf cards inside the crown, denser at the outside; late October: part of the leaves are gone
   const n = Math.round((name === 'poplar' ? 70 : 85) * S.dens * (0.85 + R() * 0.3));
-  const tu = (S.tile % 4) * 0.25, tv = Math.floor(S.tile / 4) * 0.5;
+  const tu = (S.tile % 4) * 0.25, tv = Math.floor(S.tile / 4) * 0.25;
   const tint = 0.85 + R() * 0.3;
   for (let k = 0; k < n; k++) {
     let dx, dy, dz;
@@ -670,19 +694,19 @@ function treeDetailed(G, F, x, y, kind, R, species) {
     const e1 = V.add(V.mul(t1, ca * sz / 2), V.mul(t2, sa * sz / 2)), e2 = V.add(V.mul(t1, -sa * sz / 2), V.mul(t2, ca * sz / 2));
     const q = [V.sub(V.sub(c, e1), e2), V.sub(V.add(c, e1), e2), V.add(V.add(c, e1), e2), V.add(V.sub(c, e1), e2)];
     const radial = V.norm([dx, dy, dz * 0.7 + 0.3]);
-    const uv = [[tu + 0.005, tv + 0.01], [tu + 0.245, tv + 0.01], [tu + 0.245, tv + 0.49], [tu + 0.005, tv + 0.49]];
+    const uv = [[tu + 0.005, tv + 0.005], [tu + 0.245, tv + 0.005], [tu + 0.245, tv + 0.245], [tu + 0.005, tv + 0.245]];
     const col = [tint * (0.9 + R() * 0.2), tint * (0.9 + R() * 0.2), tint];
     const sway = Math.max(0, c[2] - th);
     for (const i of [0, 1, 2, 0, 2, 3]) F.push(q[i][0], q[i][1], q[i][2] + zg, radial[0], radial[1], radial[2], uv[i][0], uv[i][1], col[0], col[1], col[2], sway);
   }
   // fallen leaves on the ground under the crown
-  const lr = rx * 1.2, tu6 = 0.5, tv6 = 0.5, lc = [1, 1, 1];
-  const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.5], [tu6, tv6 + 0.5]];
+  const lr = rx * 1.2, tu6 = 0.5, tv6 = 0.25, lc = [1, 1, 1];
+  const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.25], [tu6, tv6 + 0.25]];
   for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2] + tzS(L[i][0], L[i][1]), 0, 0, 1, Luv[i][0], Luv[i][1], 1, 1, 1, 0);
 }
 /* leaf atlas drawn in the browser: 4x2 tiles of 128 px (6 species, fallen leaves, spare) */
 function leafAtlas() {
-  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256; const c = cv.getContext('2d');
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 512; const c = cv.getContext('2d');
   const R = rng(31);
   const pal = [
     [[150, 110, 40], [175, 130, 45], [120, 80, 35], [105, 115, 40]],     // chestnut: brown-yellow
@@ -713,6 +737,41 @@ function leafAtlas() {
     }
     c.restore();
   }
+  // v7.3: whole-tree impostors for the trees beyond the detailed zone (tiles 8-15): crown and trunk seen from the side, one crown seen from above
+  const IMPAL = [
+    [[120, 135, 45], [175, 160, 50], [205, 150, 45], [150, 110, 40], [95, 115, 40]],   // 8 mixed: green, yellow, orange
+    [[205, 170, 40], [190, 160, 35], [220, 190, 70], [160, 150, 40], [150, 140, 45]],  // 9 yellow (linden, birch)
+    [[200, 90, 30], [215, 130, 40], [180, 65, 30], [200, 160, 50], [150, 100, 40]],    // 10 orange-red (maple)
+    [[100, 125, 45], [130, 145, 50], [85, 110, 40], [150, 155, 55], [110, 120, 45]],   // 11 still green (acacia, poplar)
+    [[160, 160, 50], [185, 170, 45], [130, 140, 45], [200, 180, 60], [145, 150, 50]],  // 12 columnar poplar
+    [[45, 75, 45], [55, 90, 55], [35, 60, 40], [65, 95, 60], [40, 70, 45]],            // 13 spruce
+    [[150, 160, 60], [175, 170, 70], [125, 140, 50], [195, 185, 85], [140, 150, 55]],  // 14 weeping willow
+    [[130, 140, 45], [180, 160, 50], [200, 140, 45], [150, 120, 40], [100, 120, 42]],  // 15 crown from above
+  ];
+  for (let t = 8; t < 16; t++) {
+    const ox = (t % 4) * 128, oy = Math.floor(t / 4) * 128, P = IMPAL[t - 8];
+    c.save(); c.beginPath(); c.rect(ox, oy, 128, 128); c.clip();
+    const top = t === 15, col = t === 12, spr = t === 13, wil = t === 14;
+    if (!top) { // trunk and the lower branches (bottom of the tile is the ground)
+      c.fillStyle = spr ? 'rgb(60,45,35)' : 'rgb(75,62,50)'; c.fillRect(ox + 61, oy + (spr ? 100 : 70), 6, 128 - (spr ? 100 : 70));
+      c.strokeStyle = 'rgba(70,58,46,0.95)'; c.lineWidth = 2.2; for (let k = 0; k < 5 && !spr; k++) { c.beginPath(); c.moveTo(ox + 64, oy + 92 - k * 9); c.lineTo(ox + 64 + (k % 2 ? 1 : -1) * (14 + R() * 18), oy + 66 - k * 11); c.stroke(); } }
+    const n = top ? 900 : 650;
+    for (let k = 0; k < n; k++) {
+      let x, y, inside = false;
+      for (let tries = 0; tries < 20 && !inside; tries++) { x = R() * 128; y = R() * 128;
+        if (top) inside = Math.hypot(x - 64, y - 64) < 60 - R() * 8;
+        else if (col) inside = Math.abs(x - 64) < 27 * Math.sin(Math.min(1, (106 - y) / 100) * Math.PI) + 3 && y > 4 && y < 106;
+        else if (spr) inside = y > 4 && y < 112 && Math.abs(x - 64) < (y - 4) * 0.5;
+        else if (wil) inside = Math.hypot((x - 64) / 58, (y - 52) / 46) < 1 && y > 8;
+        else inside = Math.hypot((x - 64) / 58, (y - 46) / 42) < 1 - R() * 0.12; }
+      if (!inside) continue;
+      const p = P[Math.floor(R() * P.length)], sh = top ? 0.75 + 0.45 * (1 - Math.hypot(x - 64, y - 64) / 64) : 0.62 + 0.55 * (1 - y / 120), v = (0.85 + R() * 0.3) * sh;
+      c.fillStyle = `rgb(${Math.min(255, p[0] * v) | 0},${Math.min(255, p[1] * v) | 0},${Math.min(255, p[2] * v) | 0})`;
+      c.save(); c.translate(ox + x, oy + y); c.rotate(wil ? (R() - 0.5) * 0.4 : R() * TAU); const sz = 2.2 + R() * 2.8;
+      c.beginPath(); if (wil) c.ellipse(0, 0, sz * 0.3, sz * 1.8, 0, 0, TAU); else if (spr) c.ellipse(0, 0, sz * 1.3, sz * 0.45, 0, 0, TAU); else c.ellipse(0, 0, sz * 0.7, sz, 0, 0, TAU); c.fill(); c.restore();
+    }
+    c.restore();
+  }
   return cv;
 }
 
@@ -723,6 +782,7 @@ function buildNets(D) {
   for (const rd of D.roads) {
     const w = rd[0] / 10; if (w < 5) continue;
     const p = pts(rd, 3, 10); if (p.length < 2) continue;
+    if (!p.some(q => Math.hypot(q[0], q[1]) < 1100)) continue;   // traffic where it can be seen
     const L = []; let tot = 0; L.push(0);
     for (let i = 1; i < p.length; i++) { tot += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); L.push(tot); }
     if (tot < 8) continue;
@@ -788,7 +848,7 @@ varying vec3 vW; varying vec3 vN; varying vec2 vU; varying float vM; varying vec
 uniform vec3 uCam; uniform vec3 uSun; uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec3 uFog; uniform float uFogD;
 uniform float uNight; uniform float uLit; uniform float uSlot; uniform float uFlood; uniform float uWet; uniform float uClipZ; uniform float uWZ;
 uniform sampler2D uSh; uniform float uShOn; uniform float uPitch; uniform float uT;
-uniform sampler2D uLU; uniform vec2 uLUo; uniform float uLUs; uniform vec3 uLUd;
+uniform sampler2D uLU; uniform vec2 uLUo; uniform vec2 uLUs; uniform vec3 uLUd;
 float h21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
 float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
 float shadow(){
@@ -831,6 +891,8 @@ void main(){
     vec2 lu=(vW.xy-uLUo)/uLUs; vec3 lc=uLUd; if(lu.x>0.0&&lu.x<1.0&&lu.y>0.0&&lu.y<1.0) lc=texture2D(uLU,lu).rgb;
     float n=n2(vW.xy*0.06)*0.5+n2(vW.xy*0.5)*0.3+n2(vW.xy*3.0)*0.2; col=lc*(0.75+0.5*n);
     col=mix(col,vec3(0.33,0.29,0.2),smoothstep(0.62,0.8,n2(vW.xy*0.11+7.0))*0.5);
+    col=mix(col,col*vec3(1.16,1.04,0.72),smoothstep(0.5,0.78,n2(vW.xy*0.045+3.0))*0.65);   // dry October grass in patches
+    col*=0.9+0.13*n2(vW.xy*1.7+5.0)+0.07*n2(vW.xy*7.0);
     float bz=vW.z-uWZ; if(bz<1.4){ float nb=n2(vW.xy*2.5); col=mix(col,vec3(0.26,0.29,0.14)*(0.8+0.4*nb),smoothstep(1.4,0.7,bz)); col=mix(col,vec3(0.34,0.3,0.23)*(0.75+0.45*nb),smoothstep(0.55,0.15,bz)); }
   } else if(m<1.5||abs(m-19.0)<0.5){ // asphalt: patches and cracks; centre dashes on the wide streets
     float n=n2(vW.xy*0.7); col=vec3(0.15,0.15,0.16)*(0.8+0.35*n);
@@ -918,6 +980,18 @@ void main(){
   vec3 c=col*(amb*0.9+uSunC*(ndl+tr)*s);
   float d=length(uCam-vW); gl_FragColor=vec4(mix(c,uFog,1.0-exp(-d*uFogD)),1.0);
 }`;
+/* v7.3: whole-tree impostors, instanced: two crossed upright cards and one card seen from above */
+const IMP_VS = HDR + `
+attribute vec3 aP; attribute vec3 aU; attribute vec4 aI; attribute vec4 aJ;
+uniform mat4 uVP; uniform mat4 uLVP; uniform float uT; uniform float uWind;
+varying vec3 vW; varying vec3 vN; varying vec2 vU; varying vec3 vC; varying vec4 vL;
+void main(){ float c=cos(aJ.w), s=sin(aJ.w); vec2 q=vec2(aP.x*c-aP.y*s, aP.x*s+aP.y*c)*aJ.x; float z=aP.z*aI.w;
+  vec3 p=vec3(aI.xy+q, aI.z+z);
+  float sw=aP.z*aP.z*0.35*uWind; p.x+=sin(uT*1.7+aI.y*0.2)*sw; p.y+=cos(uT*1.3+aI.x*0.2)*sw*0.6;
+  float tile=aU.z>0.5?15.0:aJ.y; vec2 to=vec2(mod(tile,4.0)*0.25, floor(tile/4.0+0.01)*0.25);
+  vU=to+vec2(0.003,0.003)+aU.xy*0.244;
+  vN=aU.z>0.5?vec3(0.0,0.0,1.0):normalize(vec3(q/(aJ.x+0.001)*1.6,0.55+0.4*aP.z));
+  float tn=aJ.z; vC=vec3(0.86+0.24*tn,0.88+0.16*tn,0.9); vW=p; vL=uLVP*vec4(p,1.0); gl_Position=uVP*vec4(p,1.0); }`;
 const SHF_VS = HDR + `attribute vec3 aP; attribute vec2 aU; uniform mat4 uLVP; varying vec2 vU; void main(){ vU=aU; gl_Position=uLVP*vec4(aP,1.0); }`;
 const SHF_FS = HDR + `varying vec2 vU; uniform sampler2D uTex; void main(){ if(texture2D(uTex,vU).a<0.45) discard; gl_FragColor=vec4(1.0); }`;
 const AO_VS = HDR + `attribute vec3 aP; attribute float aA; uniform mat4 uVP; varying float vA; void main(){ vA=aA; gl_Position=uVP*vec4(aP,1.0); }`;
@@ -1076,7 +1150,7 @@ async function open(host, opt) {
     pool: prog(POOL_VS, POOL_FS, ['aP', 'aQ']),
     rain: prog(RAIN_VS, RAIN_FS, ['aP']),
     shd: prog(SH_VS, SH_FS, ['aP', 'aM', 'aU']),
-    fol: prog(FOL_VS, FOL_FS, ['aP', 'aN', 'aU', 'aC', 'aS']),
+    fol: prog(FOL_VS, FOL_FS, ['aP', 'aN', 'aU', 'aC', 'aS']), imp: prog(IMP_VS, FOL_FS, ['aP', 'aU', 'aI', 'aJ']),
     shf: prog(SHF_VS, SHF_FS, ['aP', 'aU']),
     mask: prog(MASK_VS, MASK_FS, ['aP']),
     ao: prog(AO_VS, AO_FS, ['aP', 'aA']),
@@ -1085,7 +1159,34 @@ async function open(host, opt) {
 
   /* static geometry */
   TERR = makeTerrain(D);
-  const G = new Geo(), FOL = []; G.zf = tzS; buildCity(G, D, FOL); G.zf = null; G.zc = 0; buildTower(G);
+  // ring buildings as boxes: [cx, cy, w, l, angle deg, height, type*2 + estimated]
+  const RB = D.ring && D.ring.b ? D.ring.b.filter(b => Math.hypot(b[0], b[1]) < (mobile ? 1400 : 2700)) : [];
+  const ringBox = b => { const a = b[4] * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), hw = b[2] / 2, hl = b[3] / 2; return [[-hw, -hl], [hw, -hl], [hw, hl], [-hw, hl]].map(([u, v]) => [b[0] + u * c - v * s, b[1] + u * s + v * c]); };
+  D._far = mobile ? 1400 : 1e9; D._mob = mobile;
+  if (D.ring && D.ring.lu && D.lu) { // v7.3: the land use of the ring around the district (OSM API) joined with the district grid
+    const R = D.ring.lu, L = D.lu, rows = R.r.map(r => { let o = ''; r.replace(/([a-z.])(\d*)/g, (m, c, n) => { o += c.repeat(n ? +n : 1); return ''; }); return o; });
+    const lx = L.x / 10, ly = L.y / 10, ls = L.s / 10, c = [];
+    for (let j = 0; j < R.n; j++) { let o = ''; for (let i = 0; i < R.n; i++) { const x = R.x + (i + 0.5) * R.s, y = R.y + (j + 0.5) * R.s, gi = Math.floor((x - lx) / ls), gj = Math.floor((y - ly) / ls);
+      o += gi >= 0 && gj >= 0 && gi < L.nx && gj < L.ny ? ((L.c[gj] || '')[gi] || '.') : (rows[j][i] || '.'); } c.push(o); }
+    D.lu = { x: R.x * 10, y: R.y * 10, s: R.s * 10, nx: R.n, ny: R.n, c };
+  }
+  const G = new Geo(), FOL = []; FOL.imp = []; G.zf = tzS; buildCity(G, D, FOL); G.zf = null; G.zc = 0; buildTower(G);
+  if (RB.length) { const PALH = [[0.93, 0.91, 0.86], [0.91, 0.84, 0.67], [0.73, 0.81, 0.85], [0.62, 0.36, 0.28], [0.86, 0.75, 0.52]], PALA = [[0.86, 0.85, 0.8], [0.75, 0.74, 0.71], [0.86, 0.75, 0.52], [0.62, 0.36, 0.28]], RFH = [[0.42, 0.44, 0.45], [0.55, 0.25, 0.18], [0.3, 0.42, 0.3], [0.5, 0.5, 0.48]], rq = rng(77);
+    for (const b of RB) { const p = ringBox(b), ty = b[6] >> 1, h = Math.max(2.5, b[5]), z0 = Math.min(...p.map(q => tzS(q[0], q[1]))), house = ty === 0 && h < 8, u0 = rq();
+      const col = (house ? PALH[Math.floor(u0 * 5)] : ty === 2 ? [0.7, 0.69, 0.66] : PALA[Math.floor(u0 * 4)]).map(v => v * 0.82), rc = house ? RFH[Math.floor(rq() * 4)] : [0.46, 0.46, 0.45];
+      G.zf = null; G.zc = z0; let u = rq() * 300;
+      for (let i = 0; i < 4; i++) { const a = p[i], q = p[(i + 1) % 4], L = Math.hypot(q[0] - a[0], q[1] - a[1]), nn = [(q[1] - a[1]) / L, -(q[0] - a[0]) / L, 0];
+        G.quad([a[0], a[1], -0.6], [q[0], q[1], -0.6], [q[0], q[1], h], [a[0], a[1], h], house ? M.HOUSEWALL : ty === 2 ? M.ROOF : M.WALL, col, [[u, 0], [u + L, 0], [u + L, h], [u, h]], nn); u += L; }
+      if (house) { const c = [(p[0][0] + p[2][0]) / 2, (p[0][1] + p[2][1]) / 2], rh = Math.min(b[2], b[3]) * 0.35;   // hip roof
+        for (let i = 0; i < 4; i++) { const a = p[i], q = p[(i + 1) % 4]; G.tri([a[0], a[1], h], [q[0], q[1], h], [c[0] + (a[0] + q[0] - 2 * c[0]) * 0.15, c[1] + (a[1] + q[1] - 2 * c[1]) * 0.15, h + rh], M.ROOFP, rc); } }
+      else G.quad([p[0][0], p[0][1], h], [p[1][0], p[1][1], h], [p[2][0], p[2][1], h], [p[3][0], p[3][1], h], M.ROOF, rc, null, [0, 0, 1]);
+      G.zf = null; G.zc = 0; }
+  }
+  if (D.ring && D.ring.r) { G.zf = tzS; G.zc = 0;
+    for (const r of D.ring.r) { const w = r[0], p0 = pts(r, 2, 1); if (!p0.some(q => Math.hypot(q[0], q[1]) < (mobile ? 1400 : 2700))) continue; const p = subdiv(p0, mobile ? 40 : 20);
+      for (let i = 0; i + 1 < p.length; i++) { const a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 0.2) continue; const nx = -(b[1] - a[1]) / L * w / 2, ny = (b[0] - a[0]) / L * w / 2;
+        G.quad([a[0] + nx, a[1] + ny, 0.08], [b[0] + nx, b[1] + ny, 0.08], [b[0] - nx, b[1] - ny, 0.08], [a[0] - nx, a[1] - ny, 0.08], M.ROAD, [0.16, 0.16, 0.17], null, [0, 0, 1]); } }
+    G.zf = null; G.zc = 0; }
   // the yard platform: its surface at the yard level (the ground mesh dips below it)
   if (TERR.PL) { const p = TERR.PL.slice(), t = earcut(area2(p) < 0 ? p.reverse() : p); for (let q = 0; q + 2 < t.length; q += 3) G.tri([p[t[q]][0], p[t[q]][1], 0], [p[t[q + 1]][0], p[t[q + 1]][1], 0], [p[t[q + 2]][0], p[t[q + 2]][1], 0], M.GROUND, [0.2, 0.24, 0.12], null, null, null, [0, 0, 1]); }
   /* soft contact darkening on the ground: around building walls, under trees and parked cars (cheap ambient occlusion) */
@@ -1093,18 +1194,75 @@ async function open(host, opt) {
   const gz = q => [q[0], q[1], q[2] + tzS(q[0], q[1])];
   const aoq = (p0, p1, p2, p3, a0, a1, a2, a3) => { p0 = gz(p0); p1 = gz(p1); p2 = gz(p2); p3 = gz(p3); AO.push(...p0, a0, ...p1, a1, ...p2, a2, ...p0, a0, ...p2, a2, ...p3, a3); };
   for (const b of D.bld) {
-    let p = pts(b, 5, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse();
+    let p = pts(b, 5, 10); if (p.length < 3) continue; if (area2(p) < 0) p = p.reverse(); if (p.every(q => Math.hypot(q[0], q[1]) > 900)) continue;
     const h = Math.max(3, b[0] / 10), R = Math.min(4.5, 1.2 + h * 0.12), z = 0.03, k = 0.5;
     for (let i = 0; i < p.length; i++) { const a = p[i], q = p[(i + 1) % p.length], L = Math.hypot(q[0] - a[0], q[1] - a[1]); if (L < 0.5) continue;
       const nx = (q[1] - a[1]) / L * R, ny = -(q[0] - a[0]) / L * R;
       aoq([a[0], a[1], z], [q[0], q[1], z], [q[0] + nx, q[1] + ny, z], [a[0] + nx, a[1] + ny, z], k, k, 0, 0); }
   }
-  { const tr = D.trees; for (let i = 0; i + 2 < tr.length; i += 3) { const x = tr[i] / 10, y = tr[i + 1] / 10, r = 3.2, z = 0.03; const n = 8;
+  { const tr = D.trees; for (let i = 0; i + 2 < tr.length; i += 3) { const x = tr[i] / 10, y = tr[i + 1] / 10, r = 3.2, z = 0.03; const n = 8; if (Math.hypot(x, y) > NEAR) continue;
       for (let j = 0; j < n; j++) { const a = TAU * j / n, b = TAU * (j + 1) / n; AO.push(...gz([x, y, z]), 0.35, ...gz([x + Math.cos(a) * r, y + Math.sin(a) * r, z]), 0, ...gz([x + Math.cos(b) * r, y + Math.sin(b) * r, z]), 0); } } }
   { const pk = D.cars; for (let i = 0; i + 3 < pk.length; i += 4) { const x = pk[i] / 10, y = pk[i + 1] / 10, a = pk[i + 2] * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), z = 0.2;
       const P = (s, t) => [x + ca * s - sa * t, y + sa * s + ca * t, z]; aoq(P(-2.6, -1.2), P(2.6, -1.2), P(2.6, 1.2), P(-2.6, 1.2), 0.45, 0.45, 0.45, 0.45); } }
   const aoB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, aoB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(AO), gl.STATIC_DRAW); const nAO = AO.length / 4;
+  /* v7.3: trees where the map shows yards, parks, woods and green strips: density by land use and by closeness to houses and blocks of flats;
+     the groups follow the map, single positions are estimates (seeded, the same on every visit) */
+  const LUd = D.lu; G.zf = tzS; G.zc = 0;
+  if (LUd && LUd.nx) {
+    const S = 4, x0 = LUd.x / 10, y0 = LUd.y / 10, cs = LUd.s / 10, nx = Math.ceil(LUd.nx * cs / S), ny = Math.ceil(LUd.ny * cs / S), occ = new Uint8Array(nx * ny);
+    const fillPoly = (p, pad) => { if (p.length < 3) return; let ya = 1e9, yb = -1e9; for (const q of p) { ya = Math.min(ya, q[1]); yb = Math.max(yb, q[1]); }
+      for (let j = Math.max(0, Math.floor((ya - pad - y0) / S)); j <= Math.min(ny - 1, Math.ceil((yb + pad - y0) / S)); j++) { const y = y0 + (j + 0.5) * S, xs = [];
+        for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; if ((a[1] > y) !== (b[1] > y)) xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0])); }
+        xs.sort((a, b) => a - b); for (let k = 0; k + 1 < xs.length; k += 2) { const i0 = Math.max(0, Math.floor((xs[k] - pad - x0) / S)), i1 = Math.min(nx - 1, Math.floor((xs[k + 1] + pad - x0) / S)); for (let i = i0; i <= i1; i++) occ[j * nx + i] = 1; } } };
+    const stamp = (x, y, r) => { const i0 = Math.max(0, Math.floor((x - r - x0) / S)), i1 = Math.min(nx - 1, Math.floor((x + r - x0) / S)), j0 = Math.max(0, Math.floor((y - r - y0) / S)), j1 = Math.min(ny - 1, Math.floor((y + r - y0) / S));
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) occ[j * nx + i] = 1; };
+    for (const b of D.bld) fillPoly(pts(b, 5, 10), 2.5);
+    for (const b of RB) fillPoly(ringBox(b), 2.5);
+    if (D.ring && D.ring.r) for (const r of D.ring.r) { const w = r[0] / 2 + 1.5; for (const q of subdiv(pts(r, 2, 1), 3)) stamp(q[0], q[1], w); }
+    for (const w of D.water) fillPoly(pts(w, 0, 10), 2);
+    if (TERR.PL) fillPoly(TERR.PL, 3);
+    for (const a of D.areas || []) fillPoly(pts(a, 1, 10), 1.5);
+    for (const q of D.props || []) if (q[0] === 'tree') stamp(q[1] / 10, q[2] / 10, 3.5); else stamp(q[1] / 10, q[2] / 10, 2);
+    for (const rd of D.roads) { const w = Math.max(4, rd[0] / 10) / 2 + 1.5; for (const q of subdiv(pts(rd, 3, 10), 3)) stamp(q[0], q[1], w); }
+    for (const t of FOL.imp) stamp(t[0], t[1], 3);
+    const yard = new Uint8Array(LUd.nx * LUd.ny);
+    for (const t of (() => { const o = [], tr = D.trees; for (let i = 0; i + 2 < tr.length; i += 3) o.push([tr[i] / 10, tr[i + 1] / 10]); return o; })()) stamp(t[0], t[1], 3);
+    for (const b of D.bld) { const ty = Math.floor(b[1] / 10); if (!(ty === 0 || ty === 1 || ty === 4 || ty === 8 || ty === 9)) continue;
+      const p = pts(b, 5, 10); let cx = 0, cy = 0; for (const q of p) { cx += q[0]; cy += q[1]; } cx /= p.length; cy /= p.length; let rm = 0; for (const q of p) rm = Math.max(rm, Math.hypot(q[0] - cx, q[1] - cy));
+      const R = rm + (ty === 0 || ty === 8 ? 20 : 32), hs = ty === 0 || ty === 8 ? 2 : 1;
+      for (let j = Math.max(0, Math.floor((cy - R - y0) / cs)); j <= Math.min(LUd.ny - 1, Math.floor((cy + R - y0) / cs)); j++) for (let i = Math.max(0, Math.floor((cx - R - x0) / cs)); i <= Math.min(LUd.nx - 1, Math.floor((cx + R - x0) / cs)); i++) yard[j * LUd.nx + i] = Math.max(yard[j * LUd.nx + i], hs); }
+    for (const b of RB) { const ty = b[6] >> 1; if (!(ty === 0 || ty === 1 || ty === 9)) continue; const R = Math.hypot(b[2], b[3]) / 2 + (ty === 0 ? 20 : 32), hs = ty === 0 ? 2 : 1;
+      for (let j = Math.max(0, Math.floor((b[1] - R - y0) / cs)); j <= Math.min(LUd.ny - 1, Math.floor((b[1] + R - y0) / cs)); j++) for (let i = Math.max(0, Math.floor((b[0] - R - x0) / cs)); i <= Math.min(LUd.nx - 1, Math.floor((b[0] + R - x0) / cs)); i++) yard[j * LUd.nx + i] = Math.max(yard[j * LUd.nx + i], hs); }
+    const DEN = { f: 5.5, p: 2.8, g: 0.9, w: 1.0, h: 1.6, c: 0.3, i: 0.15, s: 0.4, '.': 0.22 }, rr2 = rng(1983);
+    for (let j = 0; j < LUd.ny; j++) { const row = LUd.c[j] || ''; for (let i = 0; i < LUd.nx; i++) { const ch = row[i] || '.'; let d = DEN[ch] !== undefined ? DEN[ch] : 0.22;
+      if (yard[j * LUd.nx + i] && (ch === '.' || ch === 'h' || ch === 'g' || ch === 'w')) d = Math.max(d, yard[j * LUd.nx + i] === 2 ? 3.2 : 2.8);   // gardens of the private houses are thick with trees
+      const n = Math.floor(d) + (rr2() < d - Math.floor(d) ? 1 : 0);
+      for (let k = 0; k < n; k++) { const x = x0 + (i + rr2()) * cs, y = y0 + (j + rr2()) * cs, dc = Math.hypot(x, y); if (dc < 60) continue;
+        const gi = Math.floor((x - x0) / S), gj = Math.floor((y - y0) / S); if (gi < 0 || gj < 0 || gi >= nx || gj >= ny || occ[gj * nx + gi]) continue;
+        if (dc < 130 && !mobile) { treeDetailed(G, FOL, x, y, ch === 'f' || ch === 'p' ? 0 : 1, rng(Math.floor(x * 31 + y * 17))); stamp(x, y, 4); continue; }   // close to the tower: full trees
+        FOL.imp.push([x, y, ch === 'f' ? 5 : ch === 'p' ? 4 : 9]); stamp(x, y, 2.2); } } }
+  }
   const folB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, folB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(FOL), gl.STATIC_DRAW); const nFol = FOL.length / 12;
+  G.zf = null; G.zc = 0;
+  // impostor instances: species by kind (water's edge: willows and poplars), size and tint vary
+  const impExt = gl.getExtension('ANGLE_instanced_arrays');
+  let nImp = 0, impB = null, impI = null;
+  if (impExt && FOL.imp.length) {
+    let list = FOL.imp; const cap = mobile ? 9000 : 60000; if (list.length > cap) list = list.slice().sort((a, b) => (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1])).slice(0, cap);
+    const WE2 = []; D.water.forEach((w, wi) => { if (Math.abs(TERR.wl(wi) - TERR.WZ) > 1) return; const p = pts(w, 0, 10); for (let i = 0; i < p.length; i++) WE2.push([p[i], p[(i + 1) % p.length]]); });
+    const sd2 = (x, y, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)); return Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy); };
+    const I = new Float32Array(list.length * 8), ri = rng(4242);
+    list.forEach(([x, y, k], n) => { const u = ri(), wet = k !== 5 && WE2.length && WE2.some(e => sd2(x, y, e[0], e[1]) < 26);
+      let tile = wet ? (u < 0.45 ? 14 : u < 0.75 ? 12 : 11) : k === 5 ? (u < 0.22 ? 13 : u < 0.55 ? 8 : u < 0.8 ? 11 : u < 0.9 ? 9 : 10) : (u < 0.4 ? 8 : u < 0.55 ? 9 : u < 0.66 ? 10 : u < 0.92 ? 11 : u < 0.97 ? 12 : 13);
+      const sz = 0.8 + ri() * 0.5, w = tile === 12 ? 6.5 * sz : tile === 13 ? 6.5 * sz : tile === 14 ? 12 * sz : 11 * sz, h = tile === 12 ? 22 * sz : tile === 13 ? 14 * sz : tile === 14 ? 12 * sz : 15 * sz;
+      I.set([x, y, tzS(x, y) - 0.15, h, w, tile, ri(), ri() * TAU], n * 8); });
+    const B = []; const qd = (a, b, c, d, k) => { for (const v of [a, b, c, a, c, d]) B.push(v[0], v[1], v[2], v[3], v[4], k); };
+    qd([-0.5, 0, 0, 0, 1], [0.5, 0, 0, 1, 1], [0.5, 0, 1, 1, 0], [-0.5, 0, 1, 0, 0], 0);
+    qd([0, -0.5, 0, 0, 1], [0, 0.5, 0, 1, 1], [0, 0.5, 1, 1, 0], [0, -0.5, 1, 0, 0], 0);
+    qd([-0.3, -0.3, 0.6, 0, 1], [0.3, -0.3, 0.6, 1, 1], [0.3, 0.3, 0.6, 1, 0], [-0.3, 0.3, 0.6, 0, 0], 1);   // small top card, hidden inside the crown from the side
+    impB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(B), gl.STATIC_DRAW);
+    impI = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impI); gl.bufferData(gl.ARRAY_BUFFER, I, gl.STATIC_DRAW); nImp = list.length;
+  }
   const leafTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, leafTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, leafAtlas()); gl.generateMipmap(gl.TEXTURE_2D);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -1120,17 +1278,17 @@ async function open(host, opt) {
         if (hole && x >= -hole + st && x + st <= hole - st && y >= -hole + st && y + st <= hole - st) continue;
         const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j], [i + 1, j + 1], [i, j + 1]];
         for (const [a, b] of c) GG.v([-ext + a * st, -ext + b * st, hv(a, b)], nv(a, b), [0, 0], M.GROUND, gc); } };
-    ring(4, 168, 0, 0); ring(12, 600, 168, 0.04); ring(100, 4000, 600, 0.1); }
+    ring(mobile ? 6 : 4, 168, 0, 0); ring(mobile ? 16 : 12, 600, 168, 0.04); ring(100, 4000, 600, 0.1); }
   const gndB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, gndB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(GG.a), gl.STATIC_DRAW); const nGnd = GG.n;
   /* land use from the map grid (20 m cells) as a small texture */
   const LU = D.lu, LUC = { h: [0.27, 0.29, 0.15], c: [0.36, 0.35, 0.32], i: [0.34, 0.32, 0.27], g: [0.22, 0.3, 0.12], p: [0.19, 0.29, 0.11], f: [0.14, 0.22, 0.09], s: [0.45, 0.41, 0.3], w: [0.24, 0.28, 0.13], '.': [0.25, 0.28, 0.14] };
-  const luTex = gl.createTexture(); let luO = [0, 0], luS = 1;
-  if (LU) { const n = LU.n, px = new Uint8Array(n * n * 4);
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const c = LUC[(LU.c[j] || '')[i]] || LUC['.']; px.set([c[0] * 255, c[1] * 255, c[2] * 255, 255], (j * n + i) * 4); }
-    gl.bindTexture(gl.TEXTURE_2D, luTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, n, n, 0, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const luTex = gl.createTexture(); let luO = [0, 0], luS = [1, 1];
+  if (LU) { const nx = LU.nx || LU.n, ny = LU.ny || LU.n, px = new Uint8Array(nx * ny * 4);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const c = LUC[(LU.c[j] || '')[i]] || LUC['.']; px.set([c[0] * 255, c[1] * 255, c[2] * 255, 255], (j * nx + i) * 4); }
+    gl.bindTexture(gl.TEXTURE_2D, luTex); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, nx, ny, 0, gl.RGBA, gl.UNSIGNED_BYTE, px);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
-    luO = [LU.x / 10, LU.y / 10]; luS = LU.n * LU.s / 10; }
+    luO = [LU.x / 10, LU.y / 10]; luS = [nx * LU.s / 10, ny * LU.s / 10]; }
   const stat = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, stat); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(G.a), gl.STATIC_DRAW);
   const nStat = G.n; G.a = null;
   /* water: the surface lies 1 m below the street level, the banks slope down to it */
@@ -1384,7 +1542,7 @@ async function open(host, opt) {
     gl.uniform1f(u.uShOn, (shOn && E.sunC[0] > 0.05) ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(u.uSh, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, luTex); gl.uniform1i(u.uLU, 1);
-    gl.uniform2fv(u.uLUo, luO); gl.uniform1f(u.uLUs, luS); gl.uniform3fv(u.uLUd, LUC['.']);
+    gl.uniform2fv(u.uLUo, luO); gl.uniform2fv(u.uLUs, luS); gl.uniform3fv(u.uLUd, LUC['.']);
     if (!refl) { // ground outside the water: stencil mask of the water polygons first
       gl.enable(gl.STENCIL_TEST); gl.clear(gl.STENCIL_BUFFER_BIT);
       gl.stencilFunc(gl.ALWAYS, 1, 0xff); gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -1409,6 +1567,20 @@ async function open(host, opt) {
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(uf.uSh, 0);
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, leafTex); gl.uniform1i(uf.uTex, 1);
       bindFol(); gl.drawArrays(gl.TRIANGLES, 0, nFol); off(0);
+      gl.activeTexture(gl.TEXTURE0);
+    }
+    if (nImp) { // tree impostors (instanced)
+      const f = P.imp, uf = f.u; gl.useProgram(f.p);
+      gl.uniformMatrix4fv(uf.uVP, false, VP); gl.uniformMatrix4fv(uf.uLVP, false, LVP); gl.uniform3fv(uf.uCam, cam); gl.uniform1f(uf.uT, t); gl.uniform1f(uf.uWind, st.wind + st.rainK * 0.6);
+      gl.uniform3fv(uf.uSun, E.sun); gl.uniform3fv(uf.uSunC, E.sunC); gl.uniform3fv(uf.uSkyC, E.skyAmb); gl.uniform3fv(uf.uGndC, E.gnd); gl.uniform3fv(uf.uFog, E.fog); gl.uniform1f(uf.uFogD, E.fogD);
+      gl.uniform1f(uf.uClipZ, clipZ); gl.uniform1f(uf.uNight, E.night); gl.uniform1f(uf.uShOn, (shOn && E.sunC[0] > 0.05) ? 1 : 0);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(uf.uSh, 0);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, leafTex); gl.uniform1i(uf.uTex, 1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, impB); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
+      gl.bindBuffer(gl.ARRAY_BUFFER, impI); gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0); gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 32, 16);
+      impExt.vertexAttribDivisorANGLE(2, 1); impExt.vertexAttribDivisorANGLE(3, 1);
+      impExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 18, nImp);
+      impExt.vertexAttribDivisorANGLE(2, 0); impExt.vertexAttribDivisorANGLE(3, 0); off(0);
       gl.activeTexture(gl.TEXTURE0);
     }
   }
@@ -1534,7 +1706,7 @@ async function open(host, opt) {
     setWeather(w) { st.weather = w; },
     sound(v) { return v ? sound.start() : (sound.stop(), false); },
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
-    debug() { return { nStat, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
+    debug() { return { nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = yaw; st.pitch = pitch; st.dist = dist; },
     destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); const l = gl.getExtension('WEBGL_lose_context'); if (l) l.loseContext(); canvas.remove(); },
   };
