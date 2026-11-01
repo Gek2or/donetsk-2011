@@ -1129,7 +1129,7 @@ async function open(host, opt) {
   // v7.5: say why WebGL is missing. After a graphics-driver crash Chromium blocks WebGL for the site until the browser restarts.
   let why = ''; canvas.addEventListener('webglcontextcreationerror', e => { why = e.statusMessage || ''; });
   const gl = canvas.getContext('webgl', { antialias: true, alpha: false, stencil: true, powerPreference: 'default' }) || canvas.getContext('experimental-webgl');
-  const failMsg = () => /block|context loss|lost/i.test(why) && S.blocked ? S.blocked : S.fail;
+  const failMsg = () => /block|context loss|lost|GL_VENDOR = Disabled|BindToCurrentSequence/i.test(why) && S.blocked ? S.blocked : S.fail;
   if (!gl) { host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${failMsg()}</p>`); return { destroy() { canvas.remove(); } }; }
   const extDepth = gl.getExtension('WEBGL_depth_texture');
   const D = await fetch(opt.data || 'assets/kt3d.json').then(r => r.json());
