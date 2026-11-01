@@ -2010,3 +2010,9 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .kt3d-note.open{padding:6px 8px}
 .kt3d-note.open{display:block;-webkit-line-clamp:unset;background:#05080bd9;max-height:45%;overflow:auto}
 .kt3d-note:focus-visible{outline:2px solid #f08aa3}
+/* v7.5: why the cab view is missing, with another try */
+.tr-3dmsg{position:absolute;z-index:4;left:50%;top:14px;transform:translateX(-50%);width:min(92%,520px);display:flex;gap:12px;align-items:center;padding:10px 12px 10px 14px;border-radius:12px;background:#1c1814e8;color:#f3ebdc;font:500 13.5px/1.4 var(--f-body);box-shadow:0 8px 22px -8px #000c}
+.tr-3dmsg[hidden]{display:none}
+.tr-3dmsg p{margin:0;flex:1}
+.tr-3dmsg button{all:unset;cursor:pointer;flex:none;padding:7px 12px;border-radius:99px;background:#f3ebdc;color:#1c1814;font-weight:600}
+.tr-3dmsg button:focus-visible{outline:2px solid #c8272f;outline-offset:2px}

@@ -1126,8 +1126,11 @@ async function open(host, opt) {
   opt = opt || {};
   const S = Object.assign({ load: 'Loading…', fail: 'WebGL is not available on this device.' }, opt.text || {});
   const canvas = document.createElement('canvas'); canvas.className = 'kt3d-c'; host.appendChild(canvas);
-  const gl = canvas.getContext('webgl', { antialias: true, alpha: false, stencil: true, powerPreference: 'high-performance' }) || canvas.getContext('experimental-webgl');
-  if (!gl) { host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${S.fail}</p>`); return { destroy() { canvas.remove(); } }; }
+  // v7.5: say why WebGL is missing. After a graphics-driver crash Chromium blocks WebGL for the site until the browser restarts.
+  let why = ''; canvas.addEventListener('webglcontextcreationerror', e => { why = e.statusMessage || ''; });
+  const gl = canvas.getContext('webgl', { antialias: true, alpha: false, stencil: true, powerPreference: 'default' }) || canvas.getContext('experimental-webgl');
+  const failMsg = () => /block|context loss|lost/i.test(why) && S.blocked ? S.blocked : S.fail;
+  if (!gl) { host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${failMsg()}</p>`); return { destroy() { canvas.remove(); } }; }
   const extDepth = gl.getExtension('WEBGL_depth_texture');
   const D = await fetch(opt.data || 'assets/kt3d.json').then(r => r.json());
   const mobile = matchMedia('(pointer:coarse)').matches || Math.min(innerWidth, innerHeight) < 600;
@@ -1612,9 +1615,13 @@ async function open(host, opt) {
     off(0); gl.disable(gl.BLEND); gl.depthMask(true);
   }
 
+  // v7.5: if the GPU drops the context, stop drawing and explain instead of freezing on a black frame
+  let lostT = 0;
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); st.alive = false; cancelAnimationFrame(st.raf);
+    if (!host.querySelector('.kt3d-fail')) host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${S.lost || S.fail}</p>`); });
   let bloomOn = opt.bloom !== false, shOn = !!shFb && quality >= 2, refOn = quality >= 1, frames = 0, fpsT = performance.now(), fps = 60;
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
+    const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   }
   function frame(now) {
@@ -1622,7 +1629,10 @@ async function open(host, opt) {
     st.raf = requestAnimationFrame(frame);
     if (document.hidden) return;
     resize();
-    const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now; simT += dt;
+    const dt = Math.min(0.1, (now - lastT) / 1000);
+    // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
+    if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
+    lastT = now; simT += dt;
     if (st.auto) { const n = donetskNow(); st.hour = n.h; } else if (st.lapse) st.hour = (st.hour + dt * 0.25) % 24; // time-lapse: 1 s = 15 min
     if (opt.onHour) opt.onHour(st.hour, st.auto);
     st.rainK += ((st.weather === 'rain' ? 1 : 0) - st.rainK) * Math.min(1, dt * 0.8);
@@ -1708,7 +1718,7 @@ async function open(host, opt) {
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
     debug() { return { nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = yaw; st.pitch = pitch; st.dist = dist; },
-    destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); const l = gl.getExtension('WEBGL_lose_context'); if (l) l.loseContext(); canvas.remove(); },
+    destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); canvas.width = canvas.height = 1; canvas.remove(); },
   };
 }
 window.KT3D = { open };

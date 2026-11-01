@@ -4,7 +4,7 @@
 window.__T3D=function(canvas,opts){
 'use strict';
 opts=opts||{};
-const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl');
+const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'default'})||canvas.getContext('experimental-webgl');
 if(!gl)return null;
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();ready=false;if(opts.onlost)opts.onlost()});
 const LITE=opts.lite;
