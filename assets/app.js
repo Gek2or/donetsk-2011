@@ -739,7 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
- {id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
+ {id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},

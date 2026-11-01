@@ -12,19 +12,40 @@ const LITE=opts.lite;
 const VS=`attribute vec3 p;attribute vec3 n;attribute vec4 c;attribute vec3 f;
 uniform mat4 M;uniform mat4 MO;uniform vec3 E;varying vec3 vn;varying vec4 vc;varying vec3 vf;varying vec3 vw;
 void main(){vec4 w=MO*vec4(p,1.);vn=mat3(MO)*n;vc=c;vf=f;vw=w.xyz;gl_Position=M*w;}`;
-const FS=`precision mediump float;varying vec3 vn;varying vec4 vc;varying vec3 vf;varying vec3 vw;
+const FS=`#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec3 vn;varying vec4 vc;varying vec3 vf;varying vec3 vw;
 uniform vec3 E;uniform vec3 SUN;uniform vec3 FOG;uniform float FD;uniform float MODE;uniform vec3 SUNC;uniform vec3 AMB;uniform float NIGHT;uniform vec3 CD;
 float h1(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}
+float hh(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+float vn2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hh(i),hh(i+vec2(1,0)),f.x),mix(hh(i+vec2(0,1)),hh(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){return .5*vn2(p)+.27*vn2(p*2.03+7.1)+.15*vn2(p*4.1+3.7)+.08*vn2(p*8.3+1.3);}
 void main(){vec3 col=vc.rgb;vec3 N=normalize(vn);
  float k=vf.z;
- if(MODE>.5){ /* trees: a soft canopy on crossed quads */
-  vec2 q=vf.xy;vec2 d=(q-vec2(.5,.63))*vec2(1.,1.12);float r=length(d);float trunk=step(abs(q.x-.5),.03+.02*(.4-q.y))*step(q.y,.45);
-  float nz=.055*sin(q.x*19.+q.y*7.)+.045*sin(q.y*23.-q.x*11.)+.035*sin((q.x+q.y)*41.)+.02*sin(q.x*67.-q.y*53.);
-  float leaf=step(r,.36+nz);
-  if(leaf<.5&&trunk<.5)discard;
-  float tex=.5+.5*sin(q.x*47.+sin(q.y*29.)*3.)*sin(q.y*43.+q.x*9.);
-  col=leaf>.5?col*(.84+.03*tex+.4*(q.y-.45)-.2*r):vec3(.3,.24,.19);
- }else if(k>.5){ /* facades: floors of 2.9 m, windows every 3 m (houses 4.2 m) */
+ if(MODE>.5){ /* v7.6 trees: a crown of leaf clumps, each lit from above and shaded below, with gaps to the sky */
+  vec2 q=vf.xy;float seed=hh(floor(vw.xz*.7+.5));vec2 d=(q-vec2(.5,.62))*vec2(1.,1.1);float r=length(d);
+  float trunk=step(abs(q.x-.5+.02*sin(q.y*9.+seed*6.)),.028+.02*(.42-q.y))*step(q.y,.5);
+  float br=step(abs(q.x-.5-(q.y-.38)*(seed>.5?1.1:-1.1)),.012)*step(.38,q.y)*step(q.y,.62);
+  vec2 cq=q*vec2(11.,12.)+seed*13.;vec2 ib=floor(cq);float md=9.,cr=0.;vec2 co=vec2(0.);
+#ifdef LITE
+for(int j=0;j<=0;j++)for(int i=0;i<=0;i++){
+#else
+for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){
+#endif
+vec2 c=ib+vec2(float(i),float(j));vec2 o=cq-(c+.2+.6*vec2(hh(c),hh(c+5.3)));float dd=dot(o,o);if(dd<md){md=dd;co=o;cr=hh(c+1.7);}}
+  float edge=.34+.07*(vn2(q*6.+seed*9.)-.5)+.05*(vn2(q*15.+seed*3.)-.5);
+  float leaf=step(r,edge);
+  float hole=step(.72,vn2(q*11.+seed*17.))*smoothstep(.16,.3,r);
+  if(leaf>.5&&hole>.5&&trunk+br<.5)discard;
+  if(leaf<.5&&trunk<.5&&br<.5)discard;
+  if(leaf>.5&&hole<.5){vec2 cn=co/.62;float cz=sqrt(max(0.,1.-dot(cn,cn)));vec3 ln=normalize(vec3(cn.x,-cn.y,cz+.25));float lam=max(dot(ln,normalize(vec3(.35,.75,.55))),0.);float big=vn2(q*3.+seed*7.);float lum=(.55+.45*lam+.3*(q.y-.5)-.7*r*r+.25*(big-.5))*(.95+.1*cr)*(.84+.32*vn2(q*46.+seed*50.));
+   vec3 c2=mix(col,col*vec3(1.2,1.03,.6),smoothstep(.5,.8,vn2(q*2.4+seed*5.))*.7);c2=mix(c2,col*vec3(.8,.88,.72),smoothstep(.55,.85,vn2(q*3.1+seed*11.))*.5);
+   col=c2*lum*(.9+.2*seed);}
+  else col=vec3(.27,.22,.18)*(.8+.4*q.x);
+ }else if(k>.5&&k<9.5){ /* facades: floors of 2.9 m, windows every 3 m (houses 4.2 m) */
   float u=vf.x,v=vf.y;float fw=k>2.5&&k<3.5?4.4:(k>3.5&&k<4.5?3.6:3.0);float fh=k>2.5&&k<3.5?4.5:2.9;
   float fx=fract(u/fw),fy=fract(v/fh);float row=floor(v/fh);
   float win=step(.31,fx)*step(fx,.69)*step(.34,fy)*step(fy,.78);
@@ -43,27 +64,78 @@ void main(){vec3 col=vc.rgb;vec3 N=normalize(vn);
   if(k>.5&&k<1.5&&row>=1.){float bc=h1(vec2(floor(u/fw),7.));if(bc<.42&&fx>.16&&fx<.84&&fy<.33){col=mix(col,vec3(.9,.88,.84)*(bc<.2?1.:.93),.85);win=0.;}}
   col*=1.-.18*step(v,.75)*step(.5,k);
   col*=1.-.06*step(.96,fract(v/fh)); /* slab line */
+  if(k<4.5){col*=1.-.07*step(.975,fract(u/fw+.5))*step(.9,v);
+   col*=.93+.1*vn2(vec2(u*1.7,v*.07));
+   col*=1.-.12*(1.-smoothstep(.0,1.6,v))*(.6+.4*vn2(vec2(u*2.,1.)));}
  }
  if(k>5.5&&k<9.5){ /* lamps and car lights: they glow after dark */
   vec3 em=k<6.5?vec3(1.,.72,.38):k<7.5?vec3(1.,.97,.86):vec3(.95,.12,.08);
   col=mix(col,em*1.15,NIGHT);if(NIGHT>.5){float d1=length(vw-E);gl_FragColor=vec4(mix(col,FOG,clamp((1.-exp(-pow(d1/FD,1.6)))*.5,0.,1.)),1.);return;}}
+ float dE=length(vw-E);float near=1.-smoothstep(40.,260.,dE);
+ if(MODE<.5&&N.y>.8&&(k<.5||k>9.5)){vec2 w=mod(vw.xz,2048.);
+  if(k>9.5&&k<10.5){
+   float g=vn2(w*22.)*.6+vn2(w*7.)*.4;col*=.78+.4*g*mix(.5,1.,near);
+   float sl=step(fract(vf.x/.6),.3)*step(abs(vf.y),1.25);col=mix(col,vec3(.5,.48,.45)*(.9+.15*vn2(w*3.)),sl*.92*(.35+.65*near));
+   col=mix(col,col*vec3(1.05,.82,.66),(1.-smoothstep(.0,.35,abs(abs(vf.y)-.76)))*.5);
+  }else if(k>10.5&&k<11.5){
+   col=mix(vec3(.36,.3,.26),vec3(.78,.77,.75),smoothstep(.0,.6,1.-abs(vf.y)/.045));
+  }else if(k>11.5&&k<12.5){
+   col*=(.86+.22*fbm(w*.9))*(1.-.25*step(.97,fract(vf.x/2.)));
+  }else if(k>12.5&&k<13.5){
+   col*=.84+.26*fbm(w*.25)+.1*(vn2(w*9.)-.5)*near;
+   col*=1.-.06*smoothstep(.74,.82,fbm(w*.06+3.));col*=1.-.07*(1.-smoothstep(.0,.5,abs(abs(vf.y)-1.7)));
+  }else if(k>13.5&&k<14.5){
+   col*=.88+.2*fbm(w*.6);col*=1.-(.08*step(.95,fract(w.x*.8))+.08*step(.95,fract(w.y*.8)))*near;
+  }else if(k>14.5&&k<15.5){
+   col*=.8+.35*fbm(w*.5)+.1*(vn2(w*6.)-.5)*near;
+  }else if(k>20.5&&k<21.5){
+   float rp=vn2(w*1.3);float fr=pow(1.-clamp(abs((vw.y-E.y)/max(dE,1.)),0.,1.),4.);
+   col=mix(col*.8,FOG*.95,.35+.45*fr)+SUNC*pow(max(dot(reflect(normalize(vw-E),normalize(vec3((rp-.5)*.08,1.,(vn2(w*2.)-.5)*.08))),SUN),0.),60.)*(1.-NIGHT)*1.5;
+  }else if(col.g>col.r*1.03&&col.g>col.b){
+   float m=fbm(w*.08),m2=fbm(w*.6+5.);col*=.82+.32*m;col=mix(col,col*vec3(1.25,1.02,.62),smoothstep(.45,.75,m2)*.65);
+   float lv=step(.86,vn2(w*5.3))*near;col=mix(col,mix(vec3(.62,.42,.16),vec3(.7,.6,.25),vn2(w*9.)),lv*.55);
+   col*=.9+.18*(vn2(w*14.)-.5)*near;
+  }else col*=.88+.24*fbm(w*.3);
+ }
  float sun=max(dot(N,SUN),0.);float hemi=.5+.5*N.y;
- vec3 light=AMB*hemi+SUNC*sun+.2*(1.-NIGHT*.85);
+ vec3 light=AMB*hemi*vec3(.93,.97,1.06)+SUNC*sun*1.08+.17*(1.-NIGHT*.85)+vec3(.05,.045,.03)*(1.-hemi)*(1.-NIGHT);
  /* the tram's own headlights on what is in front of it */
  vec3 tp=vw-E;float dd=length(tp.xz);float fw=dot(tp.xz/max(dd,.01),CD.xz);
  light+=NIGHT*vec3(1.,.95,.8)*smoothstep(.86,.985,fw)*clamp(1.-dd/70.,0.,1.)*(N.y>.5?1.1:.6)*step(vw.y,4.);
  col*=light;
  float d=length(vw-E);float fo=1.-exp(-pow(d/FD,1.6));
  col=mix(col,FOG,clamp(fo,0.,1.));
+ col=col*(1.08-.12*col);
  gl_FragColor=vec4(col,1.);}`;
-const SVS=`attribute vec2 p;varying float y;void main(){y=p.y;gl_Position=vec4(p,.9999,1.);}`;
-const SFS=`precision mediump float;varying float y;uniform float H;uniform vec3 SA;uniform vec3 SB;void main(){float t=clamp((y-H)*.9,0.,1.);gl_FragColor=vec4(mix(SA,SB,pow(t,.7)),1.);}`;
+const SVS=`attribute vec2 p;varying vec2 q;void main(){q=p;gl_Position=vec4(p,.9999,1.);}`;
+const SFS=`#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 q;uniform vec3 SA;uniform vec3 SB;uniform vec3 R;uniform vec3 UP;uniform vec3 F;uniform vec2 TN;uniform vec3 SUN;uniform vec3 SUNC;uniform vec3 FOG;uniform vec3 AMB;uniform float NIGHT;uniform float TT;uniform float CC;
+float hh(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+float vn2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hh(i),hh(i+vec2(1,0)),f.x),mix(hh(i+vec2(0,1)),hh(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*vn2(p);p=p*2.03+vec2(7.1,3.3);a*=.5;}return s;}
+void main(){vec3 d=normalize(F+q.x*TN.x*R+q.y*TN.y*UP);float y=d.y;
+ vec3 col=mix(SA,SB,pow(clamp(y,0.,1.),.5));
+ float sd=max(dot(d,SUN),0.);col+=SUNC*(.22*pow(sd,6.)+.5*pow(sd,48.))*(1.-NIGHT);
+ if(y>0.){vec2 uv=d.xz/(y+.12)*1.6+vec2(TT*.004,TT*.0015);
+  float c=fbm(uv*.55);float cov=smoothstep(.62-CC*.35,.92-CC*.3,c);
+  float th=fbm(uv*.55+SUN.xz*.06);float lit=clamp(.55+(c-th)*5.,0.,1.);
+  vec3 base=AMB*.95+.05*(1.-NIGHT),top=AMB*.6+SUNC*1.1+.08;vec3 cl=mix(base,top,lit)+SUNC*pow(sd,6.)*.5*(1.-NIGHT);
+  col=mix(col,cl,cov*smoothstep(0.,.1,y)*.92);
+  col+=smoothstep(.7,1.,NIGHT)*step(.9975,hh(floor(d.xz/(y+.2)*420.)))*(1.-cov)*.8*smoothstep(.05,.3,y);}
+ col+=SUNC*smoothstep(.9985,.9993,sd)*3.*(1.-NIGHT);
+ col=mix(col,FOG,exp(-max(y,0.)*9.)*.75);
+ if(y<0.)col=FOG;
+ gl_FragColor=vec4(col,1.);}`;
 function prog(vs,fs){const P=gl.createProgram();for(const [t,s] of [[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]]){const S=gl.createShader(t);gl.shaderSource(S,s);gl.compileShader(S);if(!gl.getShaderParameter(S,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(S));gl.attachShader(P,S)}gl.linkProgram(P);if(!gl.getProgramParameter(P,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(P));return P}
-const PR=prog(VS,FS),SK=prog(SVS,SFS);
+const PR=prog(VS,LITE?FS.replace('#endif\nvarying','#endif\n#define LITE\nvarying'):FS),SK=prog(SVS,SFS);
 const A={p:gl.getAttribLocation(PR,'p'),n:gl.getAttribLocation(PR,'n'),c:gl.getAttribLocation(PR,'c'),f:gl.getAttribLocation(PR,'f')};
 const U={MO:gl.getUniformLocation(PR,'MO'),M:gl.getUniformLocation(PR,'M'),E:gl.getUniformLocation(PR,'E'),SUN:gl.getUniformLocation(PR,'SUN'),FOG:gl.getUniformLocation(PR,'FOG'),FD:gl.getUniformLocation(PR,'FD'),MODE:gl.getUniformLocation(PR,'MODE'),SUNC:gl.getUniformLocation(PR,'SUNC'),AMB:gl.getUniformLocation(PR,'AMB'),NIGHT:gl.getUniformLocation(PR,'NIGHT'),CD:gl.getUniformLocation(PR,'CD')};
 const skyBuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,skyBuf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-const SKP=gl.getAttribLocation(SK,'p'),SKH=gl.getUniformLocation(SK,'H'),SKA=gl.getUniformLocation(SK,'SA'),SKB=gl.getUniformLocation(SK,'SB');
+const SKP=gl.getAttribLocation(SK,'p'),SKA=gl.getUniformLocation(SK,'SA'),SKB=gl.getUniformLocation(SK,'SB'),SKU={};for(const k of ['R','UP','F','TN','SUN','SUNC','FOG','AMB','NIGHT','TT','CC'])SKU[k]=gl.getUniformLocation(SK,k);
 /* ---------- geometry builder: growable arrays, one set per chunk and layer ---------- */
 function G(){return{p:[],n:[],c:[],f:[]}}
 let CH=[];/* chunk -> {flat:G, solid:G, tree:G, line:[]} */
@@ -78,16 +150,16 @@ function HT(x,y){if(!TER)return 0;const fx=(x-TER.x)/TER.s,fy=(y-TER.y)/TER.s;co
   return((h[j*n+i]*(1-u)+h[j*n+i+1]*u)*(1-v)+(h[(j+1)*n+i]*(1-u)+h[(j+1)*n+i+1]*u)*v)/10-TER.z0}
 const W=(x,y,h)=>[x,h+HT(x,y),-y];
 /* flat ribbon along a polyline (ground layer) */
-function ribbon(g,pts,w,y,col){const hw=w/2;for(let i=1;i<pts.length;i++){let [ax,ay]=pts[i-1];const [bx,by]=pts[i];const l=Math.hypot(bx-ax,by-ay);if(l<.05)continue;const nx=-(by-ay)/l*hw,ny=(bx-ax)/l*hw;
+function ribbon(g,pts,w,y,col,fk){const hw=w/2;let U0=0;for(let i=1;i<pts.length;i++){let [ax,ay]=pts[i-1];const [bx,by]=pts[i];const l=Math.hypot(bx-ax,by-ay);if(l<.05)continue;const nx=-(by-ay)/l*hw,ny=(bx-ax)/l*hw;
   const n=TER?Math.max(1,Math.ceil(l/14)):1;for(let k=0;k<n;k++){const x0=ax+(bx-ax)*k/n,y0=ay+(by-ay)*k/n,x1=ax+(bx-ax)*(k+1)/n,y1=ay+(by-ay)*(k+1)/n;
-    quad(g,W(x0+nx,y0+ny,y),W(x0-nx,y0-ny,y),W(x1-nx,y1-ny,y),W(x1+nx,y1+ny,y),[0,1,0],col)}
-  if(i>1&&hw>.3){/* round the joint */const r=[];for(let k=0;k<=6;k++){const t=k/6*Math.PI*2;r.push([ax+Math.cos(t)*hw,ay+Math.sin(t)*hw])}for(let k=0;k<6;k++)tri(g,W(ax,ay,y),W(r[k][0],r[k][1],y),W(r[k+1][0],r[k+1][1],y),[0,1,0],col)}}}
+    const u0=U0+l*k/n,u1=U0+l*(k+1)/n;quad(g,W(x0+nx,y0+ny,y),W(x0-nx,y0-ny,y),W(x1-nx,y1-ny,y),W(x1+nx,y1+ny,y),[0,1,0],col,fk?[[u0,hw,fk],[u0,-hw,fk],[u1,-hw,fk],[u1,hw,fk]]:null)}U0+=l;
+  if(i>1&&hw>.3){/* round the joint */const r=[];for(let k=0;k<=6;k++){const t=k/6*Math.PI*2;r.push([ax+Math.cos(t)*hw,ay+Math.sin(t)*hw])}const jf=fk?[[U0-l,0,fk],[U0-l,hw,fk],[U0-l,hw,fk]]:null;for(let k=0;k<6;k++)tri(g,W(ax,ay,y),W(r[k][0],r[k][1],y),W(r[k+1][0],r[k+1][1],y),[0,1,0],col,jf)}}}
 function dens(p,m){const o=[p[0]];for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i];const n=Math.ceil(Math.hypot(bx-ax,by-ay)/m);for(let k=1;k<=n;k++)o.push([ax+(bx-ax)*k/n,ay+(by-ay)*k/n])}return o}
 /* split a ground triangle until it follows the relief */
-function gtri(g,a,b,c,y,col,d){const l1=Math.hypot(a[0]-b[0],a[1]-b[1]),l2=Math.hypot(b[0]-c[0],b[1]-c[1]),l3=Math.hypot(c[0]-a[0],c[1]-a[1]);
-  if(TER&&(d||0)<6&&Math.max(l1,l2,l3)>34){if(l1>=l2&&l1>=l3){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];gtri(g,a,m,c,y,col,(d||0)+1);gtri(g,m,b,c,y,col,(d||0)+1)}
-    else if(l2>=l3){const m=[(b[0]+c[0])/2,(b[1]+c[1])/2];gtri(g,a,b,m,y,col,(d||0)+1);gtri(g,a,m,c,y,col,(d||0)+1)}else{const m=[(c[0]+a[0])/2,(c[1]+a[1])/2];gtri(g,a,b,m,y,col,(d||0)+1);gtri(g,m,b,c,y,col,(d||0)+1)}return}
-  tri(g,W(a[0],a[1],y),W(b[0],b[1],y),W(c[0],c[1],y),[0,1,0],col)}
+function gtri(g,a,b,c,y,col,d,fk){const l1=Math.hypot(a[0]-b[0],a[1]-b[1]),l2=Math.hypot(b[0]-c[0],b[1]-c[1]),l3=Math.hypot(c[0]-a[0],c[1]-a[1]);
+  if(TER&&(d||0)<6&&Math.max(l1,l2,l3)>34){if(l1>=l2&&l1>=l3){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];gtri(g,a,m,c,y,col,(d||0)+1,fk);gtri(g,m,b,c,y,col,(d||0)+1,fk)}
+    else if(l2>=l3){const m=[(b[0]+c[0])/2,(b[1]+c[1])/2];gtri(g,a,b,m,y,col,(d||0)+1,fk);gtri(g,a,m,c,y,col,(d||0)+1,fk)}else{const m=[(c[0]+a[0])/2,(c[1]+a[1])/2];gtri(g,a,b,m,y,col,(d||0)+1,fk);gtri(g,m,b,c,y,col,(d||0)+1,fk)}return}
+  tri(g,W(a[0],a[1],y),W(b[0],b[1],y),W(c[0],c[1],y),[0,1,0],col,fk?[[0,0,fk],[0,0,fk],[0,0,fk]]:null)}
 const off=(pts,d)=>pts.map((p,i)=>{const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];const l=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return[p[0]-(b[1]-a[1])/l*d,p[1]+(b[0]-a[0])/l*d]});
 const unflat=f=>{const o=[];for(let i=0;i<f.length;i+=2)o.push([f[i]/10,f[i+1]/10]);return o};
 /* ---------- the track: arc length -> position ---------- */
@@ -101,16 +173,16 @@ function build(D){
   const nC=Math.ceil(TL/D.CH)+1;for(let i=0;i<nC;i++)ck(i);
   /* areas */
   const AC={0:[118,142,86],1:[96,130,150],2:[92,118,72],3:[110,140,92],4:[138,136,130],5:[150,146,136],6:[196,182,150]};
-  for(const [c,cls,f,tr] of D.A){const p=unflat(f),g=fl(c,1),col=AC[cls],y=cls===1?.0:.04;for(let i=0;i<tr.length;i+=3)gtri(g,p[tr[i]],p[tr[i+1]],p[tr[i+2]],y,col)}
+  for(const [c,cls,f,tr] of D.A){const p=unflat(f),g=fl(c,1),col=AC[cls],y=cls===1?.0:.04;for(let i=0;i<tr.length;i+=3)gtri(g,p[tr[i]],p[tr[i+1]],p[tr[i+2]],y,col,0,cls===1?21:0)}
   /* pavements under the roads, then the roads (painter's order: layers drawn in this order) */
   const RS=D.R.slice().sort((a,b)=>b[3]-a[3]);
-  for(const [c,w,surf,cls,f] of RS){if(cls>3)continue;const p=unflat(f);ribbon(fl(c,2),p,w/10+(cls<=2?4.4:1.2),.07,cls<=2?[146,144,138]:[134,130,120])}
-  for(const [c,w,surf,cls,f] of RS){const p=unflat(f);const col=cls===4?[150,146,136]:surf===3?[140,124,98]:surf===2?[110,106,100]:surf===1?[128,126,120]:[88,88,92];ribbon(fl(c,3),p,w/10,.1,col)}
+  for(const [c,w,surf,cls,f] of RS){if(cls>3)continue;const p=unflat(f);ribbon(fl(c,2),p,w/10+(cls<=2?4.4:1.2),.07,cls<=2?[146,144,138]:[134,130,120],14)}
+  for(const [c,w,surf,cls,f] of RS){const p=unflat(f);const col=cls===4?[150,146,136]:surf===3?[140,124,98]:surf===2?[110,106,100]:surf===1?[128,126,120]:[88,88,92];ribbon(fl(c,3),p,w/10,.1,col,cls===4?14:surf===3?15:13)}
   /* centre lines on the bigger roads */
   for(const [c,w,surf,cls,f] of D.R){if(cls>1||w<70)continue;const p=unflat(f);const g=fl(c,4);for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i];const l=Math.hypot(bx-ax,by-ay);const n=Math.floor(l/6);for(let k=0;k<n;k++){const t0=k*6/l,t1=(k*6+3)/l;ribbon(g,[[ax+(bx-ax)*t0,ay+(by-ay)*t0],[ax+(bx-ax)*t1,ay+(by-ay)*t1]],.14,.12,[226,224,214])}}}
   /* rails: ballast, sleepers in the ballast, two rails 1524 mm apart; the overhead wire with poles */
-  for(const [c,kind,emb,f] of D.RL){const p=unflat(f);if(!emb)ribbon(fl(c,4),p,kind?3.4:2.9,.12,kind?[124,112,100]:[128,118,104]);
-    for(const d of [-.762,.762])ribbon(fl(c,5),off(p,d),.09,.15,[70,68,66]);
+  for(const [c,kind,emb,f] of D.RL){const p=unflat(f);if(!emb)ribbon(fl(c,4),p,kind?3.4:2.9,.12,kind?[124,112,100]:[128,118,104],10);
+    for(const d of [-.762,.762])ribbon(fl(c,5),off(p,d),.09,.15,[70,68,66],11);
     if(kind===0){/* overhead: contact wire at 5.9 m; poles every 32 m on alternating sides */
       const wire=ck(c).wire;const pw=TER?dens(p,20):p;for(let i=1;i<pw.length;i++)wire.push(W(pw[i-1][0],pw[i-1][1],5.9),W(pw[i][0],pw[i][1],5.9));
 }}
@@ -133,7 +205,7 @@ function build(D){
    /* v6.9: ballast where the track has its own bed, concrete slabs where it runs in the carriageway (D.EM, every 4 m) */
    const EM=D.EM||[];const segs=[];let cur=null;for(let q0=0;q0<TL+4;q0+=4){const q=Math.min(q0,TL);const e=EM[Math.round(q/4)]|0;const c=Math.floor(Math.min(TL-1,q)/D.CH);const [x,y]=trackAt(q);
      if(!cur||cur.c!==c||cur.e!==e){const pv=cur&&cur.p[cur.p.length-1];cur={c,e,p:pv?[pv]:[]};segs.push(cur)}cur.p.push([x,y])}
-   for(const S of segs){if(S.p.length<2)continue;ribbon(fl(S.c,4),S.p,S.e?2.7:2.9,.12,S.e?[140,138,132]:[126,116,102]);for(const d of [-.762,.762])ribbon(fl(S.c,5),off(S.p,d),.09,.15,[66,64,62])}}
+   for(const S of segs){if(S.p.length<2)continue;ribbon(fl(S.c,4),S.p,S.e?2.7:2.9,.12,S.e?[140,138,132]:[126,116,102],S.e?12:10);for(const d of [-.762,.762])ribbon(fl(S.c,5),off(S.p,d),.09,.15,[66,64,62],11)}}
   /* v6.9: catenary poles placed on free ground (D.PO): an arm over both wires, or a cross-span wire to a pole across the street */
   for(const [c,a,b,e,f,sp] of (D.PO||[])){const px=a/10,py=b/10,ex=e/10,ey=f/10,g=ck(c).solid;pole(g,px,py,7.6,.12,[78,80,82]);
     const l=Math.hypot(ex-px,ey-py)||1,ux=(ex-px)/l,uy=(ey-py)/l;const P=(f_,r_,h)=>W(px+ux*f_-uy*r_,py+uy*f_+ux*r_,h);
@@ -253,8 +325,11 @@ function frame(f,speed,dt,t){if(!ready)return;resize();const s=f*TL;
   gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(...FOGC,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   /* sky */
   gl.disable(gl.DEPTH_TEST);gl.useProgram(SK);gl.bindBuffer(gl.ARRAY_BUFFER,skyBuf);gl.enableVertexAttribArray(SKP);gl.vertexAttribPointer(SKP,2,gl.FLOAT,false,0,0);
-  /* the horizon in clip space: project a far point straight ahead */
-  const dv=[Math.cos(cam.a),0,-Math.sin(cam.a),0];const cy_=MV[1]*dv[0]+MV[5]*dv[1]+MV[9]*dv[2],cw_=MV[3]*dv[0]+MV[7]*dv[1]+MV[11]*dv[2];gl.uniform1f(SKH,cy_/cw_);gl.uniform3fv(SKA,LL.sa);gl.uniform3fv(SKB,LL.sb);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.disableVertexAttribArray(SKP);
+  {let fx=Cn[0]-E[0],fy_=Cn[1]-E[1],fz=Cn[2]-E[2];const fl_=Math.hypot(fx,fy_,fz);fx/=fl_;fy_/=fl_;fz/=fl_;let rx=-fz,rz=fx;const rl=Math.hypot(rx,rz)||1;rx/=rl;rz/=rl;
+   const ux=-rz*fy_,uy=rz*fx-rx*fz,uz=rx*fy_;const ty=Math.tan(fy/2);
+   gl.uniform3f(SKU.F,fx,fy_,fz);gl.uniform3f(SKU.R,rx,0,rz);gl.uniform3f(SKU.UP,ux,uy,uz);gl.uniform2f(SKU.TN,ty*as,ty);
+   gl.uniform3fv(SKU.SUN,sunVec(LL));gl.uniform3fv(SKU.SUNC,LL.sunc);gl.uniform3fv(SKU.FOG,FOGC);gl.uniform3fv(SKU.AMB,LL.amb);gl.uniform1f(SKU.NIGHT,LL.night);gl.uniform1f(SKU.TT,t||0);gl.uniform1f(SKU.CC,.45);}
+  gl.uniform3fv(SKA,LL.sa);gl.uniform3fv(SKB,LL.sb);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.disableVertexAttribArray(SKP);
   gl.useProgram(PR);for(const k in A)gl.enableVertexAttribArray(A[k]);
   gl.uniformMatrix4fv(U.M,false,new Float32Array(MV));gl.uniformMatrix4fv(U.MO,false,ID);gl.uniform3fv(U.E,E);gl.uniform3fv(U.SUN,sunVec(LL));gl.uniform3fv(U.FOG,FOGC);gl.uniform1f(U.FD,(LITE?520:720)*LL.fd);gl.uniform3fv(U.SUNC,LL.sunc);gl.uniform3fv(U.AMB,LL.amb);gl.uniform1f(U.NIGHT,LL.night);gl.uniform3fv(U.CD,[Math.cos(cam.a),0,-Math.sin(cam.a)]);gl.uniform1f(U.MODE,0);
   const c0=Math.floor(s/chSize);const vis=[];for(let i=c0-2;i<=c0+7;i++)if(CH[i])vis.push(CH[i]);

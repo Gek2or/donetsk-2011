@@ -2016,3 +2016,7 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .tr-3dmsg p{margin:0;flex:1}
 .tr-3dmsg button{all:unset;cursor:pointer;flex:none;padding:7px 12px;border-radius:99px;background:#f3ebdc;color:#1c1814;font-weight:600}
 .tr-3dmsg button:focus-visible{outline:2px solid #c8272f;outline-offset:2px}
+
+/* v7.6: the cab of a Tatra T3SU - pillars, sun visor, dusty glass outside the wiper's sweep, an instrument panel */
+.tr-frame{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tr-wiper{height:3px;background:linear-gradient(90deg,#0b0907,#1d1813);opacity:.9;left:6%;bottom:12%;width:30%;transform-origin:100% 50%;transform:rotate(2deg);box-shadow:0 1px 0 #ffffff12}
