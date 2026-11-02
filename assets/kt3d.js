@@ -1,3 +1,160 @@
+/* v7.6: painted tree atlas shared by the 3D scenes. Eight October trees of Donetsk streets and yards, each painted
+   leaf by leaf into a 256×512 cell of a 2048×512 RGBA image: trunk and limbs, leaf clumps lit from the upper right,
+   darker inside and below, with gaps to the sky. Returns ImageData whose transparent pixels carry the colour of the
+   nearest leaf, so mipmaps do not get dark fringes. Species: 0 pyramidal poplar, 1 broad poplar, 2 linden,
+   3 horse chestnut, 4 birch, 5 Norway maple, 6 black locust (acacia), 7 young tree. */
+if (!window.__TREEATLAS) (function () {
+  'use strict';
+  const CW = 256, CH = 512, N = 10, COLS = 8, ROWS = 2; // cells of 256×512 in an 8×2 grid (2048×1024); cell 10 holds two crowns seen from above; cells 11-15 are free for the caller
+  // crown: bottom and top (fraction of cell height from the ground), widest half-width and where it is (0 bottom, 1 top),
+  // clumps, clump radius (px), leaves per clump, leaf size (px), gap-ness, droop, bark colour
+  const SP = [
+    { yb: .07, yt: .985, hw: .24, hp: .32, n: 70, r: 15, k: 70, ls: 2.4, gap: .10, droop: 0, bark: [70, 62, 52], pal: ['#6f7f3a', '#8a8f3c', '#a89a3e', '#c2a94a', '#5d6e34', '#b8a246'] },
+    { yb: .30, yt: .985, hw: .46, hp: .55, n: 64, r: 22, k: 90, ls: 2.8, gap: .25, droop: 0, bark: [78, 72, 64], pal: ['#7d8a3c', '#a6a24a', '#6f7a3a', '#c0ad50', '#8f9444', '#5f6c32'] },
+    { yb: .26, yt: .975, hw: .45, hp: .52, n: 72, r: 21, k: 95, ls: 2.6, gap: .14, droop: 0, bark: [62, 54, 46], pal: ['#8a8a3a', '#b49a3a', '#c9a844', '#757c38', '#d4b55a', '#9c9440'] },
+    { yb: .22, yt: .960, hw: .48, hp: .48, n: 66, r: 24, k: 80, ls: 4.2, gap: .10, droop: .1, bark: [58, 50, 44], pal: ['#7a6a32', '#9a6a30', '#6c7136', '#a8803c', '#5f5a2c', '#8c4e26'] },
+    { yb: .30, yt: .985, hw: .30, hp: .45, n: 60, r: 15, k: 70, ls: 2.0, gap: .30, droop: .55, bark: [214, 208, 196], pal: ['#c9a838', '#d8b84a', '#b8a040', '#8d8a3a', '#e0c460', '#a8963c'] },
+    { yb: .25, yt: .965, hw: .46, hp: .55, n: 68, r: 22, k: 90, ls: 3.2, gap: .16, droop: 0, bark: [66, 58, 50], pal: ['#c8772c', '#d99a30', '#b85a28', '#e0b040', '#8c7a34', '#a4642c'] },
+    { yb: .30, yt: .975, hw: .44, hp: .62, n: 46, r: 17, k: 60, ls: 2.2, gap: .42, droop: .15, bark: [74, 64, 54], pal: ['#7d8a42', '#97964a', '#6b783a', '#b0a654', '#5d6a34', '#8a8c40'] },
+    { yb: .20, yt: .950, hw: .40, hp: .50, n: 40, r: 16, k: 60, ls: 2.4, gap: .30, droop: 0, bark: [80, 70, 58], pal: ['#8a8c3e', '#b09a44', '#6e7838', '#c4a84a', '#7c8a40'] },
+    { yb: .12, yt: .960, hw: .47, hp: .62, n: 60, r: 18, k: 60, ls: 2.2, gap: .20, droop: .8, bark: [82, 74, 60], pal: ['#9aa048', '#b4ac52', '#7f8a40', '#c8b65a', '#8c9446'] },
+    { yb: .28, yt: .985, hw: .44, hp: .58, n: 64, r: 21, k: 85, ls: 2.8, gap: .22, droop: 0, bark: [196, 194, 184], pal: ['#8e9446', '#aaa452', '#74803c', '#c2b058', '#9aa04c', '#b8b8a4'] }
+  ];
+  // card proportions for the scenes: height and width in units of the tree size
+  const ASPECT = [[2.3, .85], [1.55, 1.1], [1.3, 1.05], [1.2, 1.1], [1.75, .85], [1.25, 1.05], [1.35, 1.05], [1.0, .9], [1.15, 1.25], [1.65, 1.1]];
+  function rng(s) { return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  function env(sp, y) { // half-width of the crown (fraction of cell width) at height y (fraction)
+    if (y < sp.yb || y > sp.yt) return 0;
+    const t = (y - sp.yb) / (sp.yt - sp.yb);
+    const a = t < sp.hp ? Math.sin(t / sp.hp * Math.PI / 2) : Math.cos((t - sp.hp) / (1 - sp.hp) * Math.PI / 2);
+    return sp.hw * Math.pow(Math.max(0, a), .8);
+  }
+  // paint one tree on its own canvas in natural proportions (the card's width:height), y measured from the ground up
+  function paint(si, seed) {
+    const sp = SP[si], R = rng(seed * 7919 + 13), A = ASPECT[si];
+    const H = CH, Wn = Math.round(CH * A[1] / A[0]);
+    const cv = document.createElement('canvas'); cv.width = Wn; cv.height = H; const ctx = cv.getContext('2d');
+    const cx0 = Wn / 2, Y = y => H - y; // y in px from the ground
+    const hwp = y => env(sp, y / H) * Wn; // fraction of card width → px
+    const pal = sp.pal.map(hex), bark = sp.bark;
+    const clumps = [];
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const pyr = si === 0, birch = si === 4 || si === 9, young = si === 7, willow = si === 8;
+    const maxD = pyr ? 5 : young ? 4 : 6;
+    function inside(x, y) { const w = hwp(y); return w > 2 && Math.abs(x - cx0) < w; }
+    function seg(x0, y0, x1, y1, w0, w1, shade) {
+      const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
+      for (let i = 0; i < n; i++) {
+        const t0 = i / n, t1 = (i + 1) / n, w = w0 + (w1 - w0) * t0;
+        ctx.strokeStyle = `rgb(${bark.map(v => Math.min(255, v * shade) | 0)})`; ctx.lineWidth = Math.max(.7, w);
+        ctx.beginPath(); ctx.moveTo(x0 + (x1 - x0) * t0, Y(y0 + (y1 - y0) * t0)); ctx.lineTo(x0 + (x1 - x0) * t1, Y(y0 + (y1 - y0) * t1)); ctx.stroke();
+      }
+    }
+    function grow(x, y, ang, len, w, d) {
+      let x1 = x + Math.sin(ang) * len, y1 = y + Math.cos(ang) * len;
+      // keep the limbs inside the crown: shorten and turn back towards the axis
+      for (let k = 0; k < 6 && !inside(x1, y1) && y1 > sp.yb * H * .8; k++) { len *= .8; ang *= .8; x1 = x + Math.sin(ang) * len; y1 = y + Math.cos(ang) * len; }
+      if (y1 > sp.yt * H - sp.r * .6) { const k = Math.max(.15, (sp.yt * H - sp.r * .6 - y) / Math.max(1, y1 - y)); x1 = x + (x1 - x) * k; y1 = y + (y1 - y) * k; d = maxD; }
+      const shade = .75 + .35 * R();
+      seg(x, y, x1, y1, w, w * .7, shade);
+      if (d >= 1) clumps.push({ x: (x + x1) / 2, y: (y + y1) / 2, z: R(), r: sp.r * (.55 + .4 * R()) });
+      if (d >= maxD || len < 7) { clumps.push({ x: x1, y: y1, z: R(), r: sp.r * (.75 + .5 * R()) }); return; }
+      const nb = pyr ? 2 : (R() < .35 ? 3 : 2);
+      for (let i = 0; i < nb; i++) {
+        const spread = pyr ? .22 : birch ? .55 : si === 6 ? .8 : .62;
+        let a = ang + (i - (nb - 1) / 2) * spread * (1.2 - .2 * R()) + (R() - .5) * .35;
+        if (birch && d >= 3) a += Math.sign(x1 - cx0 || 1) * .35; // birch limbs bend out and down
+        const keep = pyr && i === 0;
+        grow(x1, y1, keep ? ang * .5 : a, len * (keep ? .85 : .72 + .12 * R()), w * .68, d + 1);
+      }
+    }
+    // trunk up to the first fork, then the limbs
+    const fork = pyr ? sp.yb * H + 10 : Math.max(sp.yb * H * .95, H * .16);
+    const tw = Math.max(young ? 7 : 10, (young ? .04 : pyr ? .07 : .055) * Wn);
+    {
+      const n = 30; for (let i = 0; i < n; i++) {
+        const y0 = fork * i / n, y1 = fork * (i + 1) / n, w = tw * (1 - .25 * i / n) / 2, sw = Math.sin(y0 * .03 + seed) * 1.5;
+        const g = ctx.createLinearGradient(cx0 - w + sw, 0, cx0 + w + sw, 0);
+        g.addColorStop(0, `rgb(${bark.map(v => v * .5 | 0)})`); g.addColorStop(.6, `rgb(${bark})`); g.addColorStop(1, `rgb(${bark.map(v => Math.min(255, v * 1.12) | 0)})`);
+        ctx.fillStyle = g; ctx.fillRect(cx0 - w + sw, Y(y1), 2 * w, Y(y0) - Y(y1) + 1);
+        if (birch && R() < .55) { ctx.fillStyle = 'rgba(34,30,28,.85)'; ctx.fillRect(cx0 - w + sw + R() * w, Y(y1), w * (.3 + R() * .9), 1.6); }
+      }
+    }
+    const L0 = (sp.yt * H - fork) * (pyr ? .42 : .36);
+    const nMain = pyr ? 1 : young ? 2 : 3;
+    for (let i = 0; i < nMain; i++) grow(cx0, fork, nMain === 1 ? 0 : (i - (nMain - 1) / 2) * .55 + (R() - .5) * .2, L0 * (.9 + .2 * R()), tw * .85, 0);
+    if (pyr) for (let y = fork; y < sp.yt * H * .95; y += 14) { const sd = R() < .5 ? -1 : 1; grow(cx0, y, sd * (.25 + .2 * R()), 26 + 20 * R(), 2.2, 3); }
+    // extra clumps to fill the crown where the limbs left it thin
+    for (let g = 0, add = 0; g < 6000 && add < sp.n * 1.4; g++) {
+      const y = (sp.yb + R() * (sp.yt - sp.yb)) * H, w = hwp(y); if (w < 3) continue; const x = cx0 + (R() * 2 - 1) * w * .88;
+      if (R() < sp.gap) continue; const e = Math.abs(x - cx0) / w; clumps.push({ x, y, z: R() * (.35 + .6 * e), r: sp.r * (.7 + .5 * R()) }); add++;
+    }
+    clumps.sort((a, b) => a.z - b.z);
+    if (willow) { // hanging curtains of narrow leaves from every clump
+      for (const c of clumps) { const ns = 2 + (R() * 3 | 0); for (let q = 0; q < ns; q++) {
+        let px = c.x + (R() - .5) * c.r * 1.6, py = c.y + (R() - .3) * c.r; const len = 30 + R() * 70 * Math.min(1, (py / H) * 1.4), bend = (px - cx0) * .004;
+        for (let t = 0; t < len; t += 2.2) { const col = pal[(R() * pal.length) | 0], m = (.55 + .4 * c.z) * (.85 + .3 * R()) * (1 - .25 * t / len);
+          ctx.fillStyle = `rgb(${Math.min(255, col[0] * m) | 0},${Math.min(255, col[1] * m) | 0},${Math.min(255, col[2] * m) | 0})`;
+          ctx.beginPath(); ctx.ellipse(px + bend * t + (R() - .5) * 2.5, Y(py - t), .9, 2.6, (R() - .5) * .4, 0, Math.PI * 2); ctx.fill(); } } }
+    }
+    const lit = [.6, .8];
+    for (const c of clumps) {
+      const tH = Math.max(0, Math.min(1, (c.y / H - sp.yb) / (sp.yt - sp.yb))), side = (c.x - cx0) / (hwp(c.y) + 1);
+      const base = (.5 + .42 * c.z) * (.8 + .28 * tH) * (.94 + .1 * side);
+      for (let k = 0; k < sp.k; k++) {
+        let dx = (R() + R() + R() - 1.5) / 1.5, dy = (R() + R() + R() - 1.5) / 1.5;
+        if (dx * dx + dy * dy > 1) continue;
+        const px = c.x + dx * c.r, py = c.y + dy * c.r - sp.droop * c.r * .6 * (1 - dy);
+        const L = .72 + .42 * (dx * lit[0] + dy * lit[1]) * .7;
+        const col = pal[(R() * pal.length) | 0], m = Math.max(.22, base * L * (.84 + .32 * R()));
+        ctx.fillStyle = `rgb(${Math.min(255, col[0] * m) | 0},${Math.min(255, col[1] * m) | 0},${Math.min(255, col[2] * m) | 0})`;
+        const s = sp.ls * (.7 + .6 * R());
+        ctx.beginPath(); ctx.ellipse(px, Y(py), s, s * (.45 + .3 * R()), R() * Math.PI, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    return cv;
+  }
+  // crowns seen from above for the cards that close the top of a tree: cell 10, two variants of 256×256 (green-yellow, warm)
+  function paintTop(ctx, ox, oy, warm, seed) {
+    const R = rng(seed), pal = (warm ? SP[3].pal.concat(SP[5].pal) : SP[2].pal.concat(SP[0].pal)).map(hex), c = 128, rad = 118;
+    const cl = []; for (let i = 0; i < 160; i++) { const a = R() * Math.PI * 2, r = Math.sqrt(R()) * (rad - 14); cl.push({ x: c + Math.cos(a) * r, y: c + Math.sin(a) * r, z: R() * (1 - r / rad * .5), r: 12 + R() * 12 }); }
+    cl.sort((a, b) => a.z - b.z);
+    for (const q of cl) for (let k = 0; k < 70; k++) {
+      const dx = (R() + R() + R() - 1.5) / 1.5, dy = (R() + R() + R() - 1.5) / 1.5; if (dx * dx + dy * dy > 1) continue;
+      const px = q.x + dx * q.r, py = q.y + dy * q.r; if (Math.hypot(px - c, py - c) > rad) continue;
+      const L = (.55 + .4 * q.z) * (.8 + .35 * (dx * .6 - dy * .8) * .6) * (.85 + .3 * R()), col = pal[(R() * pal.length) | 0];
+      ctx.fillStyle = `rgb(${Math.min(255, col[0] * L) | 0},${Math.min(255, col[1] * L) | 0},${Math.min(255, col[2] * L) | 0})`;
+      ctx.beginPath(); ctx.ellipse(ox + px, oy + py, 2.6, 1.5, R() * Math.PI, 0, Math.PI * 2); ctx.fill(); }
+  }
+  function dilate(img) { // spread leaf colours into the transparent pixels around them
+    const d = img.data, w = img.width, h = img.height;
+    for (let pass = 0; pass < 6; pass++) {
+      const src = new Uint8ClampedArray(d);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4; if (src[i + 3] > 0 || (src[i] | src[i + 1] | src[i + 2])) continue;
+        let r = 0, g = 0, b = 0, n = 0;
+        for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const xx = x + ax, yy = y + ay; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+          const j = (yy * w + xx) * 4; if (src[j + 3] > 0 || (src[j] | src[j + 1] | src[j + 2])) { r += src[j]; g += src[j + 1]; b += src[j + 2]; n++; }
+        }
+        if (n) { d[i] = r / n; d[i + 1] = g / n; d[i + 2] = b / n; }
+      }
+    }
+    return img;
+  }
+  let cache = null;
+  window.__TREEATLAS = function () {
+    if (cache) return cache;
+    const cv = document.createElement('canvas'); cv.width = CW * COLS; cv.height = CH * ROWS;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    for (let i = 0; i < N; i++) ctx.drawImage(paint(i, 11 + i * 37), (i % COLS) * CW, Math.floor(i / COLS) * CH, CW, CH);
+    paintTop(ctx, 2 * CW, CH, false, 501); paintTop(ctx, 2 * CW, CH + 256, true, 733);
+    cache = { img: dilate(ctx.getImageData(0, 0, cv.width, cv.height)), n: N, cols: COLS, rows: ROWS, aspect: ASPECT, canvas: cv };
+    return cache;
+  };
+})();
+
 /* Donetsk 2011 · King's Tower live scene (v7.0)
    WebGL1, no libraries. Orbit camera around the tower; sun from the Donetsk clock or a slider;
    cars and people moving on the OpenStreetMap streets; lit windows, street lamps and the
@@ -655,9 +812,31 @@ const SPEC = {
   wpoplar: { rx: 4.0, rz: 7.5, th: 3.4, tile: 2, dens: 0.55, shape: 'egg', bark: [0.72, 0.72, 0.68] },
   sapling: { rx: 0.9, rz: 1.7, th: 1.5, tile: 1, dens: 0.45, shape: 'egg', bark: [0.32, 0.27, 0.22], thin: 1 },
 };
+/* v7.6: a near tree as three painted cards (trunk, limbs and leaves in the picture), a crown card seen from above, fallen leaves under it */
+function treePainted(F, x, y, name, S, sc, zg, R) {
+  const sp = PAINT[name], A = window.__TREEATLAS().aspect[sp], H = (S.th + S.rz) * sc * (name === 'poplar' ? 1.05 : 1.12), Wd = H * A[1] / A[0];
+  const col = sp % 8, row = Math.floor(sp / 8), tint = 0.9 + R() * 0.2, th = S.th * sc, cz = th + S.rz * sc * 0.5;
+  const C = [tint * (0.95 + R() * 0.1), tint * (0.95 + R() * 0.1), tint * 0.97];
+  const a0 = R() * Math.PI;
+  for (let k = 0; k < 3; k++) {
+    const a = a0 + k * Math.PI / 3, dx = Math.cos(a) * Wd / 2, dy = Math.sin(a) * Wd / 2;
+    const P = [[x - dx, y - dy, 0], [x + dx, y + dy, 0], [x + dx, y + dy, H], [x - dx, y - dy, H]], UV = [[0, 1], [1, 1], [1, 0], [0, 0]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { const p = P[i], s = i === 1 || i === 2 ? 1 : -1, n = V.norm([Math.cos(a) * s * 0.6, Math.sin(a) * s * 0.6, (p[2] - cz) / (H * 0.6) + 0.45]);
+      F.push(p[0], p[1], p[2] + zg - 0.1, n[0], n[1], n[2], 2 + (col + Math.min(.996, Math.max(.004, UV[i][0]))) / 8, (row + Math.min(.998, Math.max(.002, UV[i][1]))) / 2, C[0], C[1], C[2], Math.max(0, p[2] - th)); }
+  }
+  if (false) { // crown from above (off: it showed as a flat plate from the usual camera height) (old tile 15), a little below the top so the side cards hide it
+    const r = Wd * 0.36, z = th + (H - th) * 0.55, wv = name === 'chestnut' || name === 'maple' ? 0.25 : 0;
+    const Q = [[x - r, y - r], [x + r, y - r], [x + r, y + r], [x - r, y + r]], U2 = [[2.252, .502 + wv], [2.373, .502 + wv], [2.373, .748 + wv], [2.252, .748 + wv]];
+    for (const i of [0, 1, 2, 0, 2, 3]) F.push(Q[i][0], Q[i][1], z + zg, 0, 0, 1, U2[i][0], U2[i][1], C[0] * .9, C[1] * .9, C[2] * .9, z - th);
+  }
+  const lr = S.rx * sc * 1.1, tu6 = 0.5, tv6 = 0.25;
+  const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.25], [tu6, tv6 + 0.25]];
+  for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2] + tzS(L[i][0], L[i][1]), 0, 0, 1, Luv[i][0], Luv[i][1], .5, .48, .46, 0);
+}
 const SPK = { 0: ['chestnut', 'linden', 'maple', 'poplar', 'acacia'], 1: ['acacia', 'poplar', 'birch', 'maple', 'chestnut'], 2: ['chestnut', 'linden', 'maple', 'linden', 'chestnut'], 3: ['willow', 'wpoplar', 'poplar', 'willow', 'wpoplar'] };
 function treeDetailed(G, F, x, y, kind, R, species) {
   const name = species && SPEC[species] ? species : SPK[kind] ? SPK[kind][Math.floor(R() * 5)] : 'linden', S = SPEC[name], sc = S.thin ? 0.9 + R() * 0.2 : 0.8 + R() * 0.45, zg = tzS(x, y);
+  if (window.__TREEATLAS && PAINT[name] != null) { treePainted(F, x, y, name, S, sc, zg, R); return; }
   const rx = S.rx * sc, rz = S.rz * sc, th = S.th * (0.85 + R() * 0.3), cz = th + rz * 0.55;
   // trunk: tapered octagon
   const seg = 6, r0 = S.thin ? 0.035 : 0.16 + 0.05 * sc, r1 = S.thin ? 0.015 : 0.09, top = th + rz * 0.5;
@@ -703,6 +882,15 @@ function treeDetailed(G, F, x, y, kind, R, species) {
   const lr = rx * 1.2, tu6 = 0.5, tv6 = 0.25, lc = [1, 1, 1];
   const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.25], [tu6, tv6 + 0.25]];
   for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2] + tzS(L[i][0], L[i][1]), 0, 0, 1, Luv[i][0], Luv[i][1], 1, 1, 1, 0);
+}
+/* v7.6: one texture for all trees: the painted October trees (treeatlas.js, 2048×1024, cells 0-9) with the old leaf atlas
+   (512×512) in the free cells at x 1024-1536, y 512-1024. Old uv (u,v) map to (0.5+u/4, 0.5+v/2); painted uv are passed as u+2. */
+const PAINT = { chestnut: 3, linden: 2, poplar: 0, maple: 5, birch: 4, acacia: 6, willow: 8, wpoplar: 9, sapling: 7 };
+function treeAtlasKT() {
+  const TA = window.__TREEATLAS(), img = new ImageData(new Uint8ClampedArray(TA.img.data), TA.img.width, TA.img.height);
+  const la = leafAtlas(), ld = la.getContext('2d').getImageData(0, 0, 512, 512).data, W = img.width;
+  for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) { const i = (y * 512 + x) * 4, j = ((512 + y) * W + 1024 + x) * 4; for (let k = 0; k < 4; k++) img.data[j + k] = ld[i + k]; }
+  return img;
 }
 /* leaf atlas drawn in the browser: 4x2 tiles of 128 px (6 species, fallen leaves, spare) */
 function leafAtlas() {
@@ -966,7 +1154,7 @@ attribute vec3 aP; attribute vec3 aN; attribute vec2 aU; attribute vec3 aC; attr
 uniform mat4 uVP; uniform mat4 uLVP; uniform float uT; uniform float uWind;
 varying vec3 vW; varying vec3 vN; varying vec2 vU; varying vec3 vC; varying vec4 vL;
 void main(){ vec3 p=aP; float k=aS*0.03*uWind; p.x+=sin(uT*1.9+aP.x*0.37+aP.y*0.23)*k; p.y+=cos(uT*1.5+aP.y*0.31)*k*0.7; p.z+=sin(uT*2.3+aP.x)*k*0.2;
-  vW=p; vN=aN; vU=aU; vC=aC; vL=uLVP*vec4(p,1.0); gl_Position=uVP*vec4(p,1.0); }`;
+  vW=p; vN=aN; vU=aU.x>1.5?vec2(aU.x-2.0,aU.y):vec2(0.5+aU.x*0.25,0.5+aU.y*0.5); vC=aC; vL=uLVP*vec4(p,1.0); gl_Position=uVP*vec4(p,1.0); }`;
 const FOL_FS = HDR + `
 varying vec3 vW; varying vec3 vN; varying vec2 vU; varying vec3 vC; varying vec4 vL;
 uniform sampler2D uTex; uniform sampler2D uSh; uniform float uShOn; uniform vec3 uCam; uniform vec3 uSun; uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec3 uFog; uniform float uFogD; uniform float uClipZ; uniform float uNight;
@@ -974,7 +1162,7 @@ void main(){
   if(vW.z<uClipZ) discard;
   vec4 t=texture2D(uTex,vU); if(t.a<0.45) discard;
   vec3 N=normalize(vN); vec3 Vd=normalize(uCam-vW);
-  float s=1.0; if(uShOn>0.5){ vec3 q=vL.xyz/vL.w*0.5+0.5; if(q.x>0.0&&q.x<1.0&&q.y>0.0&&q.y<1.0&&q.z<1.0){ s=0.0; for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=(texture2D(uSh,q.xy+vec2(float(i),float(j))/2048.0).r+0.003<q.z)?0.0:1.0; s/=9.0; } }
+  float s=1.0; if(uShOn>0.5){ vec3 q=vL.xyz/vL.w*0.5+0.5; if(q.x>0.0&&q.x<1.0&&q.y>0.0&&q.y<1.0&&q.z<1.0){ s=0.0; for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=(texture2D(uSh,q.xy+vec2(float(i),float(j))/2048.0).r+0.003<q.z)?0.0:1.0; s/=9.0; s=0.35+0.65*s; } }
   float ndl=max(dot(N,uSun)*0.6+0.4,0.0); float tr=pow(max(dot(-Vd,uSun),0.0),4.0)*0.5;
   vec3 col=t.rgb*vC; vec3 amb=mix(uGndC,uSkyC,N.z*0.5+0.5);
   vec3 c=col*(amb*0.9+uSunC*(ndl+tr)*s);
@@ -988,11 +1176,13 @@ varying vec3 vW; varying vec3 vN; varying vec2 vU; varying vec3 vC; varying vec4
 void main(){ float c=cos(aJ.w), s=sin(aJ.w); vec2 q=vec2(aP.x*c-aP.y*s, aP.x*s+aP.y*c)*aJ.x; float z=aP.z*aI.w;
   vec3 p=vec3(aI.xy+q, aI.z+z);
   float sw=aP.z*aP.z*0.35*uWind; p.x+=sin(uT*1.7+aI.y*0.2)*sw; p.y+=cos(uT*1.3+aI.x*0.2)*sw*0.6;
-  float tile=aU.z>0.5?15.0:aJ.y; vec2 to=vec2(mod(tile,4.0)*0.25, floor(tile/4.0+0.01)*0.25);
-  vU=to+vec2(0.003,0.003)+aU.xy*0.244;
+  float tile=aU.z>0.5&&aJ.y<15.5?15.0:aJ.y;
+  if(aU.z>0.5&&tile>15.5){ vU=vec2(0.252+clamp(aU.x,0.0,1.0)*0.121, 0.502+(aJ.z>0.5?0.25:0.0)+clamp(aU.y,0.0,1.0)*0.246); }
+  else if(tile>15.5){ float sp=tile-16.0; vU=vec2((mod(sp,8.0)+clamp(aU.x,0.004,0.996))*0.125,(floor(sp/8.0+0.01)+clamp(aU.y,0.002,0.998))*0.5); }
+  else { vec2 to=vec2(mod(tile,4.0)*0.25, floor(tile/4.0+0.01)*0.25)+vec2(0.003,0.003)+aU.xy*0.244; vU=vec2(0.5+to.x*0.25,0.5+to.y*0.5); }
   vN=aU.z>0.5?vec3(0.0,0.0,1.0):normalize(vec3(q/(aJ.x+0.001)*1.6,0.55+0.4*aP.z));
   float tn=aJ.z; vC=vec3(0.86+0.24*tn,0.88+0.16*tn,0.9); vW=p; vL=uLVP*vec4(p,1.0); gl_Position=uVP*vec4(p,1.0); }`;
-const SHF_VS = HDR + `attribute vec3 aP; attribute vec2 aU; uniform mat4 uLVP; varying vec2 vU; void main(){ vU=aU; gl_Position=uLVP*vec4(aP,1.0); }`;
+const SHF_VS = HDR + `attribute vec3 aP; attribute vec2 aU; uniform mat4 uLVP; varying vec2 vU; void main(){ vU=aU.x>1.5?vec2(aU.x-2.0,aU.y):vec2(0.5+aU.x*0.25,0.5+aU.y*0.5); gl_Position=uLVP*vec4(aP,1.0); }`;
 const SHF_FS = HDR + `varying vec2 vU; uniform sampler2D uTex; void main(){ if(texture2D(uTex,vU).a<0.45) discard; gl_FragColor=vec4(1.0); }`;
 const AO_VS = HDR + `attribute vec3 aP; attribute float aA; uniform mat4 uVP; varying float vA; void main(){ vA=aA; gl_Position=uVP*vec4(aP,1.0); }`;
 const AO_FS = HDR + `varying float vA; uniform float uK; void main(){ float a=vA*uK; gl_FragColor=vec4(vec3(1.0-a),1.0); }`;
@@ -1124,7 +1314,7 @@ function Sound() {
 /* ---------- the scene ---------- */
 async function open(host, opt) {
   opt = opt || {};
-  const S = Object.assign({ load: 'Loading…', fail: 'WebGL is not available on this device.' }, opt.text || {});
+  const S = Object.assign({ load: 'Loading…', fail: 'WebGL is not available on this device.' }, opt.text || {}), hero = !!opt.hero;
   const canvas = document.createElement('canvas'); canvas.className = 'kt3d-c'; host.appendChild(canvas);
   // v7.5: say why WebGL is missing. After a graphics-driver crash Chromium blocks WebGL for the site until the browser restarts.
   let why = ''; canvas.addEventListener('webglcontextcreationerror', e => { why = e.statusMessage || ''; });
@@ -1254,20 +1444,25 @@ async function open(host, opt) {
     let list = FOL.imp; const cap = mobile ? 9000 : 60000; if (list.length > cap) list = list.slice().sort((a, b) => (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1])).slice(0, cap);
     const WE2 = []; D.water.forEach((w, wi) => { if (Math.abs(TERR.wl(wi) - TERR.WZ) > 1) return; const p = pts(w, 0, 10); for (let i = 0; i < p.length; i++) WE2.push([p[i], p[(i + 1) % p.length]]); });
     const sd2 = (x, y, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)); return Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy); };
-    const I = new Float32Array(list.length * 8), ri = rng(4242);
+    const I = new Float32Array(list.length * 8), ri = rng(4242), TAA = window.__TREEATLAS ? window.__TREEATLAS() : null;
     list.forEach(([x, y, k], n) => { const u = ri(), wet = k !== 5 && WE2.length && WE2.some(e => sd2(x, y, e[0], e[1]) < 26);
       let tile = wet ? (u < 0.45 ? 14 : u < 0.75 ? 12 : 11) : k === 5 ? (u < 0.22 ? 13 : u < 0.55 ? 8 : u < 0.8 ? 11 : u < 0.9 ? 9 : 10) : (u < 0.4 ? 8 : u < 0.55 ? 9 : u < 0.66 ? 10 : u < 0.92 ? 11 : u < 0.97 ? 12 : 13);
-      const sz = 0.8 + ri() * 0.5, w = tile === 12 ? 6.5 * sz : tile === 13 ? 6.5 * sz : tile === 14 ? 12 * sz : 11 * sz, h = tile === 12 ? 22 * sz : tile === 13 ? 14 * sz : tile === 14 ? 12 * sz : 15 * sz;
+      const sz = 0.8 + ri() * 0.5; let w = tile === 12 ? 6.5 * sz : tile === 13 ? 6.5 * sz : tile === 14 ? 12 * sz : 11 * sz, h = tile === 12 ? 22 * sz : tile === 13 ? 14 * sz : tile === 14 ? 12 * sz : 15 * sz;
+      if (TAA && tile !== 13) { // v7.6: painted species instead of the old crowns
+        const v = ri(), sp = tile === 12 ? 0 : tile === 14 ? 8 : tile === 10 ? 5 : tile === 9 ? (v < .6 ? 2 : 4) : tile === 11 ? (v < .6 ? 6 : 1) : [3, 2, 5, 6, 1, 9][(v * 6) | 0];
+        const A = TAA.aspect[sp]; h = (tile === 12 ? 22 : 15) * sz * (A[0] / 1.3) ** .5; w = h * A[1] / A[0]; tile = 16 + sp; }
       I.set([x, y, tzS(x, y) - 0.15, h, w, tile, ri(), ri() * TAU], n * 8); });
     const B = []; const qd = (a, b, c, d, k) => { for (const v of [a, b, c, a, c, d]) B.push(v[0], v[1], v[2], v[3], v[4], k); };
     qd([-0.5, 0, 0, 0, 1], [0.5, 0, 0, 1, 1], [0.5, 0, 1, 1, 0], [-0.5, 0, 1, 0, 0], 0);
-    qd([0, -0.5, 0, 0, 1], [0, 0.5, 0, 1, 1], [0, 0.5, 1, 1, 0], [0, -0.5, 1, 0, 0], 0);
+    const c6 = Math.cos(Math.PI / 3) * .5, s6 = Math.sin(Math.PI / 3) * .5;
+    qd([-c6, -s6, 0, 0, 1], [c6, s6, 0, 1, 1], [c6, s6, 1, 1, 0], [-c6, -s6, 1, 0, 0], 0);
+    qd([c6, -s6, 0, 0, 1], [-c6, s6, 0, 1, 1], [-c6, s6, 1, 1, 0], [c6, -s6, 1, 0, 0], 0);
     qd([-0.3, -0.3, 0.6, 0, 1], [0.3, -0.3, 0.6, 1, 1], [0.3, 0.3, 0.6, 1, 0], [-0.3, 0.3, 0.6, 0, 0], 1);   // small top card, hidden inside the crown from the side
     impB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(B), gl.STATIC_DRAW);
     impI = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impI); gl.bufferData(gl.ARRAY_BUFFER, I, gl.STATIC_DRAW); nImp = list.length;
   }
   const leafTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, leafTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, leafAtlas()); gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, treeAtlasKT()); gl.generateMipmap(gl.TEXTURE_2D);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
   /* ground: one big quad; inside the water polygons it is masked out with the stencil */
@@ -1439,6 +1634,7 @@ async function open(host, opt) {
     const k = e.key; if (k === 'ArrowLeft') st.yaw += 0.08; else if (k === 'ArrowRight') st.yaw -= 0.08; else if (k === 'ArrowUp') st.pitch = Math.min(1.35, st.pitch + 0.05);
     else if (k === 'ArrowDown') st.pitch = Math.max(0.03, st.pitch - 0.05); else if (k === '+' || k === '=') st.dist = Math.max(28, st.dist * 0.88); else if (k === '-') st.dist = Math.min(950, st.dist * 1.13); else return; e.preventDefault(); });
   canvas.tabIndex = 0;
+  if (hero) { canvas.tabIndex = -1; canvas.style.pointerEvents = 'none'; canvas.style.cursor = 'default'; if (opt.view) { st.yaw = opt.view[0]; st.pitch = opt.view[1]; st.dist = opt.view[2]; } }
 
   /* environment from the hour */
   function env(hour, weather) {
@@ -1619,17 +1815,20 @@ async function open(host, opt) {
   let lostT = 0;
   canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); st.alive = false; cancelAnimationFrame(st.raf);
     if (!host.querySelector('.kt3d-fail')) host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${S.lost || S.fail}</p>`); });
+  let heroT = 0;
   let bloomOn = opt.bloom !== false, shOn = !!shFb && quality >= 2, refOn = quality >= 1, frames = 0, fpsT = performance.now(), fps = 60;
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
+    const dpr = Math.min(window.devicePixelRatio || 1, hero ? 1 : mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   }
   function frame(now) {
     if (!st.alive) return;
     st.raf = requestAnimationFrame(frame);
     if (document.hidden) return;
+    if (hero) { if (st.paused || now - heroT < 31) return; heroT = now; } // v7.6 hero: 30 fps at most, paused off screen
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
+    if (hero) st.yaw += dt * 0.022;
     // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
     if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
     lastT = now; simT += dt;
@@ -1645,7 +1844,7 @@ async function open(host, opt) {
     const tgt = [0, 0, tz], cam = [tgt[0] + Math.cos(st.yaw) * ch * st.dist, tgt[1] + Math.sin(st.yaw) * ch * st.dist, Math.max(2.5, tgt[2] + Math.sin(st.pitch) * st.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
     const W = canvas.width, H = canvas.height, asp = W / H;
     const fov = (asp < 0.8 ? 62 : 46) * Math.PI / 180;
-    cam0 = cam; const proj = persp(fov, asp, 0.5, 6000), view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view);
+    cam0 = cam; const proj = persp(fov, asp, 0.5, 6000); if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view);
     const px = H / (2 * Math.tan(fov / 2));
     // shadow pass
     let LVP = new Float32Array(16);
@@ -1718,6 +1917,7 @@ async function open(host, opt) {
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
     debug() { return { nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = yaw; st.pitch = pitch; st.dist = dist; },
+    pause(v) { st.paused = !!v; },
     destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); canvas.width = canvas.height = 1; canvas.remove(); },
   };
 }

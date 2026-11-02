@@ -739,7 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
- {id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
+ {id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
@@ -1482,7 +1482,7 @@ const TX={
  fi:{more:'Napauta lukeaksesi tarkkuudesta',motto:'Projektin tunnuslause: ”Kartan on oltava kuin oikea”',title:"King's Tower · elävä kortteli Kalmiusjoen rannalla",close:'Sulje',now:'Nyt',lapse:'Nopeuta aikaa',clear:'Selkeää',rain:'Sade',fog:'Sumu',sound:'Ääni',time:'Aika Donetskissa',hint:'Vedä kääntääksesi · rulla tai kaksi sormea lähentää',load:'Ladataan näkymää…',fail:'WebGL ei toimi tällä laitteella, joten 3D-näkymää ei voi näyttää.',blocked:'Selain poisti 3D:n käytöstä tältä sivustolta näytönohjaimen kaatumisen jälkeen. Sulje selain kokonaan ja avaa uudelleen — 3D palaa.',lost:'Näytönohjain pudotti 3D-näkymän. Lataa sivu uudelleen; jos se toistuu, sulje selain kokonaan ja avaa uudelleen.',note:"Torni, talot, kadut ja vesi perustuvat OpenStreetMapiin, valokuviin ja julkisiin lähteisiin; maasto SRTM-tutkamittaukseen (1–5 m:n tarkkuudella), ja tornin piha on samalla tasolla kuin sen pohjakerros. Autot, ihmiset, ikkunat, katuvalot ja sää ovat simulaatiota, eivät tallenne vuodelta 2011; kaukaiset kaupungin valot ovat yleisiä. Piha, aidat, puut ja ranta tornin ympärillä on sijoitettu silmämääräisesti lokakuun 2011 Street View -panoraamoista (2–5 m:n tarkkuudella); parvekkeet ja omakotitalojen katot ovat tyypillisiä. Tornin pihan ulkopuoliset puut on sijoitettu OSM-kartan maankäytön mukaan: pihojen, puutarhojen, puistojen ja metsävyöhykkeiden tiheys on kartasta, yksittäisen puun paikka on arvio."}}[L]||null;
 const T=TX||{};let box=null,ctl=null,last=null,loading=null;
 const fmt=h=>{h=((h%24)+24)%24;const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')};
-function load(){if(window.KT3D)return Promise.resolve();if(loading)return loading;loading=new Promise((ok,no)=>{const s=document.createElement('script');s.src='assets/kt3d.js?v=197a3d18';s.onload=ok;s.onerror=no;document.head.appendChild(s)});return loading}
+function load(){if(window.KT3D)return Promise.resolve();if(loading)return loading;loading=new Promise((ok,no)=>{const s=document.createElement('script');s.src='assets/kt3d.js?v=0493e1a7';s.onload=ok;s.onerror=no;document.head.appendChild(s)});return loading}
 function build(){
   box=document.createElement('div');box.className='kt3d';box.hidden=true;box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label',T.title);
   box.innerHTML=`<div class="kt3d-top"><h2>${T.title}<small class="kt3d-motto">${T.motto}</small></h2><button type="button" class="kt3d-x" aria-label="${T.close}">×</button></div>
@@ -1505,14 +1505,14 @@ function build(){
   box._ui={rg,out};
 }
 async function open(e){
-  last=e&&e.currentTarget;if(!box)build();box.hidden=false;document.documentElement.classList.add('kt3d-on');box.querySelector('.kt3d-x').focus();
+  if(window.__ktHeroStop)window.__ktHeroStop();last=e&&e.currentTarget;if(!box)build();box.hidden=false;document.documentElement.classList.add('kt3d-on');box.querySelector('.kt3d-x').focus();
   const host=box.querySelector('.kt3d-host'),ld=host.querySelector('.kt3d-load'),hint=host.querySelector('.kt3d-hint');ld.hidden=false;hint.style.opacity=1;
   try{await load();ctl=await window.KT3D.open(host,{data:'assets/kt3d.json?v=f043aad5',text:{fail:T.fail,blocked:T.blocked,lost:T.lost},onHour:(h,auto)=>{const u=box._ui;if(auto||document.activeElement!==u.rg)u.rg.value=h.toFixed(2);u.out.textContent=fmt(h)}});
     ld.hidden=true;const c=host.querySelector('canvas');if(c)c.focus({preventScroll:true});setTimeout(()=>{hint.style.opacity=0},6000)}
   catch(err){ld.textContent=T.fail}
 }
 function close(){if(ctl){ctl.destroy();ctl=null}box.hidden=true;document.documentElement.classList.remove('kt3d-on');
-  box.querySelectorAll('[aria-pressed]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('kt3d-now')||b.dataset.w==='clear')));if(last)last.focus()}
+  box.querySelectorAll('[aria-pressed]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('kt3d-now')||b.dataset.w==='clear')));if(last)last.focus();if(window.__ktHeroStart)setTimeout(window.__ktHeroStart,900)}
 btns.forEach(b=>b.addEventListener('click',open));
 /* v7.4: a direct link that opens the scene at once: …/donetsk-2011/#3d (or the short …/3d/ page); the address follows the overlay */
 const want3d=()=>/^#3d$/i.test(location.hash);
@@ -1522,5 +1522,32 @@ const xb=document.querySelector('.kt3d .kt3d-x');
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.kt3d-x')&&want3d())history.replaceState(null,'',location.pathname+location.search)},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('kt3d-on')&&want3d())history.replaceState(null,'',location.pathname+location.search)},true);
 if(want3d())_open({currentTarget:btns[0]});
+/* v7.6: the live scene as the home hero on computers: the same King's Tower scene, lighter (no shadows, 30 fps, 1:1 pixels),
+   turning slowly with the real Donetsk time; the rendered picture stays underneath until the scene runs and wherever 3D is not wise
+   (phones, reduced motion, weak or failing graphics). Two failed starts in a row switch it off for this browser. */
+(function(){const hk=document.querySelector('.hero-kt');if(!hk)return;
+  const L=(document.documentElement.lang||'ru').slice(0,2),CAP={ru:'Живая 3D-сцена: солнце и свет в окнах — как сейчас в Донецке. Дома, улицы и деревья по OpenStreetMap, детали приблизительны',
+    uk:'Жива 3D-сцена: сонце й світло у вікнах — як зараз у Донецьку. Будинки, вулиці й дерева за OpenStreetMap, деталі приблизні',
+    en:'A live 3D scene: the sun and the lit windows follow the time in Donetsk right now. Houses, streets and trees from OpenStreetMap; details approximate',
+    fi:'Elävä 3D-näkymä: aurinko ja ikkunoiden valot seuraavat Donetskin kellonaikaa. Talot, kadut ja puut OpenStreetMapista; yksityiskohdat likimääräisiä'};
+  const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}};
+  const ok=()=>!(matchMedia('(pointer:coarse)').matches||innerWidth<900||matchMedia('(prefers-reduced-motion: reduce)').matches||(navigator.deviceMemory||8)<4||(navigator.hardwareConcurrency||8)<4||(navigator.connection&&navigator.connection.saveData)||+(ls('kt3dHeroFail')||0)>=2);
+  let hc=null,el=null,busy=false,vis=true;const cap=document.querySelector('.kt-cap small'),cap0=cap&&cap.textContent;
+  function stop(){if(hc){hc.destroy();hc=null}if(el){el.remove();el=null}if(cap)cap.textContent=cap0}
+  async function start(){if(hc||busy||!ok()||document.documentElement.classList.contains('kt3d-on')||scrollY>innerHeight)return;busy=true;
+    ls('kt3dHeroFail',String(+(ls('kt3dHeroFail')||0)+1));
+    try{await load();el=document.createElement('div');el.className='hero-live';hk.appendChild(el);
+      const c=await window.KT3D.open(el,{data:'assets/kt3d.json?v=f043aad5',hero:true,quality:1,shiftX:innerWidth>1100?.42:.3,view:[Math.atan2(-330,-270)+.5,.13,380],text:{fail:'',blocked:'',lost:''}});
+      if(!el||document.documentElement.classList.contains('kt3d-on')){if(c)c.destroy();busy=false;return}
+      hc=c;const cv=el.querySelector('canvas');
+      if(!cv||el.querySelector('.kt3d-fail')){stop();busy=false;return}
+      cv.addEventListener('webglcontextlost',()=>{ls('kt3dHeroFail','2');stop()});
+      hc.pause(!vis);setTimeout(()=>{if(hc&&el){el.classList.add('on');if(cap)cap.textContent=CAP[L]||CAP.ru;ls('kt3dHeroFail',null)}},1600)}
+    catch(e){stop()}busy=false}
+  window.__ktHeroStop=stop;window.__ktHeroStart=start;
+  if('IntersectionObserver' in window)new IntersectionObserver(es=>{vis=es[0].isIntersecting;if(hc)hc.pause(!vis)}).observe(hk);
+  const go=()=>setTimeout(()=>{if(!want3d())start()},1200);
+  if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});
+})();
 addEventListener('hashchange',()=>{if(want3d()&&!document.documentElement.classList.contains('kt3d-on'))_open({currentTarget:btns[0]})});
 })();

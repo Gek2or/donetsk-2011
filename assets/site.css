@@ -2020,3 +2020,7 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 /* v7.6: the cab of a Tatra T3SU - pillars, sun visor, dusty glass outside the wiper's sweep, an instrument panel */
 .tr-frame{position:absolute;inset:0;width:100%;height:100%;display:block}
 .tr-wiper{height:3px;background:linear-gradient(90deg,#0b0907,#1d1813);opacity:.9;left:6%;bottom:12%;width:30%;transform-origin:100% 50%;transform:rotate(2deg);box-shadow:0 1px 0 #ffffff12}
+/* v7.6: the live 3D scene in the home hero, faded in over the rendered picture */
+.hero-live{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
+.hero-live.on{opacity:1}
+.hero-live .kt3d-fail{display:none}
