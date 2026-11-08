@@ -2024,3 +2024,5 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .hero-live{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
 .hero-live.on{opacity:1}
 .hero-live .kt3d-fail{display:none}
+/* v7.10: in the cab view the photo chip sits small under the time button, out of the line of sight */
+.tr-glass.m3d .tr-phchip{bottom:auto;top:52px;right:12px;padding:6px 11px;font-size:12px;opacity:.9}

@@ -739,7 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
- {id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
+ {id:'2026-11-09-v710',d:'2026-11-09',ty:'site',v:'v7.10',cta:['city.html#tram','tr0']},{id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
@@ -1244,13 +1244,15 @@ let dashT=0,lastV=0;function dashUpd(){const ts=performance.now();if(ts-dashT<12
   const atS=atStop()>=0&&v<.3&&dwell>0;if(ld)ld.classList.toggle('on',!atS);if(lr)lr.classList.toggle('on',playing&&acc>.02);if(lb)lb.classList.toggle('on',acc<-.02||(!playing&&v<.1))}
 function stop(){playing=false;setPlay()}
 function setPlay(){play.setAttribute('aria-pressed',String(playing));play.querySelector('span').textContent=T(playing?'tr4':'tr3');play.querySelector('path').setAttribute('d',playing?'M7 5h4v14H7zM13 5h4v14h-4z':'M8 5v14l11-7z')}
-function jump(k){dirty=true;k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
+/* v7.10: after a jump or a drag of the slider the trip clock shows the time a real ride to that point takes, not the time spent before */
+function estT(px){let n=0;for(let k=1;k<SS.length;k++)if(SS[k]<=px+.5)n++;return px/8.5+n*DWELL}
+function jump(k){dirty=true;k=Math.max(0,Math.min(ST.length-1,k));x=SS[k];tsim=estT(x);v=0;arrived=k;dwell=playing?DWELL*.5:0;clackX=x;holdUntil=0;board();gauges();camera(0);windowView(true);follow()}
 play.addEventListener('click',()=>{playing=!playing;if(playing){if(x>=LM-1){x=0;tsim=0;arrived=0}dwell=Math.min(dwell,1.5);if(soundOn()&&AC.state==='suspended')AC.resume()}setPlay()});
 snd.addEventListener('click',()=>{const on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));if(on){audio();if(AC&&AC.state==='suspended')AC.resume();if(AC&&!playing)bell()}sound()});
 fast.addEventListener('click',()=>{si=(si+1)%SPD.length;tf=SPD[si];fast.textContent='×'+tf;fast.setAttribute('aria-pressed',String(si>1))});
 $('.tr-prev').addEventListener('click',()=>{const s=atStop();let k=s>=0?s-1:nextStop()-1;jump(k)});
 $('.tr-next-b').addEventListener('click',()=>{const s=atStop();jump(s>=0?s+1:nextStop())});
-range.addEventListener('input',()=>{dirty=true;x=range.value/1000*LM;v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
+range.addEventListener('input',()=>{dirty=true;x=range.value/1000*LM;tsim=estT(x);v=0;dwell=0;arrived=atStop();holdUntil=0;board();gauges();camera(0);windowView(true);follow()});
 scheme.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)jump(+b.dataset.i)});
 $$('.tr-modes button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.v;dirty=true;if(mode==='3d')start3d();$$('.tr-modes button').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));holdUntil=0;curPh=undefined;windowView(true)}));
 /* ---- the cab view (v6.6): the renderer and the street data are loaded when the ride comes near ---- */
