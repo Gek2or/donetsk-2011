@@ -176,6 +176,16 @@ function persp(fovy, asp, n, f) {
   const t = 1 / Math.tan(fovy / 2), m = new Float32Array(16);
   m[0] = t / asp; m[5] = t; m[10] = (f + n) / (n - f); m[11] = -1; m[14] = 2 * f * n / (n - f); return m;
 }
+function minv(m) { // general 4x4 inverse (column-major)
+  const a = m, o = new Float32Array(16), b = [];
+  b[0] = a[0] * a[5] - a[1] * a[4]; b[1] = a[0] * a[6] - a[2] * a[4]; b[2] = a[0] * a[7] - a[3] * a[4]; b[3] = a[1] * a[6] - a[2] * a[5]; b[4] = a[1] * a[7] - a[3] * a[5]; b[5] = a[2] * a[7] - a[3] * a[6];
+  b[6] = a[8] * a[13] - a[9] * a[12]; b[7] = a[8] * a[14] - a[10] * a[12]; b[8] = a[8] * a[15] - a[11] * a[12]; b[9] = a[9] * a[14] - a[10] * a[13]; b[10] = a[9] * a[15] - a[11] * a[13]; b[11] = a[10] * a[15] - a[11] * a[14];
+  let det = b[0] * b[11] - b[1] * b[10] + b[2] * b[9] + b[3] * b[8] - b[4] * b[7] + b[5] * b[6]; if (!det) return null; det = 1 / det;
+  o[0] = (a[5] * b[11] - a[6] * b[10] + a[7] * b[9]) * det; o[1] = (a[2] * b[10] - a[1] * b[11] - a[3] * b[9]) * det; o[2] = (a[13] * b[5] - a[14] * b[4] + a[15] * b[3]) * det; o[3] = (a[10] * b[4] - a[9] * b[5] - a[11] * b[3]) * det;
+  o[4] = (a[6] * b[8] - a[4] * b[11] - a[7] * b[7]) * det; o[5] = (a[0] * b[11] - a[2] * b[8] + a[3] * b[7]) * det; o[6] = (a[14] * b[2] - a[12] * b[5] - a[15] * b[1]) * det; o[7] = (a[8] * b[5] - a[10] * b[2] + a[11] * b[1]) * det;
+  o[8] = (a[4] * b[10] - a[5] * b[8] + a[7] * b[6]) * det; o[9] = (a[1] * b[8] - a[0] * b[10] - a[3] * b[6]) * det; o[10] = (a[12] * b[4] - a[13] * b[2] + a[15] * b[0]) * det; o[11] = (a[9] * b[2] - a[8] * b[4] - a[11] * b[0]) * det;
+  o[12] = (a[5] * b[7] - a[4] * b[9] - a[6] * b[6]) * det; o[13] = (a[0] * b[9] - a[1] * b[7] + a[2] * b[6]) * det; o[14] = (a[13] * b[1] - a[12] * b[3] - a[14] * b[0]) * det; o[15] = (a[8] * b[3] - a[9] * b[1] + a[10] * b[0]) * det;
+  return o; }
 function ortho(l, r, b, t, n, f) {
   const m = new Float32Array(16);
   m[0] = 2 / (r - l); m[5] = 2 / (t - b); m[10] = -2 / (f - n);
@@ -1218,14 +1228,14 @@ vec2 ng(vec2 p){ float e=0.15; float c=n2(p); return vec2(n2(p+vec2(e,0.0))-c, n
 vec2 waves(vec2 p){
   vec2 g=vec2(0.0); float a=0.06*(0.4+uWind);
   g+=ng(p*0.35+vec2(uT*0.25,uT*0.12))*a*0.9+ng(p*1.3-vec2(uT*0.4,uT*0.3))*a*0.45;
-  g+=vec2(cos(p.x*0.21+p.y*0.07+uT*0.9),0.0)*a*0.4;
-  g+=vec2(cos(dot(p,vec2(0.7,0.5))*0.9+uT*1.8),cos(dot(p,vec2(-0.4,0.8))*1.1+uT*1.5))*a*0.5;
+  g+=vec2(cos(p.x*0.21+p.y*0.07+uT*0.9),0.0)*a*0.25;
+  g+=vec2(cos(dot(p,vec2(0.7,0.5))*0.9+uT*1.8+3.0*n2(p*0.05)),cos(dot(p,vec2(-0.4,0.8))*1.1+uT*1.5+3.0*n2(p*0.04+7.0)))*a*0.35;
   g+=vec2(cos(dot(p,vec2(0.3,-0.9))*2.7+uT*2.6),cos(dot(p,vec2(0.8,0.2))*3.1+uT*2.9))*a*0.25;
   if(uRain>0.0){ vec2 c=floor(p*0.7); for(int i=0;i<4;i++){ vec2 o=vec2(float(i/2),float(i-2*(i/2))); vec2 cc=c+o; float ph=fract(uT*0.8+h21(cc)); vec2 ctr=(cc+vec2(h21(cc+3.1),h21(cc+7.7)))/0.7; float r=length(p-ctr); float ring=sin((r-ph*1.6)*14.0)*exp(-abs(r-ph*1.6)*6.0)*(1.0-ph); g+=normalize(p-ctr+1e-4)*ring*0.12*uRain; } }
   return g;
 }
 void main(){
-  vec2 g=waves(vW.xy); vec3 N=normalize(vec3(-g.x,-g.y,1.0));
+  vec2 g=waves(vW.xy)/(1.0+length(uCam-vW)*0.004); vec3 N=normalize(vec3(-g.x,-g.y,1.0));
   vec3 Vd=normalize(uCam-vW); float fr=0.03+0.97*pow(1.0-max(dot(N,Vd),0.0),5.0);
   vec2 su=gl_FragCoord.xy/uRes; vec3 refl;
   if(uRefOn>0.5) refl=texture2D(uRef, su+N.xy*0.04).rgb; else { vec3 R=reflect(-Vd,N); refl=mix(uFog,uSkyC,smoothstep(0.0,0.4,R.z)); }
@@ -1532,6 +1542,14 @@ async function open(host, opt) {
   const NET = buildNets(D), rnd = rng(9);
   const CARC = [[0.75, 0.75, 0.73], [0.55, 0.06, 0.06], [0.1, 0.18, 0.38], [0.08, 0.08, 0.09], [0.6, 0.6, 0.58], [0.16, 0.32, 0.2], [0.85, 0.83, 0.72], [0.55, 0.45, 0.28], [0.9, 0.9, 0.88]];
   const cars = [], people = [];
+  /* v7.11 life: trams on the tram tracks of the district (one or two per track, Tatra T3 in the red and cream livery) and
+     flocks of birds over the water and the yards. Like the cars and the people, they are a simulation, not a record. */
+  const trams = []; for (const r of D.rl || []) { if (r[0] !== 1) continue; const pp = pts(r, 3, 10), L = [0]; for (let i = 1; i < pp.length; i++) L.push(L[i - 1] + Math.hypot(pp[i][0] - pp[i - 1][0], pp[i][1] - pp[i - 1][1]));
+    const len = L[L.length - 1]; if (len < 300 || !pp.some(q => Math.hypot(q[0], q[1]) < (D._mob ? 900 : 1500))) continue; const e = { p: pp, L, len };
+    for (let k = 0, n = len > 1200 ? 2 : 1; k < n; k++) trams.push({ e, s: len * ((k + 0.2 + 0.6 * rnd()) / n), v: 8 + rnd() * 3, wait: 0 }); }
+  const flocks = []; { const wc = waterPts.filter(q => Math.hypot(q[0], q[1]) < 700), pick = () => wc.length ? wc[Math.floor(rnd() * wc.length)] : [0, 0];
+    for (let i = 0; i < (D._mob ? 2 : 5); i++) { const c = i < 2 ? [(rnd() - 0.5) * 160, (rnd() - 0.5) * 160] : pick(); const b = []; for (let k = 0, n = 9 + Math.floor(rnd() * 10); k < n; k++) b.push([rnd() * TAU, 0.6 + rnd() * 0.8, rnd() * TAU, (rnd() - 0.5) * 9]);
+      flocks.push({ c, r: 45 + rnd() * 70, h: 38 + rnd() * 45, w: (0.09 + rnd() * 0.06) * (rnd() < 0.5 ? -1 : 1), ph: rnd() * TAU, b }); } }
   const MAXC = mobile ? 70 : 120, MAXP = mobile ? 70 : 140;
   function spawnCar(c) {
     const e = NET.edges[Math.floor(rnd() * NET.edges.length)]; if (!e) return;
@@ -1619,22 +1637,38 @@ async function open(host, opt) {
   if (host.clientWidth / Math.max(1, host.clientHeight) < 0.8) { st.dist = 300; st.pitch = 0.24; }
   const sound = Sound();
 
-  /* input: orbit only */
-  const ptrs = new Map(); let pinch0 = 0, dist0 = 0;
-  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; } });
+  /* input (v7.11): orbit, pan across the district, fly to a point. The camera eases towards what the hand asks for. */
+  const TB = D.ter ? [D.ter.x0 + 110, D.ter.y0 + 110, D.ter.x0 + (D.ter.nx - 1) * D.ter.s - 110, D.ter.y0 + (D.ter.ny - 1) * D.ter.s - 110] : [-600, -600, 600, 600];
+  st.tx = 0; st.ty = 0; const cur = { yaw: st.yaw, pitch: st.pitch, dist: st.dist, tx: 0, ty: 0 };
+  const clampT = () => { st.tx = Math.min(TB[2], Math.max(TB[0], st.tx)); st.ty = Math.min(TB[3], Math.max(TB[1], st.ty)); };
+  const pan = (dx, dy) => { const k = st.dist * 0.0016, c = Math.cos(st.yaw), s_ = Math.sin(st.yaw); st.tx += (s_ * dx - c * dy) * k; st.ty += (-c * dx - s_ * dy) * k; clampT(); if (opt.onMove) opt.onMove(); };
+  const ptrs = new Map(); let pinch0 = 0, dist0 = 0, mid0 = null, lastTap = 0, VPinv = null, camNow = [0, 0, 0];
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button === 2 || e.button === 1 || e.shiftKey]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; mid0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } })
   canvas.addEventListener('pointermove', e => {
-    if (!ptrs.has(e.pointerId)) return; const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
-    if (ptrs.size === 1) { st.yaw -= (e.clientX - prev[0]) * 0.006; st.pitch = Math.min(1.35, Math.max(0.03, st.pitch + (e.clientY - prev[1]) * 0.005)); }
-    else if (ptrs.size === 2 && pinch0) { const [a, b] = [...ptrs.values()]; st.dist = Math.min(950, Math.max(28, dist0 * pinch0 / Math.max(10, Math.hypot(a[0] - b[0], a[1] - b[1])))); }
+    if (!ptrs.has(e.pointerId)) return; const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, prev[2]]);
+    if (ptrs.size === 1) { if (prev[2]) pan(e.clientX - prev[0], e.clientY - prev[1]); else { st.yaw -= (e.clientX - prev[0]) * 0.006; st.pitch = Math.min(1.35, Math.max(0.03, st.pitch + (e.clientY - prev[1]) * 0.005)); } }
+    else if (ptrs.size === 2 && pinch0) { const [a, b] = [...ptrs.values()]; st.dist = Math.min(950, Math.max(28, dist0 * pinch0 / Math.max(10, Math.hypot(a[0] - b[0], a[1] - b[1]))));
+      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; pan(m[0] - mid0[0], m[1] - mid0[1]); mid0 = m; }   // two fingers: pinch to zoom, drag to move
   });
   const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
   canvas.addEventListener('wheel', e => { e.preventDefault(); st.dist = Math.min(950, Math.max(28, st.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+  // double click or double tap: fly to that place on the ground
+  function groundAt(cx, cy) { if (!VPinv) return null; const r = canvas.getBoundingClientRect(), nx = (cx - r.left) / r.width * 2 - 1, ny = 1 - (cy - r.top) / r.height * 2;
+    const un = z => { const v = [nx, ny, z, 1], o = [0, 0, 0, 0]; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) o[i] += VPinv[j * 4 + i] * v[j]; return [o[0] / o[3], o[1] / o[3], o[2] / o[3]]; };
+    const a = un(-1), b = un(1), d = V.norm(V.sub(b, a)); if (d[2] > -0.02) return null; let t = 0, q = a;
+    for (let i = 0; i < 400; i++) { t += Math.max(1.5, (q[2] - tzS(q[0], q[1])) * 0.5); q = V.add(a, V.mul(d, t)); if (q[2] <= tzS(q[0], q[1]) + 0.2) return q; if (t > 4000) break; } return null; }
+  const flyTo = (x, y, o) => { st.tx = x; st.ty = y; clampT(); if (o) { if (o.yaw != null) { let dy = o.yaw - st.yaw; dy -= Math.round(dy / TAU) * TAU; st.yaw += dy; } if (o.pitch != null) st.pitch = o.pitch; if (o.dist != null) st.dist = o.dist; } if (opt.onMove) opt.onMove(); };
+  canvas.addEventListener('dblclick', e => { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); });
+  canvas.addEventListener('pointerup', e => { if (e.pointerType !== 'touch') return; const now = performance.now(); if (now - lastTap < 320) { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); lastTap = 0; } else lastTap = now; });
   canvas.addEventListener('keydown', e => {
-    const k = e.key; if (k === 'ArrowLeft') st.yaw += 0.08; else if (k === 'ArrowRight') st.yaw -= 0.08; else if (k === 'ArrowUp') st.pitch = Math.min(1.35, st.pitch + 0.05);
-    else if (k === 'ArrowDown') st.pitch = Math.max(0.03, st.pitch - 0.05); else if (k === '+' || k === '=') st.dist = Math.max(28, st.dist * 0.88); else if (k === '-') st.dist = Math.min(950, st.dist * 1.13); else return; e.preventDefault(); });
+    const k = e.key.toLowerCase(); if (k === 'arrowleft') st.yaw += 0.08; else if (k === 'arrowright') st.yaw -= 0.08; else if (k === 'arrowup') st.pitch = Math.min(1.35, st.pitch + 0.05);
+    else if (k === 'arrowdown') st.pitch = Math.max(0.03, st.pitch - 0.05); else if (k === '+' || k === '=') st.dist = Math.max(28, st.dist * 0.88); else if (k === '-') st.dist = Math.min(950, st.dist * 1.13);
+    else if (k === 'w' || k === 'ц') pan(0, 60); else if (k === 's' || k === 'ы') pan(0, -60); else if (k === 'a' || k === 'ф') pan(60, 0); else if (k === 'd' || k === 'в') pan(-60, 0);
+    else if (k === 'home' || k === 'h' || k === 'р') flyTo(0, 0); else return; e.preventDefault(); });
   canvas.tabIndex = 0;
-  if (hero) { canvas.tabIndex = -1; canvas.style.pointerEvents = 'none'; canvas.style.cursor = 'default'; if (opt.view) { st.yaw = opt.view[0]; st.pitch = opt.view[1]; st.dist = opt.view[2]; } }
+  if (hero) { canvas.tabIndex = -1; canvas.style.pointerEvents = 'none'; canvas.style.cursor = 'default'; if (opt.view) { st.yaw = cur.yaw = opt.view[0]; st.pitch = cur.pitch = opt.view[1]; st.dist = cur.dist = opt.view[2]; } }
 
   /* environment from the hour */
   function env(hour, weather) {
@@ -1700,6 +1734,24 @@ async function open(host, opt) {
       }
     }
     DG.zc = 0;
+    // trams: no service between 1 and 5 at night
+    if (hr >= 5 || hr < 1) for (const t of trams) {
+      if (t.wait > 0) t.wait -= dt; else { t.s += t.v * dt; if (t.s >= t.e.len) { t.s = 0; t.wait = 4 + rnd() * 30; } }
+      if (t.wait > 0) continue;
+      const q = along(t.e, t.s), x = q[0], y = q[1], ang = Math.atan2(q[3], q[2]), zg = tzS(x, y); DG.zc = zg;
+      DG.box(x, y, 0.35, 2.5, 14.6, 1.2, ang, M.CAR, [0.72, 0.1, 0.09]); DG.box(x, y, 1.55, 2.46, 14.2, 0.95, ang, M.CARGLASS, [0.1, 0.12, 0.14]); DG.box(x, y, 2.5, 2.5, 14.6, 0.55, ang, M.CAR, [0.9, 0.86, 0.72]);
+      DG.box(x - q[2] * 2.2, y - q[3] * 2.2, 3.05, 1.5, 1.6, 1.9, ang, M.POLE, [0.12, 0.12, 0.13]);   // pantograph
+      if (nightK > 0.05 || st.rainK > 0.5 || st.fogK > 0.5) { const k = Math.max(nightK, st.rainK * 0.6, st.fogK * 0.6), fx = x + q[2] * 7.3, fy = y + q[3] * 7.3;
+        glow.push(fx, fy, 1.0 + zg, 1, 0.93, 0.75, k, 2.6); for (let w = -5; w <= 5; w += 2.5) glow.push(x + q[2] * w - q[3] * 1.26, y + q[3] * w + q[2] * 1.26, 2.0 + zg, 1, 0.88, 0.6, k * 0.5, 1.3, x + q[2] * w + q[3] * 1.26, y + q[3] * w - q[2] * 1.26, 2.0 + zg, 1, 0.88, 0.6, k * 0.5, 1.3); }
+    }
+    DG.zc = 0;
+    // birds: each flock circles its place, every bird a pair of flapping wings
+    if (E.day > 0.35 && st.rainK < 0.4) for (const f of flocks) { const a0 = simT * f.w + f.ph;
+      for (const b of f.b) { const a = a0 + b[0], rr = f.r * b[1] * (0.85 + 0.15 * Math.sin(simT * 0.3 + b[2])), x = f.c[0] + Math.cos(a) * rr, y = f.c[1] + Math.sin(a) * rr * 0.8, z = f.h + b[3] + 4 * Math.sin(simT * 0.5 + b[2]);
+        if (Math.hypot(x - cam0[0], y - cam0[1], z - cam0[2]) > 420) continue;
+        const dir = a + Math.sign(f.w) * Math.PI / 2, dx = Math.cos(dir), dy = Math.sin(dir), fl = Math.sin(simT * 9 + b[2] * 5) * 0.45, sp = 0.75, col = [0.13, 0.13, 0.14];
+        const hd = [x + dx * 0.45, y + dy * 0.45, z], tl = [x - dx * 0.45, y - dy * 0.45, z], wl = [x - dy * sp, y + dx * sp, z + fl], wr = [x + dy * sp, y - dx * sp, z + fl];
+        DG.tri(hd, tl, wl, M.PERSON, col, null, null, null, [0, 0, 1]); DG.tri(tl, hd, wr, M.PERSON, col, null, null, null, [0, 0, 1]); } }
     for (const p of people) {
       const q = along(p.w, p.s), dx = q[2] * p.dir, dy = q[3] * p.dir, x = q[0] - dy * p.side, y = q[1] + dx * p.side, ang = Math.atan2(dy, dx);
       const bob = p.stop > 0 ? 0 : Math.abs(Math.sin(p.ph)) * 0.06;
@@ -1829,6 +1881,7 @@ async function open(host, opt) {
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
     if (hero) st.yaw += dt * 0.022;
+    { const k = hero ? 1 : 1 - Math.exp(-dt * 7); for (const q of ['yaw', 'pitch', 'dist', 'tx', 'ty']) cur[q] += (st[q] - cur[q]) * k; }
     // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
     if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
     lastT = now; simT += dt;
@@ -1840,17 +1893,17 @@ async function open(host, opt) {
     const E = env(st.hour, st.weather);
     const nCars = step(dt, E);
     // camera
-    const ch = Math.cos(st.pitch), tz = Math.min(48, Math.max(6, st.dist * 0.16));
-    const tgt = [0, 0, tz], cam = [tgt[0] + Math.cos(st.yaw) * ch * st.dist, tgt[1] + Math.sin(st.yaw) * ch * st.dist, Math.max(2.5, tgt[2] + Math.sin(st.pitch) * st.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
+    const ch = Math.cos(cur.pitch), dTw = Math.hypot(cur.tx, cur.ty), kTw = 0.3 + 0.7 * smooth(220, 40, dTw), tz = tzS(cur.tx, cur.ty) * (1 - smooth(60, 10, dTw)) + Math.min(48, Math.max(6, cur.dist * 0.16)) * kTw;
+    const tgt = [cur.tx, cur.ty, tz], cam = [tgt[0] + Math.cos(cur.yaw) * ch * cur.dist, tgt[1] + Math.sin(cur.yaw) * ch * cur.dist, Math.max(2.5, tgt[2] + Math.sin(cur.pitch) * cur.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
     const W = canvas.width, H = canvas.height, asp = W / H;
     const fov = (asp < 0.8 ? 62 : 46) * Math.PI / 180;
-    cam0 = cam; const proj = persp(fov, asp, 0.5, 6000); if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view);
+    cam0 = cam; const proj = persp(fov, asp, 0.5, 6000); if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
     const px = H / (2 * Math.tan(fov / 2));
     // shadow pass
     let LVP = new Float32Array(16);
     if (shOn && E.sunC[0] > 0.05 && E.sun[2] > 0.03) {
-      const sr = Math.min(330, Math.max(90, st.dist * 0.8)), fwd = [-Math.cos(st.yaw), -Math.sin(st.yaw)];
-      const c = [fwd[0] * sr * 0.35, fwd[1] * sr * 0.35, 0], e = V.add(c, V.mul(E.sun, 900)), lv = lookAt(e, c, Math.abs(E.sun[2]) > 0.95 ? [0, 1, 0] : [0, 0, 1]);
+      const sr = Math.min(330, Math.max(90, cur.dist * 0.8)), fwd = [-Math.cos(cur.yaw), -Math.sin(cur.yaw)];
+      const c = [cur.tx + fwd[0] * sr * 0.35, cur.ty + fwd[1] * sr * 0.35, tzS(cur.tx, cur.ty)], e = V.add(c, V.mul(E.sun, 900)), lv = lookAt(e, c, Math.abs(E.sun[2]) > 0.95 ? [0, 1, 0] : [0, 0, 1]);
       LVP = mmul(ortho(-sr, sr, -sr, sr, 300, 1700), lv);
       gl.bindFramebuffer(gl.FRAMEBUFFER, shFb); gl.viewport(0, 0, 2048, 2048); gl.enable(gl.DEPTH_TEST); gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
       gl.useProgram(P.shd.p); gl.uniformMatrix4fv(P.shd.u.uLVP, false, LVP);
@@ -1916,7 +1969,8 @@ async function open(host, opt) {
     sound(v) { return v ? sound.start() : (sound.stop(), false); },
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
     debug() { return { nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
-    setView(yaw, pitch, dist) { st.yaw = yaw; st.pitch = pitch; st.dist = dist; },
+    setView(yaw, pitch, dist) { st.yaw = cur.yaw = yaw; st.pitch = cur.pitch = pitch; st.dist = cur.dist = dist; },
+    flyTo(x, y, o) { flyTo(x, y, o); }, get target() { return [st.tx, st.ty]; },
     pause(v) { st.paused = !!v; },
     destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); canvas.width = canvas.height = 1; canvas.remove(); },
   };

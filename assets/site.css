@@ -2033,3 +2033,6 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .tr-glass.m3d .tr-phchip{top:auto;bottom:calc(20% + 6px);right:8px;padding:5px 9px;font-size:11px}
 .lang-hint{bottom:8px;padding:6px 4px 6px 12px;font-size:13px;gap:4px 10px}
 }
+/* v7.11: view buttons of the 3D scene */
+.kt3d-views button{padding:8px 10px}
+@media (max-width:600px){.kt3d-views{width:100%}.kt3d-views button{flex:1;padding:8px 4px;font-size:13px}}
