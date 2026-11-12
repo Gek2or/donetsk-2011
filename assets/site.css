@@ -2026,3 +2026,10 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .hero-live .kt3d-fail{display:none}
 /* v7.10: in the cab view the photo chip sits small under the time button, out of the line of sight */
 .tr-glass.m3d .tr-phchip{bottom:auto;top:52px;right:12px;padding:6px 11px;font-size:12px;opacity:.9}
+/* v7.10 phones: the cab controls fit one line, the photo chip sits above the dashboard, the language hint is compact */
+@media (max-width:600px){
+.tr-modes button{padding:5px 9px;font-size:11.5px}
+.tr-time{padding:6px}.tr-time span{display:none}
+.tr-glass.m3d .tr-phchip{top:auto;bottom:calc(20% + 6px);right:8px;padding:5px 9px;font-size:11px}
+.lang-hint{bottom:8px;padding:6px 4px 6px 12px;font-size:13px;gap:4px 10px}
+}
