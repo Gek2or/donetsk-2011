@@ -537,6 +537,156 @@ function xobb2(pts){let best=null;for(let i=0;i<pts.length;i++){const a=pts[i],b
 /* v6.3: October 2011 — about a quarter of the crowns already yellow and rust (illustrative, after the 2011 panoramas' season) */
 const AUT=[[.7,.58,.24],[.76,.47,.2],[.62,.6,.27],[.68,.4,.18]],leafc=(h,c)=>(h>>>3)%100<24?AUT[(h>>>5)%4]:c;
 const rgbi=v=>[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255];
+
+/* v7.12: King's Tower in the reference map. The same generated model as in the King's Tower scene (assets/kt3d.js: capsule plan
+   28.8 m wide, 29 floors, brick piers and cream loggias, glazed top floors, crown of horns, mast), drawn with this page's flat
+   colours: every window, sill and air conditioner is geometry here. Proportions from photos and public listings; details approximate. */
+function kingsTowerGeom(emit,dark){
+const TAU=Math.PI*2;
+const V={sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]}};
+const rng=s=>()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
+const M={BRICK:4,LOGGIA:5,GLASSRING:6,METAL:7,BAND:11,PAVE:12,STONE:15,CURB:18,HOUSEWALL:20,ROOF:3};
+const RW=rng(77),GL=[.13,.16,.2],LIT=[[1,.82,.5],[1,.9,.68],[.75,.82,1]];
+const glass=()=>dark&&RW()<.36?LIT[RW()<.12?2:RW()<.5?0:1]:GL.map(v=>v*(.85+.3*RW()));
+const off=(p,n,d)=>[p[0]+n[0]*d,p[1]+n[1]*d,p[2]];
+const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]];
+const G={
+  quad(p0,p1,p2,p3,m,c,uv,nrm){ if(m===M.PAVE||m===M.CURB)return; emit(p0,p1,p2,p3,c,nrm);
+    if(!uv||!nrm)return; const z0=p0[2],z1=p3[2];
+    const win=(u0,u1,za,zb,col)=>{const a=off(lerp(p0,p1,u0),nrm,.05),b=off(lerp(p0,p1,u1),nrm,.05);emit([a[0],a[1],za],[b[0],b[1],za],[b[0],b[1],zb],[a[0],a[1],zb],col,nrm)};
+    if(m===M.BRICK&&z0<.01&&z1<T.g+.01){win(.08,.92,.55,3.5,glass());return}             // ground floor: shop windows
+    if(m===M.BRICK){for(let z=z0;z<z1-.5;z+=T.fh){win(.2,.8,z+.85,z+2.5,glass());win(.49,.51,z+.85,z+2.5,[.9,.88,.82])}return}
+    if(m===M.LOGGIA){for(let z=z0;z<z1-.5;z+=T.fh)win(.07,.93,z+1.05,z+2.65,glass().map(v=>Math.min(1,v*1.15+.03)));return}
+    if(m===M.GLASSRING){for(let z=z0;z<z1-.5;z+=T.fh)win(0,.04,z,z+T.fh,[.7,.68,.62])}
+  },
+  tri(p0,p1,p2,m,c){emit(p0,p1,p2,null,c,null)},
+  box(cx,cy,z0,w,l,h,ang,m,c){const ca=Math.cos(ang),sa=Math.sin(ang),Pt=(s,t,z)=>[cx+ca*s-sa*t,cy+sa*s+ca*t,z],hl=l/2,hw=w/2;
+    const q=[Pt(-hl,-hw,z0),Pt(hl,-hw,z0),Pt(hl,hw,z0),Pt(-hl,hw,z0)],t=q.map(p=>[p[0],p[1],z0+h]);
+    for(let i=0;i<4;i++)emit(q[i],q[(i+1)%4],t[(i+1)%4],t[i],c,null);emit(t[0],t[1],t[2],t[3],c,[0,0,1])}
+};
+const T = { axis: -40.69 * Math.PI / 180, R: 14.4, half: 13.9, floors: 29, fh: 3.0, g: 4.2, glass: 2 };
+T.top = T.g + (T.floors - 1) * T.fh;                       // 88.2 m roof
+T.shaft = T.g + (T.floors - 1 - T.glass) * T.fh;           // 82.2 m: glass floors start
+T.per = 4 * T.half + TAU * T.R;
+T.ncol = Math.round(T.per / 2.55); T.pitch = T.per / T.ncol;
+T.mast = T.top + 0.9 + 17.5 + 2.5;                         // 109 m
+function tw(a, b) { const c = Math.cos(T.axis), s = Math.sin(T.axis); return [a * c - b * s, a * s + b * c]; }
+function capsule(s, r) { // arc length s along the capsule (tower coords) -> point, outward normal
+  s = ((s % T.per) + T.per) % T.per; const h = T.half, R = T.R;
+  if (s < 2 * h) return [[-h + s, -r], [0, -1]];
+  s -= 2 * h;
+  if (s < Math.PI * R) { const t = -Math.PI / 2 + s / R; return [[h + r * Math.cos(t), r * Math.sin(t)], [Math.cos(t), Math.sin(t)]]; }
+  s -= Math.PI * R;
+  if (s < 2 * h) return [[h - s, r], [0, 1]];
+  s -= 2 * h; const t = Math.PI / 2 + s / R; return [[-h + r * Math.cos(t), r * Math.sin(t)], [Math.cos(t), Math.sin(t)]];
+}
+const onArc = s => { s = ((s % T.per) + T.per) % T.per; return (s >= 2 * T.half && s < 2 * T.half + Math.PI * T.R) || s >= 4 * T.half + Math.PI * T.R; };
+function buildTower(G) {
+  const P = (a, b, z) => { const q = tw(a, b); return [q[0], q[1], z]; };
+  const N = (a, b) => { const q = tw(a, b); return [q[0], q[1], 0]; };
+  const cBrick = [0.62, 0.32, 0.17], cCream = [0.86, 0.76, 0.58], cStone = [0.62, 0.57, 0.5];
+  const midCols = new Set();
+  for (const sm of [T.half, 3 * T.half + Math.PI * T.R]) { const c = Math.floor(sm / T.pitch); midCols.add(c - 1); midCols.add(c); midCols.add(c + 1); }
+  for (let c = 0; c < T.ncol; c++) {
+    const s0 = c * T.pitch, s1 = s0 + T.pitch, sm = s0 + T.pitch / 2, arc = onArc(sm);
+    const [a0] = capsule(s0, T.R), [a1] = capsule(s1, T.R), [, nm] = capsule(sm, T.R);
+    const loggia = midCols.has(c) || (arc && c % 3 === 1);
+    const ztop = arc ? T.shaft : T.top;
+    const n = N(nm[0], nm[1]);
+    const uv = (z0, z1) => [[s0, z0], [s1, z0], [s1, z1], [s0, z1]];
+    // ground floor: stone with shop windows (material BRICK handles f==0 as shop)
+    G.quad(P(a0[0], a0[1], 0), P(a1[0], a1[1], 0), P(a1[0], a1[1], T.g), P(a0[0], a0[1], T.g), M.BRICK, cStone, uv(0, T.g), n);
+    if (loggia) {
+      const o = 0.45, b0 = [a0[0] + nm[0] * o, a0[1] + nm[1] * o], b1 = [a1[0] + nm[0] * o, a1[1] + nm[1] * o];
+      G.quad(P(b0[0], b0[1], T.g), P(b1[0], b1[1], T.g), P(b1[0], b1[1], ztop), P(b0[0], b0[1], ztop), M.LOGGIA, cCream, uv(T.g, ztop), n);
+      for (const [p, q] of [[a0, b0], [a1, b1]]) G.quad(P(p[0], p[1], T.g), P(q[0], q[1], T.g), P(q[0], q[1], ztop), P(p[0], p[1], ztop), M.BAND, cCream);
+      // floor slab edges across the loggia front
+      const cx = (b0[0] + b1[0]) / 2, cy = (b0[1] + b1[1]) / 2, ang = Math.atan2(tw(b1[0] - b0[0], b1[1] - b0[1])[1], tw(b1[0] - b0[0], b1[1] - b0[1])[0]), L = Math.hypot(b1[0] - b0[0], b1[1] - b0[1]);
+      const cw = tw(cx + nm[0] * 0.05, cy + nm[1] * 0.05);
+      for (let f = 2; f <= (arc ? 26 : 28); f++) G.box(cw[0], cw[1], T.g + (f - 1) * T.fh - 0.1, 0.12, L + 0.1, 0.2, ang, M.BAND, [0.9, 0.82, 0.66]);
+    } else {
+      G.quad(P(a0[0], a0[1], T.g), P(a1[0], a1[1], T.g), P(a1[0], a1[1], ztop), P(a0[0], a0[1], ztop), M.BRICK, cBrick, uv(T.g, ztop), n);
+      // relief: sill and lintel of every window, air conditioners on some (photos show many)
+      const dl = tw(a1[0] - a0[0], a1[1] - a0[1]), L = Math.hypot(dl[0], dl[1]), ang = Math.atan2(dl[1], dl[0]), ux = dl[0] / L, uy = dl[1] / L;
+      const mc = tw((a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2), nw = tw(nm[0], nm[1]);
+      const R = rng(1000 + c * 37);
+      for (let f = 1; f <= (arc ? 26 : 28); f++) {
+        const zb = T.g + (f - 1) * T.fh;
+        G.box(mc[0] + nw[0] * 0.07, mc[1] + nw[1] * 0.07, zb + 0.73, 0.14, 1.8, 0.1, ang, M.BAND, [0.88, 0.8, 0.64]);
+        G.box(mc[0] + nw[0] * 0.03, mc[1] + nw[1] * 0.03, zb + 2.5, 0.06, 1.75, 0.12, ang, M.BAND, [0.86, 0.78, 0.62]);
+        if (R() < 0.38) {
+          const sd = R() < 0.5 ? -1 : 1, off = sd * (1.55 / 2 + 0.42), x = mc[0] + ux * off + nw[0] * 0.17, y = mc[1] + uy * off + nw[1] * 0.17;
+          G.box(x, y, zb + 0.15, 0.3, 0.72, 0.52, ang, M.STONE, [0.83, 0.83, 0.81]);
+          G.box(x - ux * 0.0 + nw[0] * 0.151, y + nw[1] * 0.151, zb + 0.22, 0.01, 0.38, 0.38, ang, M.STONE, [0.35, 0.36, 0.37]);
+        }
+      }
+    }
+    if (arc) { // glazed top floors, set back 0.5 m
+      const r = T.R - 0.5, [g0] = capsule(s0, r), [g1] = capsule(s1, r);
+      G.quad(P(g0[0], g0[1], T.shaft), P(g1[0], g1[1], T.shaft), P(g1[0], g1[1], T.top), P(g0[0], g0[1], T.top), M.GLASSRING, [0.1, 0.13, 0.16], uv(T.shaft, T.top), n);
+    }
+  }
+  // plinth (v7.2): the yard is level with the ground floor; on the east the ground is 2-4 m lower and a grey-tiled lower storey shows (panoramas, Oct 2011)
+  for (let i = 0; i < 96; i++) { const s0 = T.per * i / 96, s1 = T.per * (i + 1) / 96, [p0, n0] = capsule(s0, T.R + 0.04), [p1] = capsule(s1, T.R + 0.04);
+    G.quad(P(p0[0], p0[1], -8), P(p1[0], p1[1], -8), P(p1[0], p1[1], 0.02), P(p0[0], p0[1], 0.02), M.HOUSEWALL, [0.5, 0.5, 0.48], [[s0, -0.6], [s1, -0.6], [s1, 7.42], [s0, 7.42]], N(n0[0], n0[1])); }
+
+  // belts, cornice: capsule rings
+  const ring = (z0, z1, r, m, c) => {
+    const n = 72;
+    for (let i = 0; i < n; i++) {
+      const s0 = T.per * i / n, s1 = T.per * (i + 1) / n, [p0, n0] = capsule(s0, r), [p1] = capsule(s1, r);
+      const nn = N(n0[0], n0[1]);
+      G.quad(P(p0[0], p0[1], z0), P(p1[0], p1[1], z0), P(p1[0], p1[1], z1), P(p0[0], p0[1], z1), m, c, null, nn);
+      const [q0] = capsule(s0, T.R - 0.6), [q1] = capsule(s1, T.R - 0.6);
+      G.quad(P(q0[0], q0[1], z1), P(p0[0], p0[1], z1), P(p1[0], p1[1], z1), P(q1[0], q1[1], z1), m, c, null, [0, 0, 1]);
+      G.quad(P(q0[0], q0[1], z0), P(q1[0], q1[1], z0), P(p1[0], p1[1], z0), P(p0[0], p0[1], z0), m, c, null, [0, 0, -1]);
+    }
+  };
+  for (const f of [2, 15, 27]) { const z = T.g + (f - 1) * T.fh; ring(z - 0.35, z + 0.15, T.R + 0.75, M.BAND, cCream); }
+  ring(T.top, T.top + 0.9, T.R + 0.35, M.BAND, [0.9, 0.84, 0.72]);
+  // roof (convex capsule: fan)
+  const rp = []; for (let i = 0; i < 48; i++) rp.push(capsule(T.per * i / 48, T.R)[0]);
+  for (let i = 0; i < 48; i++) { const a = rp[i], b = rp[(i + 1) % 48]; G.tri(P(0, 0, T.top + 0.9), P(a[0], a[1], T.top + 0.9), P(b[0], b[1], T.top + 0.9), M.ROOF, [0.3, 0.3, 0.3], null, null, null, [0, 0, 1]); }
+  // railing: two thin bands
+  for (const z of [T.top + 1.4, T.top + 2.0]) {
+    for (let i = 0; i < 72; i++) {
+      const [p0, n0] = capsule(T.per * i / 72, T.R + 0.1), [p1] = capsule(T.per * (i + 1) / 72, T.R + 0.1);
+      G.quad(P(p0[0], p0[1], z - 0.05), P(p1[0], p1[1], z - 0.05), P(p1[0], p1[1], z), P(p0[0], p0[1], z), M.METAL, [0.2, 0.2, 0.21], null, N(n0[0], n0[1]));
+    }
+  }
+  // horns: curved tapered blades, 7 on each round end
+  const cHorn = [0.36, 0.11, 0.06];
+  for (const sg of [1, -1]) for (let k = 0; k < 7; k++) {
+    const t = (sg > 0 ? -Math.PI / 2 : Math.PI / 2) + Math.PI * (k + 0.5) / 7;
+    const oa = Math.cos(t), ob = Math.sin(t), a0 = sg * T.half + (T.R + 0.3) * oa, b0 = (T.R + 0.3) * ob;
+    let prev = null;
+    for (let i = 0; i <= 12; i++) {
+      const u = i / 12, ro = 4.6 * Math.pow(u, 1.5), z = T.top - 2.5 + 8.5 * u, w = 1.1 + (0.08 - 1.1) * u;
+      const ta = -ob, tb = oa; // tangent
+      const c0 = P(a0 + oa * ro + ta * w * 0.5, b0 + ob * ro + tb * w * 0.5, z), c1 = P(a0 + oa * ro - ta * w * 0.5, b0 + ob * ro - tb * w * 0.5, z);
+      if (prev) G.quad(prev[0], prev[1], c1, c0, M.METAL, cHorn);
+      prev = [c0, c1];
+    }
+  }
+  // lattice mast: four legs and rungs as thin quads
+  const base = T.top + 0.9, hw = 1.6, H = 17.5, apex = P(0, 0, base + H);
+  const legs = [P(-hw, -hw, base), P(hw, -hw, base), P(hw, hw, base), P(-hw, hw, base)];
+  const bar = (p, q, w, c) => { const d = V.norm(V.sub(q, p)), s = V.norm(V.cross(d, [0, 0, 1])); const o = V.mul(s[0] || s[1] ? s : [1, 0, 0], w);
+    G.quad(V.sub(p, o), V.add(p, o), V.add(q, o), V.sub(q, o), M.METAL, c); };
+  const cMast = [0.55, 0.1, 0.06];
+  for (let i = 0; i < 4; i++) {
+    bar(legs[i], apex, 0.09, cMast);
+    for (let l = 0; l < 6; l++) {
+      const f = l / 6, a = V.add(legs[i], V.mul(V.sub(apex, legs[i]), f)), b = V.add(legs[(i + 1) % 4], V.mul(V.sub(apex, legs[(i + 1) % 4]), f));
+      bar(a, b, 0.04, cMast);
+    }
+  }
+  bar(apex, [apex[0], apex[1], apex[2] + 2.5], 0.05, cMast);
+}
+
+
+buildTower(G);
+}
 function buildX(){const X=XD;if(!X)return;XS=false;
   /* v6.2 audit: vertices go straight into growing typed arrays in their final compact formats (the plain arrays cost ~600 MB of heap) */
   const GB=(T,n)=>{const o={a:new T(n),length:0,grow(k){if(o.length+k>o.a.length){const b=new T(Math.max(o.a.length*2,o.length+k));b.set(o.a);o.a=b}}};return o};
@@ -588,6 +738,10 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   X.b.forEach((b,k)=>{const id=20000+k,ty=Math.floor(b[4]/10),hs=b[4]%10,h=b[3]/10;let pts=xy(b[6]);const ccw=area(pts)>0?pts:pts.slice().reverse();const r=hash(b[0]);
     let col,roof;if(evid){col=C.gF;roof=C.gE}else if(ill){col=tn(ty===1||ty===4?APAL[r%4]:ty===0||ty===8?PAL[r%5]:ty===2?[.84,.82,.76]:[.8,.79,.75]);roof=tn(ty===0||ty===8?RP[(r>>>4)%4]:[[.47,.47,.46],[.51,.5,.48],[.43,.44,.44]][(r>>>8)%3]);if(b[7]>=0)col=tn(rgbi(b[7]));if(b[8]>=0)roof=tn(rgbi(b[8]))}else{col=hs?C.lvl:C.est;roof=hs?col:C.roof}
     let base=Infinity;for(const p of ccw)base=Math.min(base,hX(p[0],p[1]));base-=.4;
+    if(b[0]==='w122708890'&&!evid){ /* King's Tower: the detailed model stands on the yard level (the highest ground at its foot) */
+      let zy=-Infinity;for(const p of ccw)zy=Math.max(zy,hX(p[0],p[1]));const CX=-56.5,CY=401.0,tc=c=>tn(c),P3=p=>W(p[0]+CX,p[1]+CY,p[2]+zy+.05);
+      kingsTowerGeom((p0,p1,p2,p3,c,n)=>{const col=tc(c);if(!p3){const A=P3(p0),B=P3(p1),C3=P3(p2);const nn=nrm(A,B,C3);if(nn[1]<0){push(A,[0,1,0],col,id);push(C3,[0,1,0],col,id);push(B,[0,1,0],col,id)}else{push(A,nn,col,id);push(B,nn,col,id);push(C3,nn,col,id)}return}
+        const A=P3(p0),B=P3(p1),C3=P3(p2),D3=P3(p3);if(n){const nn=nrm(A,B,D3);if(nn[0]*n[0]+nn[1]*n[2]-nn[2]*n[1]<0){quad(A,D3,C3,B,col,id);return}}quad(A,B,C3,D3,col,id)},dk);return}
     if(ty===7){const z0=base+.4+h,t=tri(ccw);for(let i=0;i<t.length;i+=3)for(const m of [t[i],t[i+1],t[i+2]])push(W(ccw[m][0],ccw[m][1],z0),[0,1,0],roof,id);for(let i=0;i<ccw.length;i++){const a=ccw[i],c=ccw[(i+1)%ccw.length];line(W(a[0],a[1],z0),W(c[0],c[1],z0))}return}
     /* v6.3: a soft contact shadow on the ground around the larger buildings (ambient occlusion, cheap) */
     if(!evid&&ill&&h>=6&&ty!==7){const gi=(x,y)=>vcol(Math.max(0,Math.min(g.nx,Math.round((x-g.x)/g.s))),Math.max(0,Math.min(g.ny,Math.round((y-g.y)/g.s)))),R=Math.min(4.5,1.5+h*.1);
