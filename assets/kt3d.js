@@ -834,11 +834,14 @@ function treePainted(F, x, y, name, S, sc, zg, R) {
     for (const i of [0, 1, 2, 0, 2, 3]) { const p = P[i], s = i === 1 || i === 2 ? 1 : -1, n = V.norm([Math.cos(a) * s * 0.6, Math.sin(a) * s * 0.6, (p[2] - cz) / (H * 0.6) + 0.45]);
       F.push(p[0], p[1], p[2] + zg - 0.1, n[0], n[1], n[2], 2 + (col + Math.min(.996, Math.max(.004, UV[i][0]))) / 8, (row + Math.min(.998, Math.max(.002, UV[i][1]))) / 2, C[0], C[1], C[2], Math.max(0, p[2] - th)); }
   }
-  if (false) { // crown from above (off: it showed as a flat plate from the usual camera height) (old tile 15), a little below the top so the side cards hide it
-    const r = Wd * 0.36, z = th + (H - th) * 0.55, wv = name === 'chestnut' || name === 'maple' ? 0.25 : 0;
+  if (name !== 'sapling') { // crown from above: the shader shows it only when the camera looks down (old tile 15), a little below the top so the side cards hide it
+    const r = Wd * 0.52, z = th + (H - th) * 0.86, wv = name === 'chestnut' || name === 'maple' ? 0.25 : 0;
     const Q = [[x - r, y - r], [x + r, y - r], [x + r, y + r], [x - r, y + r]], U2 = [[2.252, .502 + wv], [2.373, .502 + wv], [2.373, .748 + wv], [2.252, .748 + wv]];
     for (const i of [0, 1, 2, 0, 2, 3]) F.push(Q[i][0], Q[i][1], z + zg, 0, 0, 1, U2[i][0], U2[i][1], C[0] * .9, C[1] * .9, C[2] * .9, z - th);
   }
+  { // v7.13: the shadow of a painted tree is cast by a crown seen from above (drawn in the shadow pass only), not by the upright cards
+    const r = Wd * 0.44, z = th + (H - th) * 0.5 + zg, U = [[2.252, 0.502], [2.373, 0.502], [2.373, 0.748], [2.252, 0.748]], Q = [[x - r, y - r], [x + r, y - r], [x + r, y + r], [x - r, y + r]];
+    if (F.sh) for (const i of [0, 1, 2, 0, 2, 3]) F.sh.push(Q[i][0], Q[i][1], z, U[i][0], U[i][1]); }
   const lr = S.rx * sc * 1.1, tu6 = 0.5, tv6 = 0.25;
   const L = [[x - lr, y - lr, 0.06], [x + lr, y - lr, 0.06], [x + lr, y + lr, 0.06], [x - lr, y + lr, 0.06]], Luv = [[tu6, tv6], [tu6 + 0.25, tv6], [tu6 + 0.25, tv6 + 0.25], [tu6, tv6 + 0.25]];
   for (const i of [0, 1, 2, 0, 2, 3]) F.push(L[i][0], L[i][1], L[i][2] + tzS(L[i][0], L[i][1]), 0, 0, 1, Luv[i][0], Luv[i][1], .5, .48, .46, 0);
@@ -1112,13 +1115,14 @@ void main(){
     float zf= z<4.2?z:mod(z-4.2,3.0);
     if(!shop&&!lg){
       float band=(step(0.73,zf)*step(zf,0.85))+(step(2.5,zf)*step(zf,2.62));
-      float course=step(fract(zf/0.075),0.12)*0.06;
+      float course=step(fract(zf/0.075),0.12)*0.06*(1.0-smoothstep(30.0,110.0,length(uCam-vW)));   // v7.13: no brick courses far away (they shimmered)
       col=mix(vC*(0.9+0.2*n2(vW.xy*2.0+z))*(1.0-course),vec3(0.86,0.77,0.6),clamp(band,0.0,1.0));
     }
     if(w.x>0.5){ glass=1.0-w.y; col=mix(vec3(0.05,0.06,0.07),vec3(0.86,0.86,0.84),w.y);
       if(w.z>0.5&&!shop) emi=room(vec2(floor(vU.x/uPitch)+40.0,floor(z/3.0)))*1.15*(1.0-w.y)*uNight;
       if(shop){ float cid=floor(vU.x/uPitch); float on=step(h21(vec2(cid,77.0)),0.25+uLit); emi=mix(vec3(1.0,0.82,0.6),vec3(0.9,0.95,1.0),step(0.6,h21(vec2(cid,5.0))))*0.75*on*(1.0-w.y)*uNight; col=mix(col,vec3(0.1,0.1,0.1),(1.0-on)*glass*0.5); } }
     if(w.w>0.5&&!shop) col=vec3(0.84,0.84,0.82);
+    { float fd=smoothstep(320.0,800.0,length(uCam-vW))*(1.0-uNight); if(fd>0.0&&!shop){ vec3 av=lg?vec3(0.62,0.6,0.54):mix(vC,vec3(0.07,0.08,0.09),0.2); col=mix(col,av,fd); glass*=1.0-fd; } }   // v7.13: far away the windows melt into an average tone instead of flickering
     float fl=(0.55*exp(-z/70.0)+0.12)*(0.82+0.18*cos(vU.x*6.2832/(uPitch*2.0)));
     emi+=col*vec3(1.0,0.62,0.32)*fl*uFlood*(1.0-glass*0.7);
   } else if(m<6.5){
@@ -1167,10 +1171,12 @@ void main(){ vec3 p=aP; float k=aS*0.03*uWind; p.x+=sin(uT*1.9+aP.x*0.37+aP.y*0.
   vW=p; vN=aN; vU=aU.x>1.5?vec2(aU.x-2.0,aU.y):vec2(0.5+aU.x*0.25,0.5+aU.y*0.5); vC=aC; vL=uLVP*vec4(p,1.0); gl_Position=uVP*vec4(p,1.0); }`;
 const FOL_FS = HDR + `
 varying vec3 vW; varying vec3 vN; varying vec2 vU; varying vec3 vC; varying vec4 vL;
-uniform sampler2D uTex; uniform sampler2D uSh; uniform float uShOn; uniform vec3 uCam; uniform vec3 uSun; uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec3 uFog; uniform float uFogD; uniform float uClipZ; uniform float uNight;
+uniform sampler2D uTex; uniform sampler2D uSh; uniform float uShOn; uniform vec3 uCam; uniform vec3 uSun; uniform vec3 uSunC; uniform vec3 uSkyC; uniform vec3 uGndC; uniform vec3 uFog; uniform float uFogD; uniform float uClipZ; uniform float uNight; uniform float uTop;
 void main(){
   if(vW.z<uClipZ) discard;
   vec4 t=texture2D(uTex,vU); if(t.a<0.45) discard;
+  // v7.13: the crown seen from above shows only when the camera looks down (stippled in), so trees are not crosses from the air nor plates from the side
+  if(vN.z>0.99&&((vU.x>0.25&&vU.x<0.376&&vU.y>0.5)||(vU.x>0.686&&vU.y>0.874))&&fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)>uTop) discard;
   vec3 N=normalize(vN); vec3 Vd=normalize(uCam-vW);
   float s=1.0; if(uShOn>0.5){ vec3 q=vL.xyz/vL.w*0.5+0.5; if(q.x>0.0&&q.x<1.0&&q.y>0.0&&q.y<1.0&&q.z<1.0){ s=0.0; for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=(texture2D(uSh,q.xy+vec2(float(i),float(j))/2048.0).r+0.003<q.z)?0.0:1.0; s/=9.0; s=0.35+0.65*s; } }
   float ndl=max(dot(N,uSun)*0.6+0.4,0.0); float tr=pow(max(dot(-Vd,uSun),0.0),4.0)*0.5;
@@ -1333,6 +1339,9 @@ async function open(host, opt) {
   if (!gl) { host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${failMsg()}</p>`); return { destroy() { canvas.remove(); } }; }
   const extDepth = gl.getExtension('WEBGL_depth_texture');
   const D = await fetch(opt.data || 'assets/kt3d.json').then(r => r.json());
+  if (D.cars) { const keep = [], seen = new Map(); for (let i = 0; i + 3 < D.cars.length; i += 4) { const x = D.cars[i] / 10, y = D.cars[i + 1] / 10, gx = Math.floor(x / 3), gy = Math.floor(y / 3); let ok = true;
+      for (let a = -1; a <= 1 && ok; a++) for (let b = -1; b <= 1 && ok; b++) for (const q of seen.get((gx + a) + ',' + (gy + b)) || []) if (Math.hypot(q[0] - x, q[1] - y) < 2.3) { ok = false; break; }
+      if (!ok) continue; const k = gx + ',' + gy; if (!seen.has(k)) seen.set(k, []); seen.get(k).push([x, y]); keep.push(D.cars[i], D.cars[i + 1], D.cars[i + 2], D.cars[i + 3]); } D.cars = keep; }   // v7.13
   const mobile = matchMedia('(pointer:coarse)').matches || Math.min(innerWidth, innerHeight) < 600;
   let quality = opt.quality != null ? opt.quality : (mobile ? 1 : 2); // 2: shadows + reflections, 1: reflections only at low res, 0: neither
 
@@ -1373,7 +1382,7 @@ async function open(host, opt) {
       o += gi >= 0 && gj >= 0 && gi < L.nx && gj < L.ny ? ((L.c[gj] || '')[gi] || '.') : (rows[j][i] || '.'); } c.push(o); }
     D.lu = { x: R.x * 10, y: R.y * 10, s: R.s * 10, nx: R.n, ny: R.n, c };
   }
-  const G = new Geo(), FOL = []; FOL.imp = []; G.zf = tzS; buildCity(G, D, FOL); G.zf = null; G.zc = 0; buildTower(G);
+  const G = new Geo(), FOL = []; FOL.imp = []; FOL.sh = []; G.zf = tzS; buildCity(G, D, FOL); G.zf = null; G.zc = 0; buildTower(G);
   if (RB.length) { const PALH = [[0.93, 0.91, 0.86], [0.91, 0.84, 0.67], [0.73, 0.81, 0.85], [0.62, 0.36, 0.28], [0.86, 0.75, 0.52]], PALA = [[0.86, 0.85, 0.8], [0.75, 0.74, 0.71], [0.86, 0.75, 0.52], [0.62, 0.36, 0.28]], RFH = [[0.42, 0.44, 0.45], [0.55, 0.25, 0.18], [0.3, 0.42, 0.3], [0.5, 0.5, 0.48]], rq = rng(77);
     for (const b of RB) { const p = ringBox(b), ty = b[6] >> 1, h = Math.max(2.5, b[5]), z0 = Math.min(...p.map(q => tzS(q[0], q[1]))), house = ty === 0 && h < 8, u0 = rq();
       const col = (house ? PALH[Math.floor(u0 * 5)] : ty === 2 ? [0.7, 0.69, 0.66] : PALA[Math.floor(u0 * 4)]).map(v => v * 0.82), rc = house ? RFH[Math.floor(rq() * 4)] : [0.46, 0.46, 0.45];
@@ -1446,6 +1455,7 @@ async function open(host, opt) {
         FOL.imp.push([x, y, ch === 'f' ? 5 : ch === 'p' ? 4 : 9]); stamp(x, y, 2.2); } } }
   }
   const folB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, folB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(FOL), gl.STATIC_DRAW); const nFol = FOL.length / 12;
+  const folShB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, folShB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(FOL.sh), gl.STATIC_DRAW); const nFolSh = FOL.sh.length / 5;
   G.zf = null; G.zc = 0;
   // impostor instances: species by kind (water's edge: willows and poplars), size and tint vary
   const impExt = gl.getExtension('ANGLE_instanced_arrays');
@@ -1467,7 +1477,7 @@ async function open(host, opt) {
     const c6 = Math.cos(Math.PI / 3) * .5, s6 = Math.sin(Math.PI / 3) * .5;
     qd([-c6, -s6, 0, 0, 1], [c6, s6, 0, 1, 1], [c6, s6, 1, 1, 0], [-c6, -s6, 1, 0, 0], 0);
     qd([c6, -s6, 0, 0, 1], [-c6, s6, 0, 1, 1], [-c6, s6, 1, 1, 0], [c6, -s6, 1, 0, 0], 0);
-    qd([-0.3, -0.3, 0.6, 0, 1], [0.3, -0.3, 0.6, 1, 1], [0.3, 0.3, 0.6, 1, 0], [-0.3, 0.3, 0.6, 0, 0], 1);   // small top card, hidden inside the crown from the side
+    qd([-0.52, -0.52, 0.86, 0, 1], [0.52, -0.52, 0.86, 1, 1], [0.52, 0.52, 0.86, 1, 0], [-0.52, 0.52, 0.86, 0, 0], 1);   // small top card, hidden inside the crown from the side
     impB = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impB); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(B), gl.STATIC_DRAW);
     impI = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, impI); gl.bufferData(gl.ARRAY_BUFFER, I, gl.STATIC_DRAW); nImp = list.length;
   }
@@ -1644,7 +1654,7 @@ async function open(host, opt) {
   const pan = (dx, dy) => { const k = st.dist * 0.0016, c = Math.cos(st.yaw), s_ = Math.sin(st.yaw); st.tx += (s_ * dx - c * dy) * k; st.ty += (-c * dx - s_ * dy) * k; clampT(); if (opt.onMove) opt.onMove(); };
   const ptrs = new Map(); let pinch0 = 0, dist0 = 0, mid0 = null, lastTap = 0, VPinv = null, camNow = [0, 0, 0];
   canvas.addEventListener('contextmenu', e => e.preventDefault());
-  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button === 2 || e.button === 1 || e.shiftKey]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; mid0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } })
+  canvas.addEventListener('pointerdown', e => { st.follow = null; canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button === 2 || e.button === 1 || e.shiftKey]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; mid0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } })
   canvas.addEventListener('pointermove', e => {
     if (!ptrs.has(e.pointerId)) return; const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, prev[2]]);
     if (ptrs.size === 1) { if (prev[2]) pan(e.clientX - prev[0], e.clientY - prev[1]); else { st.yaw -= (e.clientX - prev[0]) * 0.006; st.pitch = Math.min(1.35, Math.max(0.03, st.pitch + (e.clientY - prev[1]) * 0.005)); } }
@@ -1659,7 +1669,7 @@ async function open(host, opt) {
     const un = z => { const v = [nx, ny, z, 1], o = [0, 0, 0, 0]; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) o[i] += VPinv[j * 4 + i] * v[j]; return [o[0] / o[3], o[1] / o[3], o[2] / o[3]]; };
     const a = un(-1), b = un(1), d = V.norm(V.sub(b, a)); if (d[2] > -0.02) return null; let t = 0, q = a;
     for (let i = 0; i < 400; i++) { t += Math.max(1.5, (q[2] - tzS(q[0], q[1])) * 0.5); q = V.add(a, V.mul(d, t)); if (q[2] <= tzS(q[0], q[1]) + 0.2) return q; if (t > 4000) break; } return null; }
-  const flyTo = (x, y, o) => { st.tx = x; st.ty = y; clampT(); if (o) { if (o.yaw != null) { let dy = o.yaw - st.yaw; dy -= Math.round(dy / TAU) * TAU; st.yaw += dy; } if (o.pitch != null) st.pitch = o.pitch; if (o.dist != null) st.dist = o.dist; } if (opt.onMove) opt.onMove(); };
+  const flyTo = (x, y, o) => { st.follow = null; st.tx = x; st.ty = y; clampT(); if (o) { if (o.yaw != null) { let dy = o.yaw - st.yaw; dy -= Math.round(dy / TAU) * TAU; st.yaw += dy; } if (o.pitch != null) st.pitch = o.pitch; if (o.dist != null) st.dist = o.dist; } if (opt.onMove) opt.onMove(); };
   canvas.addEventListener('dblclick', e => { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); });
   canvas.addEventListener('pointerup', e => { if (e.pointerType !== 'touch') return; const now = performance.now(); if (now - lastTap < 320) { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); lastTap = 0; } else lastTap = now; });
   canvas.addEventListener('keydown', e => {
@@ -1677,8 +1687,8 @@ async function open(host, opt) {
     const night = 1 - smooth(-9, 0, el);
     let skyC = mix3([0.05, 0.035, 0.03], [0.35, 0.55, 0.85], day); skyC = mix3(skyC, [0.55, 0.45, 0.5], golden * 0.5);
     let fog = mix3([0.22, 0.12, 0.05], [0.72, 0.8, 0.9], day); fog = mix3(fog, [1.0, 0.62, 0.38], golden * 0.75);
-    let sunC = mix3([1.0, 0.45, 0.2], [1.0, 0.95, 0.88], smooth(2, 25, el)); sunC = V.mul(sunC, 1.25 * smooth(-1, 6, el));
-    let skyAmb = V.mul(mix3(skyC, [0.5, 0.6, 0.75], 0.5), 0.5 * day + 0.06), gnd = V.mul([0.3, 0.27, 0.22], 0.35 * day + 0.04);
+    let sunC = mix3([1.0, 0.45, 0.2], [1.0, 0.95, 0.88], smooth(2, 25, el)); sunC = V.mul(sunC, (1.25 + 0.3 * smooth(40, 12, el)) * smooth(-1, 6, el));   // v7.13: a low autumn sun lights the ground a little more, so the view from above is not gloomy
+    let skyAmb = V.mul(mix3(skyC, [0.5, 0.6, 0.75], 0.5), 0.78 * day + 0.06), gnd = V.mul([0.3, 0.27, 0.22], 0.6 * day + 0.04);   // v7.13: more sky light, so shaded sides and the ground are not gloomy
     if (night > 0.5) { skyAmb = mix3(skyAmb, [0.14, 0.1, 0.075], night); }   // sodium-lit low clouds, as on the night photo
     let fogD = 0.00045;
     const rk = st.rainK, fk = st.fogK;
@@ -1740,7 +1750,7 @@ async function open(host, opt) {
       if (t.wait > 0) continue;
       const q = along(t.e, t.s), x = q[0], y = q[1], ang = Math.atan2(q[3], q[2]), zg = tzS(x, y); DG.zc = zg;
       DG.box(x, y, 0.35, 2.5, 14.6, 1.2, ang, M.CAR, [0.72, 0.1, 0.09]); DG.box(x, y, 1.55, 2.46, 14.2, 0.95, ang, M.CARGLASS, [0.1, 0.12, 0.14]); DG.box(x, y, 2.5, 2.5, 14.6, 0.55, ang, M.CAR, [0.9, 0.86, 0.72]);
-      DG.box(x - q[2] * 2.2, y - q[3] * 2.2, 3.05, 1.5, 1.6, 1.9, ang, M.POLE, [0.12, 0.12, 0.13]);   // pantograph
+      DG.box(x - q[2] * 2.2, y - q[3] * 2.2, 3.05, 1.3, 1.5, 0.3, ang, M.POLE, [0.12, 0.12, 0.13]);   // pantograph
       if (nightK > 0.05 || st.rainK > 0.5 || st.fogK > 0.5) { const k = Math.max(nightK, st.rainK * 0.6, st.fogK * 0.6), fx = x + q[2] * 7.3, fy = y + q[3] * 7.3;
         glow.push(fx, fy, 1.0 + zg, 1, 0.93, 0.75, k, 2.6); for (let w = -5; w <= 5; w += 2.5) glow.push(x + q[2] * w - q[3] * 1.26, y + q[3] * w + q[2] * 1.26, 2.0 + zg, 1, 0.88, 0.6, k * 0.5, 1.3, x + q[2] * w + q[3] * 1.26, y + q[3] * w - q[2] * 1.26, 2.0 + zg, 1, 0.88, 0.6, k * 0.5, 1.3); }
     }
@@ -1811,7 +1821,7 @@ async function open(host, opt) {
     off(0);
     // foliage: leaf cards with alpha test
     if (nFol) {
-      const f = P.fol, uf = f.u; gl.useProgram(f.p);
+      const f = P.fol, uf = f.u; gl.useProgram(f.p); gl.uniform1f(uf.uTop, smooth(0.32, 0.62, cur.pitch));
       gl.uniformMatrix4fv(uf.uVP, false, VP); gl.uniformMatrix4fv(uf.uLVP, false, LVP); gl.uniform3fv(uf.uCam, cam); gl.uniform1f(uf.uT, t); gl.uniform1f(uf.uWind, st.wind + st.rainK * 0.6);
       gl.uniform3fv(uf.uSun, E.sun); gl.uniform3fv(uf.uSunC, E.sunC); gl.uniform3fv(uf.uSkyC, E.skyAmb); gl.uniform3fv(uf.uGndC, E.gnd); gl.uniform3fv(uf.uFog, E.fog); gl.uniform1f(uf.uFogD, E.fogD);
       gl.uniform1f(uf.uClipZ, clipZ); gl.uniform1f(uf.uNight, E.night); gl.uniform1f(uf.uShOn, (shOn && E.sunC[0] > 0.05) ? 1 : 0);
@@ -1821,7 +1831,7 @@ async function open(host, opt) {
       gl.activeTexture(gl.TEXTURE0);
     }
     if (nImp) { // tree impostors (instanced)
-      const f = P.imp, uf = f.u; gl.useProgram(f.p);
+      const f = P.imp, uf = f.u; gl.useProgram(f.p); gl.uniform1f(uf.uTop, smooth(0.32, 0.62, cur.pitch));
       gl.uniformMatrix4fv(uf.uVP, false, VP); gl.uniformMatrix4fv(uf.uLVP, false, LVP); gl.uniform3fv(uf.uCam, cam); gl.uniform1f(uf.uT, t); gl.uniform1f(uf.uWind, st.wind + st.rainK * 0.6);
       gl.uniform3fv(uf.uSun, E.sun); gl.uniform3fv(uf.uSunC, E.sunC); gl.uniform3fv(uf.uSkyC, E.skyAmb); gl.uniform3fv(uf.uGndC, E.gnd); gl.uniform3fv(uf.uFog, E.fog); gl.uniform1f(uf.uFogD, E.fogD);
       gl.uniform1f(uf.uClipZ, clipZ); gl.uniform1f(uf.uNight, E.night); gl.uniform1f(uf.uShOn, (shOn && E.sunC[0] > 0.05) ? 1 : 0);
@@ -1830,7 +1840,7 @@ async function open(host, opt) {
       gl.bindBuffer(gl.ARRAY_BUFFER, impB); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
       gl.bindBuffer(gl.ARRAY_BUFFER, impI); gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0); gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 32, 16);
       impExt.vertexAttribDivisorANGLE(2, 1); impExt.vertexAttribDivisorANGLE(3, 1);
-      impExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 18, nImp);
+      impExt.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 24, nImp);
       impExt.vertexAttribDivisorANGLE(2, 0); impExt.vertexAttribDivisorANGLE(3, 0); off(0);
       gl.activeTexture(gl.TEXTURE0);
     }
@@ -1881,9 +1891,12 @@ async function open(host, opt) {
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
     if (hero) st.yaw += dt * 0.022;
+    if (st.follow) { if (st.follow.wait > 0) st.follow = null; else { const q = along(st.follow.e, st.follow.s); st.tx = q[0]; st.ty = q[1]; clampT(); } }
     { const k = hero ? 1 : 1 - Math.exp(-dt * 7); for (const q of ['yaw', 'pitch', 'dist', 'tx', 'ty']) cur[q] += (st[q] - cur[q]) * k; }
     // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
-    if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
+    // v7.13: a gap over 0.4 s is a pause (hidden or throttled tab), not a slow graphics card: it must not cost the shadows and reflections
+    const paused = now - lastT > 400; if (paused) { fpsT = now; frames = 0; lostT = 0; }
+    else if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
     lastT = now; simT += dt;
     if (st.auto) { const n = donetskNow(); st.hour = n.h; } else if (st.lapse) st.hour = (st.hour + dt * 0.25) % 24; // time-lapse: 1 s = 15 min
     if (opt.onHour) opt.onHour(st.hour, st.auto);
@@ -1897,7 +1910,7 @@ async function open(host, opt) {
     const tgt = [cur.tx, cur.ty, tz], cam = [tgt[0] + Math.cos(cur.yaw) * ch * cur.dist, tgt[1] + Math.sin(cur.yaw) * ch * cur.dist, Math.max(2.5, tgt[2] + Math.sin(cur.pitch) * cur.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
     const W = canvas.width, H = canvas.height, asp = W / H;
     const fov = (asp < 0.8 ? 62 : 46) * Math.PI / 180;
-    cam0 = cam; const proj = persp(fov, asp, 0.5, 6000); if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
+    cam0 = cam; const proj = persp(fov, asp, Math.max(0.5, Math.min(8, cur.dist * 0.02)), 6000);   /* v7.13: a farther near plane when zoomed out keeps distant roads from flickering */ if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
     const px = H / (2 * Math.tan(fov / 2));
     // shadow pass
     let LVP = new Float32Array(16);
@@ -1911,8 +1924,8 @@ async function open(host, opt) {
         gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 1, gl.FLOAT, false, STRIDE * 4, 32); gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 2, gl.FLOAT, false, STRIDE * 4, 24); gl.drawArrays(gl.TRIANGLES, 0, b[1]); }
       off(0);
       if (nFol) { gl.useProgram(P.shf.p); gl.uniformMatrix4fv(P.shf.u.uLVP, false, LVP); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, leafTex); gl.uniform1i(P.shf.u.uTex, 1);
-        gl.bindBuffer(gl.ARRAY_BUFFER, folB); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 48, 0); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 48, 24); off(2);
-        gl.drawArrays(gl.TRIANGLES, 0, nFol); off(0); gl.activeTexture(gl.TEXTURE0); }
+        gl.bindBuffer(gl.ARRAY_BUFFER, folShB); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 20, 0); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 20, 12); off(2);
+        gl.drawArrays(gl.TRIANGLES, 0, nFolSh); off(0); gl.activeTexture(gl.TEXTURE0); }
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
     // reflection pass (planar, water at z=0.04)
@@ -1968,9 +1981,12 @@ async function open(host, opt) {
     setWeather(w) { st.weather = w; },
     sound(v) { return v ? sound.start() : (sound.stop(), false); },
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
-    debug() { return { nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
+    debug() { return { trams: trams.map(t => along(t.e, t.s).slice(0, 2).map(Math.round)), flocks: flocks.map(f => [Math.round(f.c[0]), Math.round(f.c[1]), Math.round(f.h)]), nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = cur.yaw = yaw; st.pitch = cur.pitch = pitch; st.dist = cur.dist = dist; },
-    flyTo(x, y, o) { flyTo(x, y, o); }, get target() { return [st.tx, st.ty]; },
+    flyTo(x, y, o) { flyTo(x, y, o); },
+    followTram() { // v7.13: the camera rides along with the nearest running tram until the hand takes over
+      if (st.hour >= 1 && st.hour < 5) return false; let best = null, bd = 1e9; for (const t of trams) { if (t.wait > 0) continue; const q = along(t.e, t.s), d = Math.hypot(q[0], q[1]); if (d < bd) { bd = d; best = t; } }
+      if (!best) return false; const q = along(best.e, best.s); flyTo(q[0], q[1], { yaw: Math.atan2(q[3], q[2]) + 2.4, pitch: 0.38, dist: 75 }); st.follow = best; return true; }, get target() { return [st.tx, st.ty]; },
     pause(v) { st.paused = !!v; },
     destroy() { st.alive = false; cancelAnimationFrame(st.raf); sound.close(); canvas.width = canvas.height = 1; canvas.remove(); },
   };

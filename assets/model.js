@@ -1260,7 +1260,7 @@ let dirty=true,visible=false,auto=!reduce,showHist=false,evid=false,hover=null,s
 function draw(){if(!inited)return;
   if(smDirty)shadowPass();
   gl.viewport(0,0,cv.width,cv.height);const nf0=evid?0:NF,gf0=evid?0:GF;let bg=mix(C.paper,C.dark?[.93,.62,.42]:[.96,.74,.55],gf0*(C.dark?.08:.22));bg=mix(bg,C.dark?[.045,.055,.085]:[.15,.17,.26],nf0*.94);bg=mix(bg,C.dark?[.2,.13,.2]:[.62,.47,.55],nf0*(1-nf0)*(C.dark?.9:1.2));gl.clearColor(bg[0],bg[1],bg[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
-  EYE=camEye(cam);MVP=mul(persp(.78,W0/H0,XON?Math.max(2,cam.d/150):2,XON?16000:5000),look(EYE,cam.t,[0,1,0]));
+  EYE=camEye(cam);MVP=mul(persp(.78,W0/H0,XON?Math.max(2,cam.d/70):Math.max(1.5,cam.d/120),XON?16000:5000),look(EYE,cam.t,[0,1,0]));
   const fogc=bg;
   gl.useProgram(PM);gl.uniformMatrix4fv(gl.getUniformLocation(PM,'m'),false,MVP);gl.uniform3fv(gl.getUniformLocation(PM,'eye'),EYE);gl.uniform3fv(gl.getUniformLocation(PM,'fog'),fogc);gl.uniform2f(gl.getUniformLocation(PM,'fr'),cam.d*1.3,cam.d*3.4+700);
   gl.uniform3fv(gl.getUniformLocation(PM,'ld'),sunDir());gl.uniformMatrix4fv(gl.getUniformLocation(PM,'lm'),false,LM);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,smTex);gl.uniform1i(gl.getUniformLocation(PM,'sm'),0);gl.uniform1f(gl.getUniformLocation(PM,'smOn'),evid?0:1);gl.uniform1f(gl.getUniformLocation(PM,'smT'),1/SMS);gl.uniform1f(gl.getUniformLocation(PM,'sk'),C.dark?.4:.52);

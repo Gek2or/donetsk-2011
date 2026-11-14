@@ -505,7 +505,7 @@ function frame(f,speed,dt,t){if(!ready)return;resize();const s=f*TL;
   const [x,y,a0]=trackAt(s);const [lx,ly]=trackAt(s+22);let a=Math.atan2(ly-y,lx-x);if(cam.a===null||Math.abs(s-(cam.ls||0))>30)cam.a=a;cam.ls=s;let da=a-cam.a;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;cam.a+=da*Math.min(1,dt*2.5||1);
   cam.bob+=dt*speed*.9;const bob=Math.sin(cam.bob)*.025*Math.min(1,speed/8)+Math.sin(cam.bob*2.3)*.012*Math.min(1,speed/8);
   const ex=x+Math.cos(cam.a)*1.2,ey=y+Math.sin(cam.a)*1.2,gh=HT(ex,ey);const E=[ex,gh+2.75+bob,-ey],Cn=[E[0]+Math.cos(cam.a)*30,HT(ex+Math.cos(cam.a)*30,ey+Math.sin(cam.a)*30)+2.2,E[2]-Math.sin(cam.a)*30];
-  const as=canvas.width/canvas.height,fy=(as<1?68:56)*Math.PI/180;const P=persp(fy,as,.4,1600),V=look(E,Cn,[0,1,0]);const MV=mul(P,V);MVc=MV;
+  const as=canvas.width/canvas.height,fy=(as<1?68:56)*Math.PI/180;const P=persp(fy,as,.9,1600),V=look(E,Cn,[0,1,0]);const MV=mul(P,V);MVc=MV;
   if(t-LT>30||t<LT||!L0.fog){L0=lightNow();LT=t}const LL=L0,FOGC=LL.fog;
   gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(...FOGC,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   /* sky */
