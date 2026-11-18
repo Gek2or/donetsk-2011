@@ -2024,8 +2024,8 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 .hero-live{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
 .hero-live.on{opacity:1}
 .hero-live .kt3d-fail{display:none}
-/* v7.10: in the cab view the photo chip sits small under the time button, out of the line of sight */
-.tr-glass.m3d .tr-phchip{bottom:auto;top:52px;right:12px;padding:6px 11px;font-size:12px;opacity:.9}
+/* v7.10: in the cab view the photo chip sits small under the time button, out of the line of sight (v7.16: below it, not over it: the button starts at 7% + 6px and is 31 px tall) */
+.tr-glass.m3d .tr-phchip{bottom:auto;top:calc(7% + 46px);right:12px;padding:6px 11px;font-size:12px;opacity:.9}
 /* v7.10 phones: the cab controls fit one line, the photo chip sits above the dashboard, the language hint is compact */
 @media (max-width:600px){
 .tr-modes button{padding:5px 9px;font-size:11.5px}
@@ -2036,3 +2036,6 @@ html.kt3d-on,html.kt3d-on body{overflow:hidden}
 /* v7.11: view buttons of the 3D scene */
 .kt3d-views button{padding:8px 10px}
 @media (max-width:600px){.kt3d-views{width:100%}.kt3d-views button{flex:1;padding:8px 4px;font-size:13px}}
+/* v7.16: the restart button after a lost 3D context */
+.q3relost{all:unset;cursor:pointer;margin-left:6px;padding:3px 10px;border-radius:99px;border:1px solid currentColor;font-weight:600}
+.q3relost:focus-visible{outline:2px solid var(--accent,#e2658a);outline-offset:2px}

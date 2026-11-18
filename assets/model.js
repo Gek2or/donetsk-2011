@@ -6,6 +6,11 @@ const cv=document.getElementById('q3dc'),lab=document.getElementById('q3lab'),ca
 let S={},inited=false;const T=k=>S[k]||'';
 const gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:false});
 if(!gl){box.classList.add('nogl');return}
+/* v7.16: if the GPU drops the context (a driver reset, too little video memory for the reference map), the still render and a
+   plain note take its place, with a button to start the 3D again; the page reloads by itself if the browser gives the context back */
+cv.addEventListener('webglcontextlost',e=>{e.preventDefault();box.classList.add('nogl');const n=box.querySelector('.q3fb-note');if(n&&!n.dataset.lost){n.dataset.lost=1;const l=document.documentElement.lang,M={ru:['Видеокарта сбросила 3D-сцену.','Запустить снова'],uk:['Відеокарта скинула 3D-сцену.','Запустити знову'],en:['The graphics card dropped the 3D scene.','Start again'],fi:['Näytönohjain pudotti 3D-näkymän.','Käynnistä uudelleen']}[l]||['The graphics card dropped the 3D scene.','Start again'];
+  n.textContent=M[0]+' ';const b=document.createElement('button');b.type='button';b.className='q3relost';b.textContent=M[1];b.addEventListener('click',()=>{location.hash='q3d';location.reload()});n.appendChild(b)}});
+cv.addEventListener('webglcontextrestored',()=>{location.hash='q3d';location.reload()});
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- colours ---------- */
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -1444,7 +1449,7 @@ const BB=[...D.B.map(b=>b[2]),...D.DF.map(b=>b[2])].map(fp=>{let x0=1e9,y0=1e9,x
 const inPoly=(fp,x,y)=>{let c=false;for(let i=0,j=fp.length-1;i<fp.length;j=i++){const a=fp[i],b=fp[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/((b[1]-a[1])||1e-9)+a[0])c=!c}return c};
 const segD=(x,y,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy||1e-9;let t=((x-a[0])*dx+(y-a[1])*dy)/l;t=Math.max(0,Math.min(1,t));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy)};
 let dirty=true,visible=false,auto=!reduce,showHist=false,evid=false,hover=null,sel=null;
-function draw(){if(!inited)return;
+function draw(){if(!inited||gl.isContextLost())return;
   {const w=XON&&XG&&!XLITE&&!evid;if(w!==SMC.on)smDirty=true;else if(w){const R=Math.max(220,Math.min(1300,cam.d*.8));if(Math.hypot(cam.t[0]-SMC.c[0],cam.t[2]-SMC.c[2])>SMC.R*.18||R/SMC.R>1.3||SMC.R/R>1.3)smDirty=true}}
   if(smDirty)shadowPass();
   gl.viewport(0,0,cv.width,cv.height);const nf0=evid?0:NF,gf0=evid?0:GF;let bg=mix(C.paper,C.dark?[.93,.62,.42]:[.96,.74,.55],gf0*(C.dark?.08:.22));bg=mix(bg,C.dark?[.045,.055,.085]:[.15,.17,.26],nf0*.94);bg=mix(bg,C.dark?[.2,.13,.2]:[.62,.47,.55],nf0*(1-nf0)*(C.dark?.9:1.2));/* v7.14 audit: over the reference map the background is a light haze in daytime, the colour its far edge fades into */
