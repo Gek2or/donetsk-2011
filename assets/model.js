@@ -706,7 +706,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const edge=dk?[0,0,0,.5]:[.08,.11,.14,.3],line=(a,b)=>{Lp.push(...a,...b);Lc.push(...edge,...edge)};
   const xy=f=>{const o=[];for(let i=0;i<f.length;i+=2)o.push([f[i]/10,f[i+1]/10]);return o};
   /* ground: a 20 m grid around the quarter's own terrain, coloured by the mapped land use */
-  const g=X.g,[t0,t1,t2,t3]=D.tb,LUC={g:[.6,.71,.5],f:[.38,.52,.34],p:[.55,.69,.47],i:[.66,.65,.62],c:[.76,.75,.71],s:[.86,.8,.62],w:[.55,.55,.46],h:[.34,.32,.31]},GARD=[.56,.66,.45];
+  const g=X.g,[t0,t1,t2,t3]=D.tb,LUC={g:[.6,.71,.5],f:[.38,.52,.34],p:[.55,.69,.47],i:[.66,.65,.62],c:[.76,.75,.71],s:[.86,.8,.62],w:[.5,.6,.45],h:[.34,.32,.31]}/* v7.18: a 'water' cell with no mapped pond is a wet meadow by a stream, green (it showed as pale squares) */,GARD=[.56,.66,.45];
   /* v7.14 audit: the water levels first, so the ground under a pond or the reservoir lies below its surface (no z-fighting, no pale
      stairs along the shore); the private-house sector gets the green of its gardens (density of the mapped houses), a spoil heap the dark slag */
   const WP=X.wa.map(f=>{const r=xy(f);let lv=Infinity,x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of r){lv=Math.min(lv,hX(p[0],p[1]));x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}return{r,lv:lv+.15,bb:[x0,y0,x1,y1]}});
@@ -716,7 +716,10 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const gbase=(x,y)=>evid?mix(C.ground,C.gC,.28):mix(C.ground,C.groundHi,Math.max(0,Math.min(1,(hX(x,y)/EX+6)/12))*.6);
   const vcol=(i,j)=>{const k=g.c[j][i],x=g.x+i*g.s,y=g.y+j*g.s;if(evid)return mix(C.ground,C.gC,.28);const base=gbase(x,y);
     if(!ill&&k!=='w')return base;if(k==='.'){const q=Math.min(1,HD[j*(g.nx+1)+i]/3);return dk?mix(base,GARD.map(v=>v*.42),.1+q*.3):mix(base,GARD,.15+q*.45)}
-    const lc=k==='h'?mix(LUC.h,[.5,.37,.32],((i*7919+j*104729)%97)/97*.25):LUC[k];return dk?mix(base,lc.map(v=>v*.5),.78):mix(base,lc,.8)};
+    if(k==='h'){/* v7.18: the slag only on the heap itself (how far the point stands above the ground 260 m around), not as a soft stain over the flat land beside it */
+      let lo=Infinity;for(let q=0;q<16;q++){const an=q/16*6.2832;lo=Math.min(lo,hX(x+Math.cos(an)*260,y+Math.sin(an)*260))}const e=Math.max(0,Math.min(1,((hX(x,y)-lo)/(EX||1)-6)/10)),lc=mix([.43,.41,.39],[.5,.42,.37],((i*7919+j*104729)%97)/97*.3);
+      return dk?mix(base,lc.map(v=>v*.5),.15+e*.45):mix(base,lc,.12+e*.5)}
+    const lc=LUC[k];return dk?mix(base,lc.map(v=>v*.5),.78):mix(base,lc,.8)};
   /* v7.14 audit: trees keep clear of the carriageways, rails, buildings and water (a 25 m hash of the mapped roads, rails and footprints) */
   const CLR=new Map(),CK=(i,j)=>i*4096+j,cadd=(x0,y0,x1,y1,o)=>{for(let i=Math.floor((x0-2)/25);i<=Math.floor((x1+2)/25);i++)for(let j=Math.floor((y0-2)/25);j<=Math.floor((y1+2)/25);j++){const k=CK(i,j);let a=CLR.get(k);if(!a)CLR.set(k,a=[]);a.push(o)}};
   for(const [k,w,br,f] of X.r){const p=xy(f),hw=w/20;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];cadd(Math.min(a[0],b[0])-hw,Math.min(a[1],b[1])-hw,Math.max(a[0],b[0])+hw,Math.max(a[1],b[1])+hw,{a,b,hw})}}
@@ -727,9 +730,17 @@ function buildX(){const X=XD;if(!X)return;XS=false;
      mapped outline instead of the 20 m grid (not where a road, a rail or a building stands within 24 m: those keep the terrain) */
   const busy=(x,y)=>{for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const L=CLR.get(CK(Math.floor(x/25)+a,Math.floor(y/25)+c));if(L)for(const o of L){if(o.r?x>o.bb[0]-24&&x<o.bb[2]+24&&y>o.bb[1]-24&&y<o.bb[3]+24:segD(x,y,o.a,o.b)<o.hw+24)return true}}return false};
   const gw2=(i,j)=>j>=0&&j<=g.ny&&i>=0&&i<=g.nx&&g.c[j][i]==='w';
-  const gv=[];for(let j=0;j<=g.ny;j++){const row=[];for(let i=0;i<=g.nx;i++){const x=g.x+i*g.s,y=g.y+j*g.s,h=hX(x,y),wp=g.c[j][i]==='w'?wIn(x,y):null;let z=wp?Math.min(h,wp.lv-1.2):h-(g.c[j][i]==='w'?1.6:0);
+  const gv=[];for(let j=0;j<=g.ny;j++){const row=[];for(let i=0;i<=g.nx;i++){const x=g.x+i*g.s,y=g.y+j*g.s,h=hX(x,y),wp=wIn(x,y);/* v7.18: every grid point inside a mapped pond goes under its surface, whatever the land-use cell says (the green teeth along the shores) */let z=wp?Math.min(h,wp.lv-1.2):h-(g.c[j][i]==='w'?1.6:0);
     if(!wp&&g.c[j][i]!=='w'&&(gw2(i-1,j)||gw2(i+1,j)||gw2(i,j-1)||gw2(i,j+1))){let w=null;for(const [a,c] of [[-1,0],[1,0],[0,-1],[0,1]])if(gw2(i+a,j+c))w=w||wIn(x+a*g.s,y+c*g.s);if(w&&h>w.lv+.3&&h<w.lv+6&&!busy(x,y))z=w.lv+.3}
     row.push([W(x,y,z),vcol(i,j)])}gv.push(row)}
+  /* v7.18: the shore line on the mapped outline. A grid point under a pond is set just so deep that, along every grid edge to a dry
+     neighbour, the ground meets the water surface where the edge crosses the outline (depth = rise of the neighbour above the water
+     x its distance ratio, the deepest of its edges, so any error falls outside, under the bank strip), instead of 1.2 m everywhere, which made the 20 m triangles cut the water in saw teeth */
+  {const sd=(r,x,y)=>{let m=1e9;for(let k=0,n=r.length;k<n;k++){const a=r[k],c=r[(k+1)%n];m=Math.min(m,segD(x,y,a,c))}return m};const D2=new Map();const dist=(w,i,j,x,y)=>{const k=i+j*4096;let v=D2.get(k);if(v==null){v=sd(w.r,x,y);D2.set(k,v)}return v};
+    for(let j=0;j<=g.ny;j++)for(let i=0;i<=g.nx;i++){const x=g.x+i*g.s,y=g.y+j*g.s,w=wIn(x,y);if(!w)continue;let za=1e9,any=false;
+      for(const [a,c] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1]]){const ii=i+a,jj=j+c;if(ii<0||jj<0||ii>g.nx||jj>g.ny)continue;const xb=x+a*g.s,yb=y+c*g.s;if(wIn(xb,yb))continue;
+        const di=dist(w,i,j,x,y),db=Math.max(.5,dist(w,ii,jj,xb,yb)),rise=Math.max(.3,gv[jj][ii][0][1]-w.lv);any=true;za=Math.min(za,w.lv-Math.max(.05,di/db*rise))}
+      if(any){const v=gv[j][i][0];gv[j][i][0]=[v[0],Math.max(w.lv-4,za),v[2]]}}}
   for(let j=0;j<g.ny;j++)for(let i=0;i<g.nx;i++){const xa=g.x+i*g.s,ya=g.y+j*g.s;if(xa>=t0&&xa+g.s<=t2&&ya>=t1&&ya+g.s<=t3)continue;
     const v=[gv[j][i],gv[j][i+1],gv[j+1][i+1],gv[j+1][i]],n=nrm(v[0][0],v[1][0],v[3][0]);for(const k of [0,1,2,0,2,3])push(v[k][0],n,v[k][1],0)}
   /* v7.14 audit: the height of the ground as drawn (the grid's triangles), so that trees stand on it rather than on the finer terrain
@@ -744,6 +755,17 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   /* water: mapped ponds, the reservoir and the river, levelled at the lowest shore point */
   const wcol=evid?mix(C.gF,C.ground,.3):(dk?[.1,.16,.21]:[.56,.68,.74]);
   for(const w of WP){const r=w.r,lv=w.lv;const cc=area(r)>0?r:r.slice().reverse();const tt=tri(cc);for(let k=0;k<tt.length;k+=3)for(const m of [tt[k],tt[k+1],tt[k+2]])push(W(cc[m][0],cc[m][1],lv),[0,1,0],wcol,0)}
+  /* v7.18: the bank. The 20 m ground triangles cut the flat water in a saw-tooth line; a strip of bank along the mapped outline, from the
+     water's edge (just above the surface) out to the drawn ground, gives the shore its mapped line. It is narrower where a road, a rail
+     or a building comes close, so it never lies over them; the colour is the ground's own at that place */
+  if(!evid)for(const w of WP){const cc=area(w.r)>0?w.r:w.r.slice().reverse(),n=cc.length,lv=w.lv;if(n<3)continue;
+    const P=[];for(let k=0;k<n;k++){const a=cc[k],b=cc[(k+1)%n],L=Math.hypot(b[0]-a[0],b[1]-a[1]),m=Math.max(1,Math.ceil(L/6));for(let q=0;q<m;q++)P.push([a[0]+(b[0]-a[0])*q/m,a[1]+(b[1]-a[1])*q/m])}
+    const N=P.length,O=P.map((p,k)=>{const a=P[(k+N-1)%N],b=P[(k+1)%N];let dx=b[0]-a[0],dy=b[1]-a[1];const l=Math.hypot(dx,dy)||1;return[dy/l,-dx/l]});
+    const ring=P.map((p,k)=>{const o=O[k];let wd=0;for(const t of [18,11,6,3])if(xclr(p[0]+o[0]*t,p[1]+o[1]*t,1.5)&&xclr(p[0]+o[0]*t*.5,p[1]+o[1]*t*.5,1.5)){wd=t;break}
+      if(p[0]>t0&&p[0]<t2&&p[1]>t1&&p[1]<t3)wd=0;const q=[p[0]+o[0]*wd,p[1]+o[1]*wd];const i=Math.max(0,Math.min(g.nx,Math.round((q[0]-g.x)/g.s))),j=Math.max(0,Math.min(g.ny,Math.round((q[1]-g.y)/g.s)));
+      return{a:W(p[0],p[1],lv+.06),b:W(q[0],q[1],Math.max(gz(q[0],q[1]),lv+.06)+.12),c:vcol(i,j),wd}});
+    for(let k=0;k<N;k++){const A=ring[k],B=ring[(k+1)%N];if(!A.wd&&!B.wd)continue;const ca=mix(A.c,dk?[.2,.2,.16]:[.62,.6,.5],.25),cb=B.c;
+      for(const [v,c] of [[A.a,ca],[B.a,ca],[B.b,cb],[A.a,ca],[B.b,cb],[A.b,A.c]])push(v,[0,1,0],c,0)}}
   const ribbon=(pts,w,col,lift,flat,deck,hf=hX)=>{const L=[0];for(let i=1;i<pts.length;i++)L.push(L[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));const za=hX(...pts[0]),zb=hX(...pts[pts.length-1]);
     const z=(i,x,y)=>flat?za+(zb-za)*L[i]/(L[L.length-1]||1)+lift:hf(x,y)+lift;
     for(let i=1;i<pts.length;i++){const p=pts[i-1],q=pts[i],l=Math.hypot(q[0]-p[0],q[1]-p[1]);if(l<.05)continue;const ox=-(q[1]-p[1])/l*w/2,oy=(q[0]-p[0])/l*w/2;
@@ -1029,8 +1051,8 @@ function buildX(){const X=XD;if(!X)return;XS=false;
        uphill half of 30 of the 38 sank under the slope (up to 7 m, 21 m with the relief exaggerated) */
     const s4sub=(a,b,c,out)=>{if(Math.max(Math.hypot(a[0]-b[0],a[1]-b[1]),Math.hypot(b[0]-c[0],b[1]-c[1]),Math.hypot(c[0]-a[0],c[1]-a[1]))<=8){out.push(a,b,c);return}
       const ab=[(a[0]+b[0])/2,(a[1]+b[1])/2],bc=[(b[0]+c[0])/2,(b[1]+c[1])/2],ca=[(c[0]+a[0])/2,(c[1]+a[1])/2];s4sub(a,ab,ca,out);s4sub(ab,b,bc,out);s4sub(ca,bc,c,out);s4sub(ab,bc,ca,out)};
-    for(const [k,f] of (X.pt||[])){const r=xy(f),cc=area(r)>0?r:r.slice().reverse();const tt=tri(cc),sv=[],zz=q=>hX(q[0],q[1])+.36;for(let i=0;i<tt.length;i+=3)s4sub(cc[tt[i]],cc[tt[i+1]],cc[tt[i+2]],sv);
-      for(let i=0;i<sv.length;i+=3)tri3(W(sv[i][0],sv[i][1],zz(sv[i])),W(sv[i+1][0],sv[i+1][1],zz(sv[i+1])),W(sv[i+2][0],sv[i+2][1],zz(sv[i+2])),PC[k],0);
+    for(const [k,f] of (X.pt||[])){const r=xy(f),cc=area(r)>0?r:r.slice().reverse();const tt=tri(cc),sv=[],zz=q=>hX(q[0],q[1])+.36;/* v7.18: a playground mapped over a whole school yard (up to 1.1 ha) is trodden grass, not one sand field */const pcol=k===3&&Math.abs(area(cc))>2500?(dk?[.2,.24,.19]:[.62,.68,.5]):PC[k];for(let i=0;i<tt.length;i+=3)s4sub(cc[tt[i]],cc[tt[i+1]],cc[tt[i+2]],sv);
+      for(let i=0;i<sv.length;i+=3)tri3(W(sv[i][0],sv[i][1],zz(sv[i])),W(sv[i+1][0],sv[i+1][1],zz(sv[i+1])),W(sv[i+2][0],sv[i+2][1],zz(sv[i+2])),pcol,0);
       if(k<2)for(let i=0;i<cc.length;i++){const a=cc[i],c=cc[(i+1)%cc.length],n=Math.max(1,Math.ceil(Math.hypot(c[0]-a[0],c[1]-a[1])/8));for(let m=0;m<n;m++){const p0=[a[0]+(c[0]-a[0])*m/n,a[1]+(c[1]-a[1])*m/n],p1=[a[0]+(c[0]-a[0])*(m+1)/n,a[1]+(c[1]-a[1])*(m+1)/n];
         Lp.push(...W(p0[0],p0[1],zz(p0)+.02),...W(p1[0],p1[1],zz(p1)+.02));Lc.push(...lc,...lc)}}}
     /* v7.14 audit: every tank is also mapped as a 2.5-3 m building on the same outline; the shell stands 15 cm outside it, no flicker */
