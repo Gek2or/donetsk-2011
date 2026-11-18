@@ -1556,7 +1556,7 @@ if(want3d())_open({currentTarget:btns[0]});
 addEventListener('hashchange',()=>{if(want3d()&&!document.documentElement.classList.contains('kt3d-on'))_open({currentTarget:btns[0]})});
 })();
 
-/* v7.17: dynamic layer - a live sky that follows the sun over Donetsk, the skyline above the footer with windows lit after
+/* v7.17: dynamic layer - a live sky that follows the sun over Donetsk, the render strip above the footer (v7.18) after
    sunset, scroll reveals. Decoration only (aria-hidden); nothing here is data about the city. */
 (function(){
   const R=document.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1573,25 +1573,13 @@ addEventListener('hashchange',()=>{if(want3d()&&!document.documentElement.classL
     R.style.setProperty('--sky-o',String((dark?1.4:1)*(k0[4]+(k1[4]-k0[4])*t)));R.style.setProperty('--night',night.toFixed(3));
     R.style.setProperty('--sun-x',sx.toFixed(1)+'%');R.style.setProperty('--sun-y',(60-Math.max(-10,Math.min(40,a))*1.2).toFixed(1)+'%')}
   tick();setInterval(tick,60000);new MutationObserver(tick).observe(R,{attributes:true,attributeFilter:['data-theme']});
-  /* the skyline: generic shapes of the city, seeded so every page draws the same one */
+  /* v7.18: above the footer a strip of the project's own render of King's Tower and the Kalmius (the hero renders), the one
+     for the current light in Donetsk: day, dusk or night; loaded only when the footer comes near */
   const ft=document.querySelector('footer');
-  if(ft){let sd=2011;const rn=()=>(sd=(sd*16807)%2147483647)/2147483647;const W=1440,H=200,o=[];
-    o.push('<circle class="sd" cx="0" cy="0" r="22" id="fxSun"/><circle class="mn" cx="1180" cy="46" r="13"/>');
-    /* far: spoil heaps and distant blocks */
-    o.push('<path class="l1" d="M0 200 L0 150 L120 150 L260 62 L330 96 L420 150 L700 150 L860 82 L960 140 L1100 150 L1250 92 L1340 140 L1440 140 L1440 200Z"/>');
-    for(let x=430;x<1440;x+=34+rn()*40){const h=24+rn()*46;o.push(`<rect class="l1" x="${x|0}" y="${(150-h)|0}" width="${(20+rn()*26)|0}" height="${h|0}"/>`)}
-    /* middle: chimneys with smoke, the headframe with its wheel */
-    for(const [x,h] of [[560,110],[590,96],[1030,124]]){o.push(`<path class="l2" d="M${x-7} 200 L${x-4} ${200-h} L${x+4} ${200-h} L${x+7} 200Z"/><rect class="lamp" x="${x-2}" y="${197-h}" width="4" height="3"/>`);if(!reduce)for(let k=0;k<3;k++)o.push(`<circle class="smoke" cx="${x}" cy="${196-h}" r="9" style="animation-delay:${k*4}s"/>`)}
-    o.push('<g transform="translate(180 72)"><path class="tr" d="M0 128 L22 20 L44 128 M8 90 L36 90 M14 60 L30 60 M22 20 L60 128"/><circle class="tr wheel" cx="22" cy="18" r="13" stroke-dasharray="4 3"/><circle class="tr" cx="22" cy="18" r="2"/></g>');
-    /* near: panel blocks with windows, a round tower */
-    const win=(x,y,w,h,cols,rows)=>{for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const on=rn()<.42?1:0,tw=rn()<.08;o.push(`<rect class="w${tw?' tw':''}" x="${(x+4+c*(w-8)/cols)|0}" y="${(y+5+r*(h-8)/rows)|0}" width="3" height="3" style="--on:${on}${tw?';--wd:'+(rn()*9).toFixed(1)+'s':''}"/>`)}};
-    for(let x=-10;x<W;){const w=60+rn()*90,fl=5+((rn()*5)|0),h=fl*11+8;if(x>640&&x<760){x+=120;continue}o.push(`<rect class="l3" x="${x|0}" y="${(200-h)|0}" width="${w|0}" height="${h}"/>`);win(x,200-h,w,h,Math.floor(w/11),fl);x+=w+14+rn()*40}
-    o.push('<rect class="l3" x="676" y="38" width="48" height="162" rx="22"/><rect class="lamp" x="698" y="30" width="4" height="4"/>');win(676,46,48,150,4,14);
-    const el=document.createElement('div');el.className='fx-skyline';el.setAttribute('aria-hidden','true');
-    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice">${o.join('')}</svg>`;
-    const ln=document.createElement('hr');ln.className='fx-line';ln.setAttribute('aria-hidden','true');ft.before(el,ln);
-    const sun=el.querySelector('#fxSun'),put=()=>{const s=window.__dn&&__dn.sun?__dn.sun():{alt:20},sx=parseFloat(getComputedStyle(R).getPropertyValue('--sun-x'))||70;sun.setAttribute('cx',String(W*Math.max(10,Math.min(90,sx))/100|0));sun.setAttribute('cy',String(Math.round(150-Math.max(-12,Math.min(40,s.alt))*3.2)))};put();setInterval(put,60000);
-    if(!reduce){const ls=[...el.querySelectorAll('.l1,.l2')];let pend=false;addEventListener('scroll',()=>{if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;const r=el.getBoundingClientRect();if(r.top>innerHeight||r.bottom<0)return;const k=(r.top-innerHeight)/innerHeight;for(const l of ls)l.style.transform=`translateY(${(k*(l.classList.contains('l1')?14:7)).toFixed(1)}px)`})},{passive:true})}}
+  if(ft){const el=document.createElement('div');el.className='fx-band';el.setAttribute('aria-hidden','true');const ln=document.createElement('hr');ln.className='fx-line';ln.setAttribute('aria-hidden','true');ft.before(el,ln);
+    const img=()=>{const p=R.dataset.phase||'day',k=p==='night'?'night':p==='day'?'day':'dusk',w=innerWidth>1300?'1920':innerWidth>700?'1280':'960',u=`assets/hero/kt-${k}-${w}.webp`;if(el.dataset.u===u)return;el.dataset.u=u;const im=new Image();im.onload=()=>{el.style.backgroundImage=`url(${u})`;el.classList.add('on')};im.src=u};
+    const go=()=>{img();setInterval(img,300000)};
+    if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();go()}},{rootMargin:'600px'});io.observe(el)}else go()}
   /* scroll reveals */
   if(reduce||!('IntersectionObserver' in window))return;
   const T=[...document.querySelectorAll('main section .head,main section .lede,main section figure,main .st-card,main a[class*="-card"],main section h2:not(.head h2)')].filter(e=>!e.closest('.kt3d,.q3d,.tr-glass,[hidden]')&&e.getBoundingClientRect().top>innerHeight*.9);
