@@ -50,7 +50,7 @@ const keep=(el,def)=>{const v=+el.dataset.sel;return Number.isFinite(v)?v:def};
 
 /* static data */
 const LADI=[{img:'img/render/house33.jpg',rn:1,st:'done'},{img:'img/render/corridor.jpg',rn:1,st:'wip'},{img:'img/render/quarter.jpg',rn:1,st:'wip'},{img:'maps/osm_city.svg',map:true,st:'wip'},{ph:21,st:'todo'},{ph:0,st:'todo'}];
-const PROFC={sheet_mixed:'#8f5b4a',sheet_green:'#4f7a52',sheet_brown:'#6e4a32',sheet_blue:'#5d8fb5',sheet_grey:'#7d8790',timber:'#b3874e',concrete_lattice:'#a9aea4',concrete_ornamental:'#c5c9bf',hedge_timber:'#b3294f',retaining_landscape:'#6f8f6a'};
+const PROFC={sheet_mixed:'#8f5b4a',sheet_green:'#4f7a52',sheet_brown:'#6e4a32',sheet_blue:'#5d8fb5',sheet_grey:'#7d8790',timber:'#b3874e',concrete_lattice:'#a9aea4',concrete_ornamental:'#c5c9bf',hedge_timber:'#b83c14',retaining_landscape:'#6f8f6a'};
 const RMI=[{p:100,s:'done'},{p:100,s:'done'},{p:40,s:'wip'},{p:25,s:'wip'},{p:5,s:'todo'},{p:0,s:'todo'}];
 const Q=window.__D11.Q;const D=window.__D11.D;
 const LAT0=47.9927461,LON0=37.8183736,KX=111320*Math.cos(LAT0*Math.PI/180),KY=110574;
@@ -91,7 +91,7 @@ function lensSVG(p){
   Q.forEach(f=>{const pp=f.p.map(([e,n])=>`${e.toFixed(1)},${(-n).toFixed(1)}`).join(' ');
     if(f.k==='r')s+=`<polyline points="${pp}" fill="none" stroke="#3a4a58" stroke-width="7" stroke-linecap="round"/>`;
     else if(f.k==='b')s+=`<polygon points="${pp}" fill="#5c6c79" stroke="#1c2630" stroke-width=".4"/>`});
-  s+=`<circle cx="${ce}" cy="${-cn}" r="30" fill="none" stroke="#e2658a55" stroke-dasharray="1.5 1.5" stroke-width=".4"/><circle cx="${ce}" cy="${-cn}" r="15" fill="none" stroke="#e2658a88" stroke-width=".4"/><circle cx="${ce}" cy="${-cn}" r="2.2" fill="#e2658a"/><circle cx="${ce}" cy="${-cn}" r="5" fill="none" stroke="#e2658a" stroke-width=".6"><animate attributeName="r" values="3;9;3" dur="3s" repeatCount="indefinite"/></circle></svg>`;
+  s+=`<circle cx="${ce}" cy="${-cn}" r="30" fill="none" stroke="#f08a4b55" stroke-dasharray="1.5 1.5" stroke-width=".4"/><circle cx="${ce}" cy="${-cn}" r="15" fill="none" stroke="#f08a4b88" stroke-width=".4"/><circle cx="${ce}" cy="${-cn}" r="2.2" fill="#f08a4b"/><circle cx="${ce}" cy="${-cn}" r="5" fill="none" stroke="#f08a4b" stroke-width=".6"><animate attributeName="r" values="3;9;3" dur="3s" repeatCount="indefinite"/></circle></svg>`;
   return s;
 }
 function terrainSVG(){
@@ -196,7 +196,7 @@ if('IntersectionObserver' in window&&!reduce){
 /* waveform sketch (decorative) */
 (function(){const c=document.getElementById('wave');if(!c)return;const x=c.getContext('2d');let w,h,t=0;const dpr=Math.min(2,devicePixelRatio||1);
 function size(){w=c.clientWidth;h=c.clientHeight;c.width=w*dpr;c.height=h*dpr;x.setTransform(dpr,0,0,dpr,0,0)}size();addEventListener('resize',size);
-function frame(){x.clearRect(0,0,w,h);const lines=[['#e2658a',1.6,1],['#86aecb',1,.6],['#e7ebe8',.6,.35]];
+function frame(){x.clearRect(0,0,w,h);const lines=[['#f08a4b',1.6,1],['#86aecb',1,.6],['#ece6dc',.6,.35]];
 lines.forEach(([col,lw,a],k)=>{x.beginPath();x.strokeStyle=col;x.globalAlpha=a;x.lineWidth=lw;for(let i=0;i<=w;i+=3){const u=i/w;const env=Math.sin(Math.PI*u);const y=h*.55+env*(Math.sin(u*9+t*(1+k*.3))*h*.16+Math.sin(u*23-t*1.7+k)*h*.06+Math.sin(u*57+t*.6)*h*.02);i?x.lineTo(i,y):x.moveTo(i,y)}x.stroke()});x.globalAlpha=1;t+=.012;if(!reduce)requestAnimationFrame(frame)}frame()})();
 
 {const b=document.getElementById('ytPoster');if(b)b.addEventListener('click',()=>{const w=b.parentElement;w.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/3lj1tFT3wGw?rel=0&autoplay=1&modestbranding=1" title="Donetsk Ukraine - Before The War Started on a Historic City" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'})}
@@ -739,7 +739,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
- {id:'2026-11-18-v716',d:'2026-11-18',ty:'site',v:'v7.16'},{id:'2026-11-18-v715',d:'2026-11-18',ty:'site',v:'v7.15'},{id:'2026-11-18-v714',d:'2026-11-18',ty:'site',v:'v7.14'},{id:'2026-11-14-v713',d:'2026-11-14',ty:'site',v:'v7.13'},{id:'2026-11-13-v712',d:'2026-11-13',ty:'site',v:'v7.12'},{id:'2026-11-13-v711',d:'2026-11-13',ty:'site',v:'v7.11'},{id:'2026-11-09-v710',d:'2026-11-09',ty:'site',v:'v7.10',cta:['city.html#tram','tr0']},{id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
+ {id:'2026-11-18-v717',d:'2026-11-18',ty:'site',v:'v7.17'},{id:'2026-11-18-v716',d:'2026-11-18',ty:'site',v:'v7.16'},{id:'2026-11-18-v715',d:'2026-11-18',ty:'site',v:'v7.15'},{id:'2026-11-18-v714',d:'2026-11-18',ty:'site',v:'v7.14'},{id:'2026-11-14-v713',d:'2026-11-14',ty:'site',v:'v7.13'},{id:'2026-11-13-v712',d:'2026-11-13',ty:'site',v:'v7.12'},{id:'2026-11-13-v711',d:'2026-11-13',ty:'site',v:'v7.11'},{id:'2026-11-09-v710',d:'2026-11-09',ty:'site',v:'v7.10',cta:['city.html#tram','tr0']},{id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
@@ -1554,4 +1554,49 @@ if(want3d())_open({currentTarget:btns[0]});
   if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});
 })();
 addEventListener('hashchange',()=>{if(want3d()&&!document.documentElement.classList.contains('kt3d-on'))_open({currentTarget:btns[0]})});
+})();
+
+/* v7.17: dynamic layer - a live sky that follows the sun over Donetsk, the skyline above the footer with windows lit after
+   sunset, scroll reveals. Decoration only (aria-hidden); nothing here is data about the city. */
+(function(){
+  const R=document.documentElement,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!document.querySelector('nav.nav'))return;
+  const sky=document.createElement('div');sky.className='fx-sky';sky.setAttribute('aria-hidden','true');document.body.prepend(sky);
+  /* sky colours by sun altitude (deg): night, blue hour, sunset, golden hour, day */
+  const K=[[-18,'#0b1322','#16202e','#3a4a7a00',.12],[-8,'#1f2346','#3a2d44','#7a4a8a33',.2],[-2,'#5a3a5a','#e0784a','#ff8a4a66',.32],[3,'#e8814a','#f4c08a','#ffb36b88',.36],[12,'#f2c79a','#f3e2c8','#ffd8a055',.3],[40,'#e9dccb','#efe7da','#fff1d033',.22]];
+  const hx=h=>[1,3,5,7].map(i=>parseInt((h+'ff').slice(i,i+2),16)),mx=(a,b,t)=>'#'+hx(a).map((v,i)=>Math.round(v+(hx(b)[i]-v)*t).toString(16).padStart(2,'0')).join('');
+  function tick(){const s=window.__dn&&__dn.sun?__dn.sun():{alt:20,am:false},a=Math.max(-18,Math.min(40,s.alt));let i=0;while(i<K.length-2&&a>K[i+1][0])i++;
+    const k0=K[i],k1=K[i+1],t=Math.max(0,Math.min(1,(a-k0[0])/(k1[0]-k0[0])));
+    const dark=R.dataset.theme==='dark',night=Math.max(0,Math.min(1,(-a-1)/7));
+    const d=new Date(),h=(d.getUTCHours()+3+d.getUTCMinutes()/60)%24,sx=Math.max(5,Math.min(95,(h-5)/14*100));
+    R.style.setProperty('--sky-a',mx(k0[1],k1[1],t));R.style.setProperty('--sky-b',dark?'#121418':mx(k0[2],k1[2],t));R.style.setProperty('--sky-sun',mx(k0[3],k1[3],t));
+    R.style.setProperty('--sky-o',String((dark?1.4:1)*(k0[4]+(k1[4]-k0[4])*t)));R.style.setProperty('--night',night.toFixed(3));
+    R.style.setProperty('--sun-x',sx.toFixed(1)+'%');R.style.setProperty('--sun-y',(60-Math.max(-10,Math.min(40,a))*1.2).toFixed(1)+'%')}
+  tick();setInterval(tick,60000);new MutationObserver(tick).observe(R,{attributes:true,attributeFilter:['data-theme']});
+  /* the skyline: generic shapes of the city, seeded so every page draws the same one */
+  const ft=document.querySelector('footer');
+  if(ft){let sd=2011;const rn=()=>(sd=(sd*16807)%2147483647)/2147483647;const W=1440,H=200,o=[];
+    o.push('<circle class="sd" cx="0" cy="0" r="22" id="fxSun"/><circle class="mn" cx="1180" cy="46" r="13"/>');
+    /* far: spoil heaps and distant blocks */
+    o.push('<path class="l1" d="M0 200 L0 150 L120 150 L260 62 L330 96 L420 150 L700 150 L860 82 L960 140 L1100 150 L1250 92 L1340 140 L1440 140 L1440 200Z"/>');
+    for(let x=430;x<1440;x+=34+rn()*40){const h=24+rn()*46;o.push(`<rect class="l1" x="${x|0}" y="${(150-h)|0}" width="${(20+rn()*26)|0}" height="${h|0}"/>`)}
+    /* middle: chimneys with smoke, the headframe with its wheel */
+    for(const [x,h] of [[560,110],[590,96],[1030,124]]){o.push(`<path class="l2" d="M${x-7} 200 L${x-4} ${200-h} L${x+4} ${200-h} L${x+7} 200Z"/><rect class="lamp" x="${x-2}" y="${197-h}" width="4" height="3"/>`);if(!reduce)for(let k=0;k<3;k++)o.push(`<circle class="smoke" cx="${x}" cy="${196-h}" r="9" style="animation-delay:${k*4}s"/>`)}
+    o.push('<g transform="translate(180 72)"><path class="tr" d="M0 128 L22 20 L44 128 M8 90 L36 90 M14 60 L30 60 M22 20 L60 128"/><circle class="tr wheel" cx="22" cy="18" r="13" stroke-dasharray="4 3"/><circle class="tr" cx="22" cy="18" r="2"/></g>');
+    /* near: panel blocks with windows, a round tower */
+    const win=(x,y,w,h,cols,rows)=>{for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const on=rn()<.42?1:0,tw=rn()<.08;o.push(`<rect class="w${tw?' tw':''}" x="${(x+4+c*(w-8)/cols)|0}" y="${(y+5+r*(h-8)/rows)|0}" width="3" height="3" style="--on:${on}${tw?';--wd:'+(rn()*9).toFixed(1)+'s':''}"/>`)}};
+    for(let x=-10;x<W;){const w=60+rn()*90,fl=5+((rn()*5)|0),h=fl*11+8;if(x>640&&x<760){x+=120;continue}o.push(`<rect class="l3" x="${x|0}" y="${(200-h)|0}" width="${w|0}" height="${h}"/>`);win(x,200-h,w,h,Math.floor(w/11),fl);x+=w+14+rn()*40}
+    o.push('<rect class="l3" x="676" y="38" width="48" height="162" rx="22"/><rect class="lamp" x="698" y="30" width="4" height="4"/>');win(676,46,48,150,4,14);
+    const el=document.createElement('div');el.className='fx-skyline';el.setAttribute('aria-hidden','true');
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice">${o.join('')}</svg>`;
+    const ln=document.createElement('hr');ln.className='fx-line';ln.setAttribute('aria-hidden','true');ft.before(el,ln);
+    const sun=el.querySelector('#fxSun'),put=()=>{const s=window.__dn&&__dn.sun?__dn.sun():{alt:20},sx=parseFloat(getComputedStyle(R).getPropertyValue('--sun-x'))||70;sun.setAttribute('cx',String(W*Math.max(10,Math.min(90,sx))/100|0));sun.setAttribute('cy',String(Math.round(150-Math.max(-12,Math.min(40,s.alt))*3.2)))};put();setInterval(put,60000);
+    if(!reduce){const ls=[...el.querySelectorAll('.l1,.l2')];let pend=false;addEventListener('scroll',()=>{if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;const r=el.getBoundingClientRect();if(r.top>innerHeight||r.bottom<0)return;const k=(r.top-innerHeight)/innerHeight;for(const l of ls)l.style.transform=`translateY(${(k*(l.classList.contains('l1')?14:7)).toFixed(1)}px)`})},{passive:true})}}
+  /* scroll reveals */
+  if(reduce||!('IntersectionObserver' in window))return;
+  const T=[...document.querySelectorAll('main section .head,main section .lede,main section figure,main .st-card,main a[class*="-card"],main section h2:not(.head h2)')].filter(e=>!e.closest('.kt3d,.q3d,.tr-glass,[hidden]')&&e.getBoundingClientRect().top>innerHeight*.9);
+  if(!T.length)return;R.classList.add('fx');
+  const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}},{rootMargin:'0px 0px -8% 0px'});
+  T.forEach(e=>{const sib=e.parentElement?[...e.parentElement.children].indexOf(e):0;e.style.setProperty('--rd',Math.min(sib,6)*.07+'s');e.classList.add('rv');io.observe(e)});
+  addEventListener('beforeprint',()=>T.forEach(e=>e.classList.add('in')));
 })();
