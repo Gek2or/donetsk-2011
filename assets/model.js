@@ -1375,7 +1375,7 @@ HP+`varying float z;void main(){vec4 e=fract(z*vec4(1.,255.,65025.,16581375.));e
 /* v7.19 prototype "Акварель": an artistic view of the same geometry. The scene is drawn into a texture, then one full-screen pass
    adds ink lines (depth silhouettes and creases, colour edges), soft washes with darker rims, pigment grain, hatching in the shade
    and paper fibre. Nothing is added to or moved in the model. Off in evidence mode. */
-let WC=false;try{WC=localStorage.getItem('d11-wc')==='1'}catch(e){}
+let WC=true;try{WC=localStorage.getItem('d11-wc')!=='0'}catch(e){}/* v7.20: the watercolour is the main look of the 3D model (owner's decision); the button turns it off and that is remembered */
 const WDX=gl.getExtension('WEBGL_depth_texture');
 const WCP=prog(`attribute vec2 p;varying vec2 u;void main(){u=p*.5+.5;gl_Position=vec4(p,0.,1.);}`,
 HP+`varying vec2 u;uniform sampler2D tc,td,tn;uniform vec2 rs,nz;uniform vec3 pap,ink;uniform float hd,px,nt,dk;
