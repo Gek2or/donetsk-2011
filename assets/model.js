@@ -1372,6 +1372,67 @@ else{bool apt=k<1.5;
 vec3 col=bc*(va*mix(mix(mix(vec3(.96,.98,1.01),vec3(1.06,.88,.76),gf*.5),vec3(.36,.41,.58),nf),vec3(.66,.56,.7),nf*(1.-nf)*1.1)+sk*vdf*s*mix(vec3(1.05,.98,.88),vec3(1.3,.7,.42),gf)*(1.-nf*.96))+gl0*vec3(.03,.035,.045)*(1.-nf)+em;float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(col,fog,max(f*.85*(1.-nf*.5),ve)),1.);}`);
 const PS=prog(`attribute vec3 p;uniform mat4 lm;varying float z;void main(){gl_Position=lm*vec4(p,1.);z=gl_Position.z/gl_Position.w*.5+.5;}`,
 HP+`varying float z;void main(){vec4 e=fract(z*vec4(1.,255.,65025.,16581375.));e-=e.yzww*vec4(1./255.,1./255.,1./255.,0.);gl_FragColor=e;}`);
+/* v7.19 prototype "Акварель": an artistic view of the same geometry. The scene is drawn into a texture, then one full-screen pass
+   adds ink lines (depth silhouettes and creases, colour edges), soft washes with darker rims, pigment grain, hatching in the shade
+   and paper fibre. Nothing is added to or moved in the model. Off in evidence mode. */
+let WC=false;try{WC=localStorage.getItem('d11-wc')==='1'}catch(e){}
+const WDX=gl.getExtension('WEBGL_depth_texture');
+const WCP=prog(`attribute vec2 p;varying vec2 u;void main(){u=p*.5+.5;gl_Position=vec4(p,0.,1.);}`,
+HP+`varying vec2 u;uniform sampler2D tc,td,tn;uniform vec2 rs,nz;uniform vec3 pap,ink;uniform float hd,px,nt,dk;
+float N(vec2 q){return texture2D(tn,q/256.).r;}
+float N2(vec2 q){return texture2D(tn,q/256.).g;}
+float fb(vec2 q){return N(q)*.5+N(q*2.03+17.)*.3+N(q*4.07+41.)*.2;}
+float lz(vec2 q){float z=texture2D(td,q).r*2.-1.;return 2.*nz.x*nz.y/(nz.y+nz.x-z*(nz.y-nz.x));}
+float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+vec3 C(vec2 q){return texture2D(tc,q).rgb;}
+void main(){vec2 P=u*rs/px;vec2 o=px/rs;
+  vec2 w=vec2(fb(P/70.),fb(P/70.+vec2(91.,37.)))-.5;vec2 uv=u+w*3.2*o;
+  vec3 c0=C(uv),cb=(C(uv+vec2(2.,0.)*o)+C(uv-vec2(2.,0.)*o)+C(uv+vec2(0.,2.)*o)+C(uv-vec2(0.,2.)*o))*.25;
+  vec3 c=mix(c0,cb,.4);float L=lum(c);
+  /* flat washes: luminance in soft steps, hue kept */
+  float q=L*5.;float qs=(floor(q)+smoothstep(.3,.7,fract(q)))/5.;c*=mix(1.,(qs+.03)/(L+.03),.3);
+  /* transparent pigment: a little lighter and less saturated in daylight */
+  float Lq=lum(c);c=mix(vec3(Lq),c,1.22-.12*nt);c=clamp(c,0.,1.);c=mix(c,1.-(1.-c)*.8,1.-nt);c=pow(c,vec3(.92));Lq=lum(c);
+  /* darker rims where a wash meets another one */
+  float rim=clamp(length(c0-cb)*2.2,0.,1.);c*=1.-.18*rim*(1.-nt*.5);
+  /* pigment grain and uneven washes */
+  c*=1.-.09*(fb(P/2.2)-.5)-.12*(N2(P/150.)-.5)*(1.-nt*.6);
+  /* hatching in the shade (two directions in the darkest places) */
+  float h1=abs(fract((P.x+P.y+N(P/9.)*3.)/5.)-.5)*2.,h2=abs(fract((P.x-P.y+N2(P/9.)*3.)/5.)-.5)*2.;
+  float sh=smoothstep(.42,.26,Lq)*(1.-nt);float hat=(1.-smoothstep(.1,.35,h1))*sh*.2+(1.-smoothstep(.1,.35,h2))*smoothstep(.26,.14,Lq)*(1.-nt)*.16;
+  /* ink: depth silhouettes and creases, colour edges, with their own small wobble */
+  vec2 lu=u+(vec2(N(P/23.),N2(P/23.))-.5)*1.8*o;float ln=0.,zc=60.;
+  if(hd>.5){zc=lz(lu);float zl=lz(lu-vec2(o.x,0.)),zr=lz(lu+vec2(o.x,0.)),zd=lz(lu-vec2(0.,o.y)),zu=lz(lu+vec2(0.,o.y));
+    float ed=max(max(abs(zl-zc),abs(zr-zc)),max(abs(zd-zc),abs(zu-zc)))/zc;
+    float ic=1./zc,cr=max(abs(1./zl+1./zr-2.*ic),abs(1./zd+1./zu-2.*ic))/ic;
+    ln=max(smoothstep(.02,.06,ed),smoothstep(.006,.02,cr)*.6);}
+  vec3 a=C(lu-vec2(o.x,0.)),b=C(lu+vec2(o.x,0.)),d=C(lu-vec2(0.,o.y)),e=C(lu+vec2(0.,o.y));
+  float ce=length(a-b)+length(d-e);ln=max(ln,smoothstep(.28,.6,ce)*.5);
+  ln*=(.6+.4*N2(P/11.))*.85*(1.-smoothstep(120.,1400.,zc)*.85)*(1.-nt*.55);
+  /* paper fibre over everything, and a ragged unpainted edge like a sheet */
+  float fib=fb(vec2(P.x/5.,P.y/1.4))*.6+fb(P/1.5)*.4;
+  vec3 col=mix(c,c*.6+ink*.2,clamp(hat,0.,1.));col=mix(col,ink,clamp(ln,0.,1.));col*=.955+.07*fib;
+  vec2 m=min(u,1.-u)*rs/px;float edge=smoothstep(0.,26.,min(m.x,m.y)-14.*fb(P/30.));col=mix(pap,col,mix(1.,edge,1.-nt*.7));
+  gl_FragColor=vec4(col,1.);}`);
+let wFB=null,wCT=null,wDT=null,wDR=null,wNT=null,wW=0,wH=0,wQB=null;
+function wcBind(){const w=cv.width,h=cv.height;
+  if(!wFB){wFB=gl.createFramebuffer();wCT=gl.createTexture();
+    wNT=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,wNT);const r=new Uint8Array(256*256*4);let sd=12345;for(let i=0;i<r.length;i++){sd=(sd*1103515245+12345)&0x7fffffff;r[i]=sd>>15&255}
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,256,0,gl.RGBA,gl.UNSIGNED_BYTE,r);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+    wQB=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,wQB);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW)}
+  if(wW!==w||wH!==h){gl.bindTexture(gl.TEXTURE_2D,wCT);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,wFB);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,wCT,0);
+    if(WDX){wDT=wDT||gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,wDT);gl.texImage2D(gl.TEXTURE_2D,0,gl.DEPTH_COMPONENT,w,h,0,gl.DEPTH_COMPONENT,gl.UNSIGNED_INT,null);for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.NEAREST],[gl.TEXTURE_MAG_FILTER,gl.NEAREST],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,wDT,0)}
+    else{wDR=wDR||gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,wDR);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,w,h);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,wDR)}
+    wW=w;wH=h}
+  gl.bindFramebuffer(gl.FRAMEBUFFER,wFB);if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){gl.bindFramebuffer(gl.FRAMEBUFFER,null);return false}return true}
+function wcPost(near,far){gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,cv.width,cv.height);const bl=gl.isEnabled(gl.BLEND);gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
+  gl.useProgram(WCP);const U=n=>gl.getUniformLocation(WCP,n);
+  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,wCT);gl.uniform1i(U('tc'),1);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,WDX?wDT:null);gl.uniform1i(U('td'),2);gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,wNT);gl.uniform1i(U('tn'),3);
+  gl.uniform2f(U('rs'),cv.width,cv.height);gl.uniform2f(U('nz'),near,far);gl.uniform1f(U('hd'),WDX?1:0);gl.uniform1f(U('px'),dpr);gl.uniform1f(U('nt'),NF);gl.uniform1f(U('dk'),C.dark?1:0);
+  const pp=C.paper||[.96,.94,.9];gl.uniform3fv(U('pap'),mix(pp,C.dark?[.045,.055,.085]:[.15,.17,.26],NF*.94));gl.uniform3fv(U('ink'),C.dark?[.08,.07,.09]:[.17,.145,.15]);
+  gl.bindBuffer(gl.ARRAY_BUFFER,wQB);const l=gl.getAttribLocation(WCP,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.disableVertexAttribArray(l);
+  for(const t of [gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3]){gl.activeTexture(t);gl.bindTexture(gl.TEXTURE_2D,null)}gl.activeTexture(gl.TEXTURE0);gl.enable(gl.DEPTH_TEST);if(bl)gl.enable(gl.BLEND)}
 let SMS=2048,smFB=null,smTex=null,smRB=null,LM=null,SMC={c:[0,0,0],R:1,on:false},SMB=.0016;
 function ortho(l,r,b,t,n,f){return[2/(r-l),0,0,0,0,2/(t-b),0,0,0,0,-2/(f-n),0,-(r+l)/(r-l),-(t+b)/(t-b),-(f+n)/(f-n),1]}
 function sunDir(){const el=SUN.el*Math.PI/180,az=SUN.az*Math.PI/180;return[Math.sin(az)*Math.cos(el),Math.sin(el),-Math.cos(az)*Math.cos(el)]}
@@ -1481,6 +1542,7 @@ let dirty=true,visible=false,auto=!reduce,showHist=false,evid=false,hover=null,s
 function draw(){if(!inited||gl.isContextLost())return;
   {const w=XON&&XG&&!XLITE&&!evid;if(w!==SMC.on)smDirty=true;else if(w){const R=Math.max(220,Math.min(1300,cam.d*.8));if(Math.hypot(cam.t[0]-SMC.c[0],cam.t[2]-SMC.c[2])>SMC.R*.18||R/SMC.R>1.3||SMC.R/R>1.3)smDirty=true}}
   if(smDirty)shadowPass();
+  const WCN=WC&&!evid&&wcBind();
   gl.viewport(0,0,cv.width,cv.height);const nf0=evid?0:NF,gf0=evid?0:GF;let bg=mix(C.paper,C.dark?[.93,.62,.42]:[.96,.74,.55],gf0*(C.dark?.08:.22));bg=mix(bg,C.dark?[.045,.055,.085]:[.15,.17,.26],nf0*.94);bg=mix(bg,C.dark?[.2,.13,.2]:[.62,.47,.55],nf0*(1-nf0)*(C.dark?.9:1.2));/* v7.14 audit: over the reference map the background is a light haze in daytime, the colour its far edge fades into */
   if(XON&&XG&&!evid)bg=mix(bg,C.dark?[.11,.14,.18]:[.8,.85,.89],.35*(1-nf0));gl.clearColor(bg[0],bg[1],bg[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
   EYE=camEye(cam);MVP=mul(persp(.78,W0/H0,XON?Math.max(2,cam.d/70):Math.max(1.5,cam.d/120),XON?16000:5000),look(EYE,cam.t,[0,1,0]));
@@ -1518,7 +1580,8 @@ function draw(){if(!inited||gl.isContextLost())return;
     gl.depthMask(true);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA)}
   gl.disable(gl.BLEND);
   labels();
-}
+
+  if(WCN)wcPost(XON?Math.max(2,cam.d/70):Math.max(1.5,cam.d/120),XON?16000:5000);}
 /* v5.4: rendered height of the non-house types (class E estimates; must match TYP and canopy() in build) */
 const TYH={garage:2.7,shed:4.8,tp:3.9,substation:8.4,outbuilding:2.5,canopy:4.1};const bH=b=>TYH[b[5]]||b[3];
 const TYK={house:'q87',outbuilding:'q88',garage:'q89',canopy:'q90',tp:'q91',substation:'q92',shed:'q93',apartments:'q94'};
@@ -1577,6 +1640,7 @@ if(xbtn)xbtn.addEventListener('click',()=>setX(xbtn.getAttribute('aria-pressed')
 tog('q3hist',on=>{showHist=on;build(evid);dirty=true});
 tog('q3ex',on=>{EX=on?3:1;build(evid);dirty=true});
 tog('q3fac',on=>{fac=on;build(evid);showCard();dirty=true});
+{const b=document.getElementById('q3wc');if(b){b.setAttribute('aria-pressed',WC);tog('q3wc',on=>{WC=on;box.classList.toggle('wc',on);try{localStorage.setItem('d11-wc',on?'1':'0')}catch(e){}dirty=true});box.classList.toggle('wc',WC)}}
 tog('q3ev',on=>{evid=on;box.classList.toggle('evid',on);build(evid);showLegend();dirty=true});
 /* touch activation */
 const act=document.getElementById('q3act'),done=document.getElementById('q3done');
