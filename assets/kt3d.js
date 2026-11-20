@@ -354,7 +354,7 @@ const onArc = s => { s = ((s % T.per) + T.per) % T.per; return (s >= 2 * T.half 
 function buildTower(G) {
   const P = (a, b, z) => { const q = tw(a, b); return [q[0], q[1], z]; };
   const N = (a, b) => { const q = tw(a, b); return [q[0], q[1], 0]; };
-  const cBrick = [0.62, 0.32, 0.17], cCream = [0.86, 0.76, 0.58], cStone = [0.62, 0.57, 0.5];
+  const cBrick = [0.56, 0.29, 0.18], cCream = [0.86, 0.76, 0.58], cStone = [0.62, 0.57, 0.5];
   const midCols = new Set();
   for (const sm of [T.half, 3 * T.half + Math.PI * T.R]) { const c = Math.floor(sm / T.pitch); midCols.add(c - 1); midCols.add(c); midCols.add(c + 1); }
   for (let c = 0; c < T.ncol; c++) {
@@ -1075,6 +1075,12 @@ vec4 win(float s, float z, float pitch, float fh, float g, float wx0, float ww, 
   float ac=step(h21(vec2(col+seed*3.1,f+1.3)),acp)*step(side,u)*step(u,side+0.6)*step(sill-0.75,zf)*step(zf,sill-0.15);
   return vec4(inside, frame, lit, ac);
 }
+/* v7.22 a window by day: dark room, tulle or curtains, the lintel shadow at the top (instead of a black hole) */
+vec3 winIn(vec2 id, float t){ float h=h21(id*1.91+0.7), k=h21(id+4.4);
+  vec3 c=vec3(0.05,0.055,0.06)*(0.7+0.6*k);
+  if(h>0.5) c=mix(c,vec3(0.5,0.48,0.43)*(0.5+0.4*k),0.45);
+  if(h>0.84) c=mix(c,mix(vec3(0.42,0.3,0.2),vec3(0.5,0.45,0.32),k),0.65);
+  return c*mix(0.45,1.0,smoothstep(0.98,0.72,t)); }
 /* a lit room: warm lamps, cool energy-saving bulbs, curtains; some rooms lit by a TV */
 vec3 room(vec2 id){
   float h=h21(id*1.37+3.1), c=h21(id+9.2);
@@ -1105,9 +1111,11 @@ void main(){
     vec4 w=win(vU.x,vU.y,3.0,2.8,2.8,0.75,1.5,0.8,1.4,floor(vU.x/997.0),0.15);
     col=vC*(0.9+0.2*h21(floor(vU.xy/vec2(3.0,2.8))))*(0.92+0.12*n2(vW.xy*0.7+vW.z*0.3));
     float seam=step(abs(fract(vU.y/2.8)-0.0),0.012)+step(abs(fract(vU.x/3.0)),0.008); col*=1.0-0.12*clamp(seam,0.0,1.0);
-    if(w.x>0.5){ glass=1.0-w.y; col=mix(vec3(0.06,0.07,0.08),vec3(0.8,0.8,0.78),w.y); if(w.z>0.5) emi=room(floor(vU.xy/vec2(3.0,2.8)))*1.1*(1.0-w.y)*uNight; }
+    if(w.x>0.5){ glass=1.0-w.y; col=mix(winIn(floor(vU.xy/vec2(3.0,2.8))+vec2(vC.r*91.0,0.0),(mod(vU.y,2.8)-0.8)/1.4),vec3(0.8,0.8,0.78),w.y); if(w.z>0.5) emi=room(floor(vU.xy/vec2(3.0,2.8)))*1.1*(1.0-w.y)*uNight; }
     if(w.w>0.5) col=vec3(0.8,0.8,0.78);
-  } else if(m<3.5){ col=vC*(0.85+0.3*n2(vW.xy*0.8));
+  } else if(m<3.5){ // v7.22 flat roofs: rolled bitumen strips, patched repairs, a lighter worn edge
+    float n=n2(vW.xy*0.8), pt=smoothstep(0.55,0.75,n2(vW.xy*0.09+vC.rg*30.0));
+    col=vC*(0.85+0.3*n)*mix(1.0,1.22,pt)*(1.0-0.1*step(fract((vW.x*0.7+vW.y*0.7)/0.95),0.04))*(0.94+0.1*n2(vW.xy*6.0));
   } else if(m<5.5){ // tower facade
     bool lg=m>4.5; float z=vU.y; bool shop=z<4.2;
     vec4 w= shop ? win(vU.x,z,uPitch,3.0,4.2,0.25,uPitch-0.5,0.25,3.4,0.0,0.0)
@@ -1116,9 +1124,12 @@ void main(){
     if(!shop&&!lg){
       float band=(step(0.73,zf)*step(zf,0.85))+(step(2.5,zf)*step(zf,2.62));
       float course=step(fract(zf/0.075),0.12)*0.06*(1.0-smoothstep(30.0,110.0,length(uCam-vW)));   // v7.13: no brick courses far away (they shimmered)
-      col=mix(vC*(0.9+0.2*n2(vW.xy*2.0+z))*(1.0-course),vec3(0.86,0.77,0.6),clamp(band,0.0,1.0));
+      float near=1.0-smoothstep(40.0,160.0,length(uCam-vW)); float rowb=floor(zf/0.075);
+      float bj=h21(vec2(floor(vU.x/0.25+mod(rowb,2.0)*0.5),floor(z/0.075)))*near;   // v7.22: each brick a slightly different fire
+      col=mix(vC*(0.9+0.2*n2(vW.xy*2.0+z))*(1.0-course)*(0.93+0.14*bj),vec3(0.86,0.77,0.6),clamp(band,0.0,1.0));
+      col*=1.0-0.2*(step(0.62,zf)*step(zf,0.73)+step(2.42,zf)*step(zf,2.5));   // the shadow line under each sill and lintel band
     }
-    if(w.x>0.5){ glass=1.0-w.y; col=mix(vec3(0.05,0.06,0.07),vec3(0.86,0.86,0.84),w.y);
+    if(w.x>0.5){ glass=1.0-w.y; col=mix(shop?vec3(0.05,0.06,0.07):winIn(vec2(floor(vU.x/uPitch)+40.0,floor(z/3.0)),lg?(zf-0.55)/2.05:(zf-0.85)/1.65),vec3(0.86,0.86,0.84),w.y);
       if(w.z>0.5&&!shop) emi=room(vec2(floor(vU.x/uPitch)+40.0,floor(z/3.0)))*1.15*(1.0-w.y)*uNight;
       if(shop){ float cid=floor(vU.x/uPitch); float on=step(h21(vec2(cid,77.0)),0.25+uLit); emi=mix(vec3(1.0,0.82,0.6),vec3(0.9,0.95,1.0),step(0.6,h21(vec2(cid,5.0))))*0.75*on*(1.0-w.y)*uNight; col=mix(col,vec3(0.1,0.1,0.1),(1.0-on)*glass*0.5); } }
     if(w.w>0.5&&!shop) col=vec3(0.84,0.84,0.82);
@@ -1153,9 +1164,10 @@ void main(){
     glass=1.0-clamp(fr,0.0,1.0); col=mix(vec3(0.12,0.14,0.15),vC,clamp(fr,0.0,1.0));
   } else if(abs(m-23.0)<0.5){ glass=1.0; col=vec3(0.05,0.06,0.07);
   } else if(abs(m-24.0)<0.5){ emi=vec3(1.0,0.62,0.28)*3.0*uNight; col=vC*0.6; }
+  if(((m>1.5&&m<2.5)||(m>3.5&&m<5.5)||abs(m-20.0)<0.5)&&abs(N.z)<0.5) col*=0.7+0.3*smoothstep(0.0,7.0,vU.y);   // v7.22: walls darker near the ground (sky hidden by trees and neighbours)
   float sh=shadow();
   float ndl=max(dot(N,uSun),0.0);
-  vec3 amb=mix(uGndC,uSkyC,N.z*0.5+0.5);
+  vec3 amb=mix(uGndC,uSkyC,N.z*0.5+0.5)*(0.84+0.16*abs(N.z))+uGndC*0.12*(1.0-abs(N.z));   // v7.22: walls see half the sky, so less fill light and more form
   vec3 lit=col*(amb+uSunC*ndl*sh);
   if(glass>0.0){ vec3 R=reflect(-Vd,N); float fr=0.08+0.6*pow(1.0-max(dot(N,Vd),0.0),4.0); lit=mix(lit,skyAt(R)*0.9,fr*glass); }
   if(spec>0.0){ vec3 H=normalize(uSun+Vd); lit+=uSunC*spec*pow(max(dot(N,H),0.0),mix(200.0,20.0,rough))*sh; }
@@ -1211,6 +1223,18 @@ void main(){ vec3 c=texture2D(uTex,vUV).rgb*0.227;
   c+=(texture2D(uTex,vUV+uDir*1.385).rgb+texture2D(uTex,vUV-uDir*1.385).rgb)*0.316;
   c+=(texture2D(uTex,vUV+uDir*3.23).rgb+texture2D(uTex,vUV-uDir*3.23).rgb)*0.07; gl_FragColor=vec4(c,1.0); }`;
 const COMP_FS = HDR + `varying vec2 vUV; uniform sampler2D uTex; uniform float uK; void main(){ gl_FragColor=vec4(texture2D(uTex,vUV).rgb*uK,1.0); }`;
+/* v7.22 colour grade: a mild S-curve, less green-plastic saturation by day, cool shadows and warm highlights, a soft vignette, a light sharpen and film grain */
+const GRADE_FS = HDR + `varying vec2 vUV; uniform sampler2D uTex; uniform vec2 uPx; uniform float uSat; uniform float uVig; uniform float uT; uniform float uWarm;
+float h21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+void main(){ vec3 c=texture2D(uTex,vUV).rgb;
+  vec3 b=(texture2D(uTex,vUV+vec2(uPx.x,0.0)).rgb+texture2D(uTex,vUV-vec2(uPx.x,0.0)).rgb+texture2D(uTex,vUV+vec2(0.0,uPx.y)).rgb+texture2D(uTex,vUV-vec2(0.0,uPx.y)).rgb)*0.25;
+  c=clamp(c+(c-b)*0.3,0.0,1.0);
+  float l=dot(c,vec3(0.2126,0.7152,0.0722)); c=mix(vec3(l),c,uSat);
+  c=mix(c,c*c*(3.0-2.0*c),0.38);
+  c*=mix(vec3(0.93,0.98,1.07),vec3(1.0+0.06*uWarm,1.0,1.0-0.09*uWarm),smoothstep(0.12,0.75,l));
+  vec2 q=vUV-0.5; c*=1.0-uVig*dot(q,q)*1.5;
+  c+=(h21(gl_FragCoord.xy+fract(uT)*97.0)-0.5)*0.016;
+  gl_FragColor=vec4(c,1.0); }`;
 const MASK_VS = HDR + `attribute vec3 aP; uniform mat4 uVP; void main(){ gl_Position=uVP*vec4(aP,1.0); }`;
 const MASK_FS = HDR + `void main(){ gl_FragColor=vec4(0.0); }`;
 const SKY_VS = HDR + `attribute vec2 aP; varying vec2 vP; void main(){ vP=aP; gl_Position=vec4(aP,0.9999,1.0); }`;
@@ -1366,7 +1390,7 @@ async function open(host, opt) {
     shf: prog(SHF_VS, SHF_FS, ['aP', 'aU']),
     mask: prog(MASK_VS, MASK_FS, ['aP']),
     ao: prog(AO_VS, AO_FS, ['aP', 'aA']),
-    bright: prog(PP_VS, BRIGHT_FS, ['aP']), blur: prog(PP_VS, BLUR_FS, ['aP']), comp: prog(PP_VS, COMP_FS, ['aP']),
+    bright: prog(PP_VS, BRIGHT_FS, ['aP']), blur: prog(PP_VS, BLUR_FS, ['aP']), comp: prog(PP_VS, COMP_FS, ['aP']), grade: prog(PP_VS, GRADE_FS, ['aP']),
   };
 
   /* static geometry */
@@ -1569,7 +1593,44 @@ async function open(host, opt) {
       liv: [[0.72, 0.14, 0.12], [0.12, 0.3, 0.62], [0.16, 0.42, 0.3], [0.85, 0.55, 0.12]][Math.floor(prnd() * 4)], ph: prnd() * 6 };
     if (!own) planes.push(p); return p; }
   /* the passenger seat: a slow circle round the tower, the left window looks at it */
-  const PV = { on: false, a: 0, r: 820, z: 380, v: 30, ov: null };
+  /* v7.22 the passenger seat, cinematic: a banked left turn round the tower at 200-270 m, the circle breathing between 440 and 680 m,
+     light turbulence; the camera sits at a window just behind the left wing and keeps the tower in the window */
+  const PV = { on: false, a: 0, ov: null, fr: null, svg: null };
+  const vA = (a, b, k) => [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k];
+  function pvUpdate(dt) {
+    PV.a += dt * 34 / 560; const a = PV.a, r = 560 + 120 * Math.sin(a * 1.3 + 1), z = 235 + 35 * Math.sin(a * 0.7 + 0.4) + 0.22 * Math.sin(simT * 1.1) + 0.09 * Math.sin(simT * 2.9);
+    const hd = a + Math.PI / 2, b = 0.3 + 0.06 * Math.sin(a * 1.3 + 1) + 0.012 * Math.sin(simT * 1.7) + 0.007 * Math.sin(simT * 3.3), pt = 0.035 + 0.006 * Math.sin(simT * 2.3);
+    const F = [Math.cos(hd) * Math.cos(pt), Math.sin(hd) * Math.cos(pt), Math.sin(pt)], L0 = [-Math.sin(hd), Math.cos(hd), 0], U0 = V.cross(F, L0);
+    const L = V.add(V.mul(L0, Math.cos(b)), V.mul(U0, -Math.sin(b))), U = V.add(V.mul(U0, Math.cos(b)), V.mul(L0, Math.sin(b)));
+    PV.fr = { o: [Math.cos(a) * r, Math.sin(a) * r, z], F, L, U }; }
+  const pvP = (f, r, u) => { const q = PV.fr; return vA(vA(vA(q.o, q.F, f), q.L, r), q.U, u); };
+  /* the left wing as seen from the cabin: swept, tapered, a little dihedral, an aerofoil section, flaps and slats, a winglet, the engine */
+  function ownWing(G, glow, nightK) {
+    const WG = [0.86, 0.84, 0.81], FL = [0.74, 0.73, 0.71], SEAM = [0.25, 0.26, 0.28], LE = [0.74, 0.75, 0.78], WH = [0.92, 0.92, 0.91], DK = [0.07, 0.07, 0.08];
+    const st = [2.0, 5.0, 8.5, 12.0, 15.0, 16.8], at = r => { const t = (r - 2) / 14.8; return { le: 3.2 - 9.4 * t, te: -3.8 - 4.2 * t, uc: -1.95 + 0.06 * (r - 2), th: 0.62 - 0.44 * t }; };
+    const sec = r => { const q = at(r), c = q.le - q.te, P = (x, u) => pvP(q.le - c * x, r, q.uc + u);
+      return { le: P(0, 0), sl: P(0.12, q.th * 0.42), mx: P(0.35, q.th * 0.5), fh: P(0.74, q.th * 0.26), te: P(1, 0.02), bm: P(0.4, -q.th * 0.28) }; };
+    for (let i = 0; i < st.length - 1; i++) { const a = sec(st[i]), b = sec(st[i + 1]);
+      G.quad(a.le, b.le, b.sl, a.sl, M.CAR, LE); G.quad(a.sl, b.sl, b.mx, a.mx, M.CAR, WG); G.quad(a.mx, b.mx, b.fh, a.fh, M.CAR, WG);
+      if (st[i] >= 2 && st[i + 1] <= 15) G.quad(a.fh, b.fh, b.te, a.te, M.CAR, FL); else G.quad(a.fh, b.fh, b.te, a.te, M.CAR, WG);
+      const lift = (p, k) => vA(p, PV.fr.U, k);   // thin seams at the slat and flap hinges
+      G.quad(lift(a.sl, 0.006), lift(b.sl, 0.006), lift(vA(b.sl, PV.fr.F, -0.06), 0.006), lift(vA(a.sl, PV.fr.F, -0.06), 0.006), M.CAR, SEAM);
+      G.quad(lift(a.fh, 0.006), lift(b.fh, 0.006), lift(vA(b.fh, PV.fr.F, -0.07), 0.006), lift(vA(a.fh, PV.fr.F, -0.07), 0.006), M.CAR, SEAM);
+      G.quad(a.le, b.le, b.bm, a.bm, M.CAR, [0.6, 0.61, 0.63]); G.quad(a.bm, b.bm, b.te, a.te, M.CAR, [0.6, 0.61, 0.63]); }
+    { const q = at(16.8), c = q.le - q.te, p0 = pvP(q.le - c * 0.15, 16.8, q.uc), p1 = pvP(q.te, 16.8, q.uc), p2 = pvP(q.te - 0.7, 17.1, q.uc + 1.5), p3 = pvP(q.te + c * 0.3 - 0.7, 17.1, q.uc + 1.5);
+      G.quad(p0, p1, p2, p3, M.CAR, [0.78, 0.77, 0.75]);   // winglet
+      const k = 0.55 + 0.45 * nightK, n = pvP(q.le - 0.2, 16.9, q.uc + 0.05); glow.push(n[0], n[1], n[2], 1, 0.08, 0.06, k, 1.6);   // red navigation light (left wing)
+      if ((simT % 1.3) < 0.07) { const w = pvP(q.te - 0.3, 17.0, q.uc + 0.1); glow.push(w[0], w[1], w[2], 1, 1, 1, 1, 4.5); } }   // white strobe
+    // engine on a pylon under the wing: a ten-sided nacelle, the fan inside the intake, an exhaust cone
+    const ef = 1.3, er = 5.9, eu = -3.15, R = 1.08, f0 = ef + 2.6, f1 = ef - 2.4, ring = (f, rad) => { const o = []; for (let k = 0; k < 10; k++) { const t = k / 10 * TAU; o.push(pvP(f, er + Math.cos(t) * rad, eu + Math.sin(t) * rad)); } return o; };
+    const A = ring(f0, R * 0.92), B = ring(f0 - 0.5, R), C = ring(f1 + 0.6, R * 0.9), D2 = ring(f1, R * 0.62), E2 = ring(f1 - 1.1, R * 0.18), FAN = ring(f0 - 0.35, R * 0.8);
+    for (let k = 0; k < 10; k++) { const j = (k + 1) % 10;
+      G.quad(A[k], A[j], B[j], B[k], M.CAR, [0.72, 0.73, 0.75]); G.quad(B[k], B[j], C[j], C[k], M.CAR, WH); G.quad(C[k], C[j], D2[j], D2[k], M.CAR, [0.55, 0.56, 0.58]);
+      G.quad(D2[k], D2[j], E2[j], E2[k], M.CAR, [0.35, 0.33, 0.31]); G.tri(pvP(f0 - 0.35, er, eu), FAN[j], FAN[k], M.CAR, DK);
+      G.quad(A[k], A[j], FAN[j], FAN[k], M.CAR, [0.16, 0.16, 0.17]); }
+    { const q = at(er), p0 = pvP(ef + 1.6, er, eu + R * 0.95), p1 = pvP(ef - 1.9, er, eu + R * 0.9), p2 = pvP(Math.min(q.te + 0.8, ef - 2.6), er, q.uc - 0.1), p3 = pvP(q.le - 0.4, er, q.uc - 0.1);
+      G.quad(p0, p1, p2, p3, M.CAR, WH); }   // pylon
+  }
   function planeModel(G, x, y, z, hd, liv, own) {
     const c = Math.cos(hd), s = Math.sin(hd), P = (f, r) => [x + c * f - s * r, y + s * f + c * r], W = [0.93, 0.93, 0.91], GR = [0.62, 0.63, 0.65];
     if (!own) {
@@ -1581,20 +1642,39 @@ async function open(host, opt) {
       const hs = P(-18, 0); G.box(hs[0], hs[1], z + 0.4, 12, 2.8, 0.3, hd, M.CAR, W);             // tailplane
     }
     if (!own) { const wg = P(-1, 0); G.box(wg[0], wg[1], z - 1.6, 34, 5, 0.5, hd, M.CAR, W); }   // wing
-    if (own) {   // the passenger's own left wing, seen from the window
-      const sw = Math.atan2(14, -7.5), L = Math.hypot(14, 7.5);   // swept wing as two long slabs along the span (no staircase)
-        for (const [t0, t1, ch, th] of [[0, 0.55, 5.6, 0.34], [0.55, 1, 3.4, 0.22]]) { const q = P(1.5 - 7.5 * (t0 + t1) / 2, 3 + 14 * (t0 + t1) / 2);
-          G.box(q[0], q[1], z - 3.1 + 0.5 * (t0 + t1) / 2, ch, L * (t1 - t0) + 0.3, th, hd + sw, M.CAR, W); }
-      const e = P(3.5, 6.5); G.box(e[0], e[1], z - 4.6, 2.1, 4.4, 2.1, hd, M.CAR, GR); return; }
     for (const r of [-6, 6]) { const e = P(1.5, r); G.box(e[0], e[1], z - 3.4, 2.1, 4.2, 2.1, hd, M.CAR, GR); }   // engines
+  }
+  /* the cabin wall: moulded plastic panel, the deep window reveal lit from outside, the inner pane with its breather hole and a faint
+     reflection, the blind pulled a little down. Drawn as an SVG over the canvas, sized to the viewport so the window keeps its shape. */
+  function pvLayout() {
+    const o = PV.ov; if (!o) return; const W = o.clientWidth || innerWidth, H = o.clientHeight || innerHeight;
+    let hh = H * 0.74, ww = hh * 0.72; if (ww > W * 0.78) { ww = W * 0.78; hh = ww / 0.72; }
+    const cx = W / 2, cy = H * 0.48, x = cx - ww / 2, y = cy - hh / 2, rr = (k, e) => `x="${cx - ww * k / 2 - (e || 0)}" y="${cy - hh * k / 2 - (e || 0)}" width="${ww * k + 2 * (e || 0)}" height="${hh * k + 2 * (e || 0)}" rx="${ww * k * 0.46 + (e || 0)}" ry="${hh * k * 0.33 + (e || 0)}"`;
+    const sh = hh * 0.13;
+    o.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;display:block"><defs>
+<linearGradient id="kw" x1="0" y1="0" x2="0.15" y2="1"><stop offset="0" stop-color="#ddd8ce"/><stop offset=".55" stop-color="#cfc9be"/><stop offset="1" stop-color="#a9a397"/></linearGradient>
+<radialGradient id="kwv" cx=".5" cy=".46" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></radialGradient>
+<linearGradient id="kr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2efe8"/><stop offset=".5" stop-color="#d6d1c7"/><stop offset="1" stop-color="#9e978b"/></linearGradient>
+<linearGradient id="kl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a8479"/><stop offset="1" stop-color="#bdb7ab"/></linearGradient>
+<linearGradient id="kb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7e3db"/><stop offset=".85" stop-color="#d3cec4"/><stop offset="1" stop-color="#a8a296"/></linearGradient>
+<linearGradient id="kp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".05"/></linearGradient>
+<radialGradient id="ke" cx=".5" cy=".5" r=".62"><stop offset=".72" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></radialGradient>
+<mask id="km"><rect width="${W}" height="${H}" fill="#fff"/><rect ${rr(1)} fill="#000"/></mask><clipPath id="kc"><rect ${rr(1)}/></clipPath>
+<filter id="kf" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${Math.max(2, ww * 0.02)}"/></filter></defs>
+<g mask="url(#km)"><rect width="${W}" height="${H}" fill="url(#kw)"/><rect width="${W}" height="${H}" fill="url(#kwv)"/>
+<rect ${rr(1, ww * 0.2)} fill="#000" opacity=".18" filter="url(#kf)"/><rect ${rr(1, ww * 0.16)} fill="url(#kr)"/><rect ${rr(1, ww * 0.05)} fill="url(#kl)"/></g>
+<g clip-path="url(#kc)"><rect ${rr(1)} fill="url(#ke)"/><rect ${rr(1)} fill="url(#kp)"/>
+<rect x="${x}" y="${y}" width="${ww}" height="${sh}" fill="url(#kb)"/><rect x="${x}" y="${y + sh - 3}" width="${ww}" height="3" fill="#8f897e"/>
+<rect x="${cx - ww * 0.09}" y="${y + sh - 2}" width="${ww * 0.18}" height="${Math.max(4, hh * 0.012)}" rx="2" fill="#7d776c"/>
+<circle cx="${cx}" cy="${y + hh * 0.9}" r="${Math.max(1.5, ww * 0.006)}" fill="#1c1d1f" opacity=".7"/></g></svg>`;
+    if (S.plane) { const p = document.createElement('p'); p.textContent = S.plane; p.style.cssText = 'position:absolute;left:0;right:0;bottom:max(10px,2.5vh);margin:0;text-align:center;font:500 12px/1.4 system-ui,sans-serif;color:#5d584f;padding:0 16px'; o.appendChild(p); }
   }
   function planeView(on) {
     PV.on = !!on; const host = canvas.parentElement;
-    if (PV.on) { PV.a = Math.atan2(cam0[1], cam0[0]) || 0; st.follow = null;
+    if (PV.on) { PV.a = (Math.atan2(cam0[1], cam0[0]) || 0) - 0.5; st.follow = null; pvUpdate(0);
       if (!PV.ov && host) { const o = document.createElement('div'); o.className = 'kt3d-window'; o.setAttribute('aria-hidden', 'true');
         o.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden';
-        o.innerHTML = '<i style="position:absolute;left:50%;top:50%;width:min(66vw,58vh);height:min(86vw,76vh);transform:translate(-50%,-52%);border-radius:44% / 34%;box-shadow:0 0 0 14px #cfc8bb,0 0 0 26px #b9b2a5,0 0 0 200vmax #e4ded2,inset 0 0 40px 8px #0006"></i>';
-        host.appendChild(o); PV.ov = o; }
+        host.appendChild(o); PV.ov = o; pvLayout(); addEventListener('resize', pvLayout); }
       if (PV.ov) PV.ov.hidden = false; }
     else { if (PV.ov) PV.ov.hidden = true; st.pitch = cur.pitch = 0.3; st.dist = cur.dist = 520; st.tx = cur.tx; st.ty = cur.ty; }
     return PV.on; }
@@ -1659,6 +1739,16 @@ async function open(host, opt) {
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
     gl.useProgram(P.comp.p); gl.uniform1i(P.comp.u.uTex, 0); gl.uniform1f(P.comp.u.uK, k); gl.bindTexture(gl.TEXTURE_2D, bl[0].t); gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.disable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthMask(true); off(0);
+  }
+  function grade(W, H, E) {
+    gl.bindTexture(gl.TEXTURE_2D, sceneTex);
+    if (scW !== W || scH !== H) { texSetup(sceneTex, W, H); scW = W; scH = H; }
+    gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, W, H);
+    gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.viewport(0, 0, W, H);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadB); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0); off(1);
+    gl.activeTexture(gl.TEXTURE0); const u = P.grade.u; gl.useProgram(P.grade.p); gl.uniform1i(u.uTex, 0); gl.uniform2f(u.uPx, 1 / W, 1 / H);
+    gl.uniform1f(u.uSat, 0.86 + 0.12 * E.night); gl.uniform1f(u.uVig, PV.on ? 0.15 : 0.32); gl.uniform1f(u.uT, simT); gl.uniform1f(u.uWarm, 1 - E.night);
+    gl.drawArrays(gl.TRIANGLES, 0, 6); gl.enable(gl.DEPTH_TEST); gl.depthMask(true); off(0);
   }
   /* reflection target */
   let refTex = null, refFb = null, refRb = null, refW = 0, refH = 0;
@@ -1810,7 +1900,7 @@ async function open(host, opt) {
       if (nightK > 0.05 || st.fogK > 0.3) { const c = Math.cos(p.hd), s = Math.sin(p.hd), k = Math.max(nightK, 0.4), fl = (simT + p.ph) % 1.2 < 0.08 ? 1 : 0;
         glow.push(p.x + s * 17, p.y - c * 17, p.z - 1.4, 0.1, 1, 0.2, k, 3, p.x - s * 17, p.y + c * 17, p.z - 1.4, 1, 0.1, 0.08, k, 3);
         if (fl) glow.push(p.x - c * 19, p.y - s * 19, p.z + 4.6, 1, 1, 1, 1, 5, p.x, p.y, p.z - 4.1, 1, 0.15, 0.1, 1, 4); } }
-    if (PV.on) { const hd = PV.a + Math.PI / 2, x = Math.cos(PV.a) * PV.r, y = Math.sin(PV.a) * PV.r; planeModel(DG, x, y, PV.z, hd, null, true); }
+    if (PV.on) { pvUpdate(dt); ownWing(DG, glow, nightK); }
     for (const p of people) {
       const q = along(p.w, p.s), dx = q[2] * p.dir, dy = q[3] * p.dir, x = q[0] - dy * p.side, y = q[1] + dx * p.side, ang = Math.atan2(dy, dx);
       const bob = p.stop > 0 ? 0 : Math.abs(Math.sin(p.ph)) * 0.06;
@@ -1926,8 +2016,8 @@ async function open(host, opt) {
   let lostT = 0;
   canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); st.alive = false; cancelAnimationFrame(st.raf);
     if (!host.querySelector('.kt3d-fail')) host.insertAdjacentHTML('beforeend', `<p class="kt3d-fail">${S.lost || S.fail}</p>`); });
-  let heroT = 0;
-  let bloomOn = opt.bloom !== false, shOn = !!shFb && quality >= 2, refOn = quality >= 1, frames = 0, fpsT = performance.now(), fps = 60;
+  let heroT = 0, hero0 = null, heroA = 0;
+  let gradeOn = opt.grade !== false, bloomOn = opt.bloom !== false, shOn = !!shFb && (quality >= 2 || !!opt.shadows), refOn = quality >= 1, frames = 0, fpsT = performance.now(), fps = 60;
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, hero ? 1 : mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -1939,13 +2029,13 @@ async function open(host, opt) {
     if (hero) { if (st.paused || now - heroT < 31) return; heroT = now; } // v7.6 hero: 30 fps at most, paused off screen
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
-    if (hero) st.yaw += dt * 0.022;
+    if (hero) { if (hero0 == null) hero0 = st.yaw; heroA += dt; st.yaw = hero0 + 0.2 * Math.sin(heroA * 0.035); }   // v7.22: a slow sway round the chosen view, not a full turn (the close view must stay clear)
     if (st.follow) { if (st.follow.wait > 0) st.follow = null; else { const q = along(st.follow.e, st.follow.s); st.tx = q[0]; st.ty = q[1]; clampT(); } }
     { const k = hero ? 1 : 1 - Math.exp(-dt * 7); for (const q of ['yaw', 'pitch', 'dist', 'tx', 'ty']) cur[q] += (st[q] - cur[q]) * k; }
     // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
     // v7.13: a gap over 0.4 s is a pause (hidden or throttled tab), not a slow graphics card: it must not cost the shadows and reflections
     const paused = now - lastT > 400; if (paused) { fpsT = now; frames = 0; lostT = 0; }
-    else if (simT > 2 && now - lastT > 220 && opt.quality == null) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
+    else if (simT > 2 && now - lastT > 220 && (opt.quality == null || opt.adapt)) { if (++lostT >= 2) { shOn = false; refOn = false; quality = Math.min(quality, 1); } } else lostT = 0;
     lastT = now; simT += dt;
     if (st.auto) { const n = donetskNow(); st.hour = n.h; } else if (st.lapse) st.hour = (st.hour + dt * 0.25) % 24; // time-lapse: 1 s = 15 min
     if (opt.onHour) opt.onHour(st.hour, st.auto);
@@ -1958,14 +2048,14 @@ async function open(host, opt) {
     const ch = Math.cos(cur.pitch), dTw = Math.hypot(cur.tx, cur.ty), kTw = 0.3 + 0.7 * smooth(220, 40, dTw), tz = tzS(cur.tx, cur.ty) * (1 - smooth(60, 10, dTw)) + Math.min(48, Math.max(6, cur.dist * 0.16)) * kTw;
     const tgt = [cur.tx, cur.ty, tz], cam = [tgt[0] + Math.cos(cur.yaw) * ch * cur.dist, tgt[1] + Math.sin(cur.yaw) * ch * cur.dist, Math.max(2.5, tgt[2] + Math.sin(cur.pitch) * cur.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
     // v7.21 the passenger seat: the camera rides a slow circle round the tower and looks out of the left window at it
-    let pvLook = null; if (PV.on) { PV.a += dt * PV.v / PV.r; const x = Math.cos(PV.a) * PV.r, y = Math.sin(PV.a) * PV.r, hd = PV.a + Math.PI / 2;
-      cam[0] = x - Math.cos(hd) * 13 - Math.cos(PV.a) * 1.3; cam[1] = y - Math.sin(hd) * 13 - Math.sin(PV.a) * 1.3; cam[2] = PV.z + 0.4;   // a seat behind the wing
-      const ty = Math.atan2(-y, -x) - 0.12 + 0.1 * Math.sin(simT * 0.05);   // a little forward, so the wing tip shows at the edge
-      pvLook = [cam[0] + Math.cos(ty) * 100, cam[1] + Math.sin(ty) * 100, cam[2] - 100 * Math.tan(0.25)];
-      cur.tx = st.tx = Math.cos(PV.a) * PV.r * 0.45; cur.ty = st.ty = Math.sin(PV.a) * PV.r * 0.45; cur.dist = st.dist = 520; }
+    let pvLook = null, pvUp = null; if (PV.on && PV.fr) {   // v7.22: the seat, the head sways a little, the eye keeps the tower in the window
+      const q = PV.fr, c2 = pvP(-6.6, 1.45, 0.38 + 0.03 * Math.sin(simT * 0.7)); cam[0] = c2[0]; cam[1] = c2[1]; cam[2] = c2[2];
+      const d = V.norm(V.sub([0, 0, 52], cam)), look = V.norm(V.add(V.mul(d, 0.93), V.mul(q.F, 0.07)));
+      pvLook = V.add(cam, V.mul(look, 100)); pvUp = q.U;
+      cur.tx = st.tx = q.o[0] * 0.55; cur.ty = st.ty = q.o[1] * 0.55; cur.dist = st.dist = 560; }
     const W = canvas.width, H = canvas.height, asp = W / H;
-    const fov = (PV.on ? (asp < 0.8 ? 58 : 40) : (asp < 0.8 ? 62 : 46)) * Math.PI / 180;
-    cam0 = cam; const proj = persp(fov, asp, PV.on ? 0.5 : Math.max(0.5, Math.min(8, cur.dist * 0.02)), 6000);   /* v7.13: a farther near plane when zoomed out keeps distant roads from flickering */ if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, pvLook || tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
+    const fov = (PV.on ? (asp < 0.8 ? 62 : 48) : (asp < 0.8 ? 62 : 46)) * Math.PI / 180;
+    cam0 = cam; const proj = persp(fov, asp, PV.on ? 0.5 : Math.max(0.5, Math.min(8, cur.dist * 0.02)), 6000);   /* v7.13: a farther near plane when zoomed out keeps distant roads from flickering */ if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, pvLook || tgt, pvUp || [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
     const px = H / (2 * Math.tan(fov / 2));
     // shadow pass
     let LVP = new Float32Array(16);
@@ -2019,13 +2109,14 @@ async function open(host, opt) {
     }
     // glow
     if (bloomOn) bloom(W, H, (0.25 + 0.9 * E.night) * (1 + st.fogK * 0.6 + st.rainK * 0.3), mix3([0.82, 0, 0], [0.55, 0, 0], E.night)[0]);
+    if (gradeOn) grade(W, H, E);
     // sound
     let wd = 1e9; for (let i = 0; i < waterPts.length; i += 3) { const q = waterPts[i]; const d = Math.hypot(q[0] - cam[0], q[1] - cam[1]); if (d < wd) wd = d; }
     sound.update({ cars: nCars, height: cam[2], waterDist: Math.hypot(wd, cam[2]), rain: st.rainK, wind: st.wind, day: E.day });
     // adaptive quality: drop shadows, then reflections, if the device struggles
     frames++;
-    if (now - fpsT > 2500 && opt.quality == null) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;
-      if (fps < 24 && shOn) shOn = false; else if (fps < 14 && bloomOn) bloomOn = false; else if (fps < 20 && refOn && quality >= 2) quality = 1; else if (fps < 16 && refOn) refOn = false; }
+    if (now - fpsT > 2500 && (opt.quality == null || opt.adapt)) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;
+      if (fps < 24 && shOn) shOn = false; else if (fps < 18 && gradeOn) gradeOn = false; else if (fps < 14 && bloomOn) bloomOn = false; else if (fps < 20 && refOn && quality >= 2) quality = 1; else if (fps < 16 && refOn) refOn = false; }
   }
   gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
   st.raf = requestAnimationFrame(frame);
