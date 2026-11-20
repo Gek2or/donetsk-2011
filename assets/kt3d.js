@@ -1560,6 +1560,44 @@ async function open(host, opt) {
   const flocks = []; { const wc = waterPts.filter(q => Math.hypot(q[0], q[1]) < 700), pick = () => wc.length ? wc[Math.floor(rnd() * wc.length)] : [0, 0];
     for (let i = 0; i < (D._mob ? 2 : 5); i++) { const c = i < 2 ? [(rnd() - 0.5) * 160, (rnd() - 0.5) * 160] : pick(); const b = []; for (let k = 0, n = 9 + Math.floor(rnd() * 10); k < n; k++) b.push([rnd() * TAU, 0.6 + rnd() * 0.8, rnd() * TAU, (rnd() - 0.5) * 9]);
       flocks.push({ c, r: 45 + rnd() * 70, h: 38 + rnd() * 45, w: (0.09 + rnd() * 0.06) * (rnd() < 0.5 ? -1 : 1), ph: rnd() * TAU, b }); } }
+  /* v7.21 airliners: now and then a twin-jet crosses the sky over the Kalmius, slower than a real one (about 120 km/h instead of
+     300 on approach) so the city can be looked at. Generic shape and livery, no airline: a simulation, not a record of 2011 flights. */
+  const planes = []; let planeT = 2, prnd = rng(77);
+  function spawnPlane(own, near) {   // near: the first one starts already over the edge of town, so nobody waits a minute for it
+    const hd = prnd() * TAU, off = (prnd() - 0.5) * 900, L = near ? 1100 : 2600, dx = Math.cos(hd), dy = Math.sin(hd), v = 30 + prnd() * 8;
+    const p = { x: -dx * L - dy * off, y: -dy * L + dx * off, z: 300 + prnd() * 260, hd, v, left: (L + 2600) / v,
+      liv: [[0.72, 0.14, 0.12], [0.12, 0.3, 0.62], [0.16, 0.42, 0.3], [0.85, 0.55, 0.12]][Math.floor(prnd() * 4)], ph: prnd() * 6 };
+    if (!own) planes.push(p); return p; }
+  /* the passenger seat: a slow circle round the tower, the left window looks at it */
+  const PV = { on: false, a: 0, r: 820, z: 380, v: 30, ov: null };
+  function planeModel(G, x, y, z, hd, liv, own) {
+    const c = Math.cos(hd), s = Math.sin(hd), P = (f, r) => [x + c * f - s * r, y + s * f + c * r], W = [0.93, 0.93, 0.91], GR = [0.62, 0.63, 0.65];
+    if (!own) {
+      const n = P(17, 0); G.box(n[0], n[1], z - 1.2, 3.0, 4, 2.6, hd, M.CAR, W);                 // nose
+      G.box(x, y, z - 2, 3.9, 30, 3.9, hd, M.CAR, W); G.box(x, y, z - 2.05, 3.95, 30, 0.9, hd, M.CAR, GR);   // fuselage, grey belly
+      G.box(x, y, z + 0.2, 3.96, 30, 0.35, hd, M.CAR, liv);                                         // cheat line
+      const t = P(-17, 0); G.box(t[0], t[1], z - 1, 2.4, 5, 2.6, hd, M.CAR, W);                    // tail cone
+      const f = P(-17.5, 0); G.box(f[0], f[1], z + 1.6, 0.45, 4.5, 6.2, hd, M.CAR, liv);           // fin
+      const hs = P(-18, 0); G.box(hs[0], hs[1], z + 0.4, 12, 2.8, 0.3, hd, M.CAR, W);             // tailplane
+    }
+    if (!own) { const wg = P(-1, 0); G.box(wg[0], wg[1], z - 1.6, 34, 5, 0.5, hd, M.CAR, W); }   // wing
+    if (own) {   // the passenger's own left wing, seen from the window
+      const sw = Math.atan2(14, -7.5), L = Math.hypot(14, 7.5);   // swept wing as two long slabs along the span (no staircase)
+        for (const [t0, t1, ch, th] of [[0, 0.55, 5.6, 0.34], [0.55, 1, 3.4, 0.22]]) { const q = P(1.5 - 7.5 * (t0 + t1) / 2, 3 + 14 * (t0 + t1) / 2);
+          G.box(q[0], q[1], z - 3.1 + 0.5 * (t0 + t1) / 2, ch, L * (t1 - t0) + 0.3, th, hd + sw, M.CAR, W); }
+      const e = P(3.5, 6.5); G.box(e[0], e[1], z - 4.6, 2.1, 4.4, 2.1, hd, M.CAR, GR); return; }
+    for (const r of [-6, 6]) { const e = P(1.5, r); G.box(e[0], e[1], z - 3.4, 2.1, 4.2, 2.1, hd, M.CAR, GR); }   // engines
+  }
+  function planeView(on) {
+    PV.on = !!on; const host = canvas.parentElement;
+    if (PV.on) { PV.a = Math.atan2(cam0[1], cam0[0]) || 0; st.follow = null;
+      if (!PV.ov && host) { const o = document.createElement('div'); o.className = 'kt3d-window'; o.setAttribute('aria-hidden', 'true');
+        o.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden';
+        o.innerHTML = '<i style="position:absolute;left:50%;top:50%;width:min(66vw,58vh);height:min(86vw,76vh);transform:translate(-50%,-52%);border-radius:44% / 34%;box-shadow:0 0 0 14px #cfc8bb,0 0 0 26px #b9b2a5,0 0 0 200vmax #e4ded2,inset 0 0 40px 8px #0006"></i>';
+        host.appendChild(o); PV.ov = o; }
+      if (PV.ov) PV.ov.hidden = false; }
+    else { if (PV.ov) PV.ov.hidden = true; st.pitch = cur.pitch = 0.3; st.dist = cur.dist = 520; st.tx = cur.tx; st.ty = cur.ty; }
+    return PV.on; }
   const MAXC = mobile ? 70 : 120, MAXP = mobile ? 70 : 140;
   function spawnCar(c) {
     const e = NET.edges[Math.floor(rnd() * NET.edges.length)]; if (!e) return;
@@ -1654,7 +1692,7 @@ async function open(host, opt) {
   const pan = (dx, dy) => { const k = st.dist * 0.0016, c = Math.cos(st.yaw), s_ = Math.sin(st.yaw); st.tx += (s_ * dx - c * dy) * k; st.ty += (-c * dx - s_ * dy) * k; clampT(); if (opt.onMove) opt.onMove(); };
   const ptrs = new Map(); let pinch0 = 0, dist0 = 0, mid0 = null, lastTap = 0, VPinv = null, camNow = [0, 0, 0];
   canvas.addEventListener('contextmenu', e => e.preventDefault());
-  canvas.addEventListener('pointerdown', e => { st.follow = null; canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button === 2 || e.button === 1 || e.shiftKey]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; mid0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } })
+  canvas.addEventListener('pointerdown', e => { st.follow = null; if (PV.on) planeView(false); canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button === 2 || e.button === 1 || e.shiftKey]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = st.dist; mid0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } })
   canvas.addEventListener('pointermove', e => {
     if (!ptrs.has(e.pointerId)) return; const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, prev[2]]);
     if (ptrs.size === 1) { if (prev[2]) pan(e.clientX - prev[0], e.clientY - prev[1]); else { st.yaw -= (e.clientX - prev[0]) * 0.006; st.pitch = Math.min(1.35, Math.max(0.03, st.pitch + (e.clientY - prev[1]) * 0.005)); } }
@@ -1669,10 +1707,11 @@ async function open(host, opt) {
     const un = z => { const v = [nx, ny, z, 1], o = [0, 0, 0, 0]; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) o[i] += VPinv[j * 4 + i] * v[j]; return [o[0] / o[3], o[1] / o[3], o[2] / o[3]]; };
     const a = un(-1), b = un(1), d = V.norm(V.sub(b, a)); if (d[2] > -0.02) return null; let t = 0, q = a;
     for (let i = 0; i < 400; i++) { t += Math.max(1.5, (q[2] - tzS(q[0], q[1])) * 0.5); q = V.add(a, V.mul(d, t)); if (q[2] <= tzS(q[0], q[1]) + 0.2) return q; if (t > 4000) break; } return null; }
-  const flyTo = (x, y, o) => { st.follow = null; st.tx = x; st.ty = y; clampT(); if (o) { if (o.yaw != null) { let dy = o.yaw - st.yaw; dy -= Math.round(dy / TAU) * TAU; st.yaw += dy; } if (o.pitch != null) st.pitch = o.pitch; if (o.dist != null) st.dist = o.dist; } if (opt.onMove) opt.onMove(); };
+  const flyTo = (x, y, o) => { st.follow = null; if (PV.on) planeView(false); st.tx = x; st.ty = y; clampT(); if (o) { if (o.yaw != null) { let dy = o.yaw - st.yaw; dy -= Math.round(dy / TAU) * TAU; st.yaw += dy; } if (o.pitch != null) st.pitch = o.pitch; if (o.dist != null) st.dist = o.dist; } if (opt.onMove) opt.onMove(); };
   canvas.addEventListener('dblclick', e => { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); });
   canvas.addEventListener('pointerup', e => { if (e.pointerType !== 'touch') return; const now = performance.now(); if (now - lastTap < 320) { const q = groundAt(e.clientX, e.clientY); if (q) flyTo(q[0], q[1], { dist: Math.min(st.dist, Math.max(70, st.dist * 0.55)) }); lastTap = 0; } else lastTap = now; });
   canvas.addEventListener('keydown', e => {
+    if (PV.on && e.key !== 'Tab') planeView(false);
     const k = e.key.toLowerCase(); if (k === 'arrowleft') st.yaw += 0.08; else if (k === 'arrowright') st.yaw -= 0.08; else if (k === 'arrowup') st.pitch = Math.min(1.35, st.pitch + 0.05);
     else if (k === 'arrowdown') st.pitch = Math.max(0.03, st.pitch - 0.05); else if (k === '+' || k === '=') st.dist = Math.max(28, st.dist * 0.88); else if (k === '-') st.dist = Math.min(950, st.dist * 1.13);
     else if (k === 'w' || k === 'ц') pan(0, 60); else if (k === 's' || k === 'ы') pan(0, -60); else if (k === 'a' || k === 'ф') pan(60, 0); else if (k === 'd' || k === 'в') pan(-60, 0);
@@ -1762,6 +1801,16 @@ async function open(host, opt) {
         const dir = a + Math.sign(f.w) * Math.PI / 2, dx = Math.cos(dir), dy = Math.sin(dir), fl = Math.sin(simT * 9 + b[2] * 5) * 0.45, sp = 0.75, col = [0.13, 0.13, 0.14];
         const hd = [x + dx * 0.45, y + dy * 0.45, z], tl = [x - dx * 0.45, y - dy * 0.45, z], wl = [x - dy * sp, y + dx * sp, z + fl], wr = [x + dy * sp, y - dx * sp, z + fl];
         DG.tri(hd, tl, wl, M.PERSON, col, null, null, null, [0, 0, 1]); DG.tri(tl, hd, wr, M.PERSON, col, null, null, null, [0, 0, 1]); } }
+    // v7.21 planes
+    planeT -= dt; if (planeT <= 0 && planes.length < (D._mob ? 1 : 2)) { spawnPlane(false, simT < 30); planeT = 25 + prnd() * 45; }
+    DG.zc = 0;
+    for (let i = planes.length - 1; i >= 0; i--) { const p = planes[i]; p.x += Math.cos(p.hd) * p.v * dt; p.y += Math.sin(p.hd) * p.v * dt; p.left -= dt; if (p.left <= 0) { planes.splice(i, 1); continue; }
+      if (Math.hypot(p.x - cam0[0], p.y - cam0[1], p.z - cam0[2]) > 3800) continue;
+      planeModel(DG, p.x, p.y, p.z, p.hd, p.liv, false);
+      if (nightK > 0.05 || st.fogK > 0.3) { const c = Math.cos(p.hd), s = Math.sin(p.hd), k = Math.max(nightK, 0.4), fl = (simT + p.ph) % 1.2 < 0.08 ? 1 : 0;
+        glow.push(p.x + s * 17, p.y - c * 17, p.z - 1.4, 0.1, 1, 0.2, k, 3, p.x - s * 17, p.y + c * 17, p.z - 1.4, 1, 0.1, 0.08, k, 3);
+        if (fl) glow.push(p.x - c * 19, p.y - s * 19, p.z + 4.6, 1, 1, 1, 1, 5, p.x, p.y, p.z - 4.1, 1, 0.15, 0.1, 1, 4); } }
+    if (PV.on) { const hd = PV.a + Math.PI / 2, x = Math.cos(PV.a) * PV.r, y = Math.sin(PV.a) * PV.r; planeModel(DG, x, y, PV.z, hd, null, true); }
     for (const p of people) {
       const q = along(p.w, p.s), dx = q[2] * p.dir, dy = q[3] * p.dir, x = q[0] - dy * p.side, y = q[1] + dx * p.side, ang = Math.atan2(dy, dx);
       const bob = p.stop > 0 ? 0 : Math.abs(Math.sin(p.ph)) * 0.06;
@@ -1908,9 +1957,15 @@ async function open(host, opt) {
     // camera
     const ch = Math.cos(cur.pitch), dTw = Math.hypot(cur.tx, cur.ty), kTw = 0.3 + 0.7 * smooth(220, 40, dTw), tz = tzS(cur.tx, cur.ty) * (1 - smooth(60, 10, dTw)) + Math.min(48, Math.max(6, cur.dist * 0.16)) * kTw;
     const tgt = [cur.tx, cur.ty, tz], cam = [tgt[0] + Math.cos(cur.yaw) * ch * cur.dist, tgt[1] + Math.sin(cur.yaw) * ch * cur.dist, Math.max(2.5, tgt[2] + Math.sin(cur.pitch) * cur.dist)]; cam[2] = Math.max(cam[2], tzS(cam[0], cam[1]) + 2.5);
+    // v7.21 the passenger seat: the camera rides a slow circle round the tower and looks out of the left window at it
+    let pvLook = null; if (PV.on) { PV.a += dt * PV.v / PV.r; const x = Math.cos(PV.a) * PV.r, y = Math.sin(PV.a) * PV.r, hd = PV.a + Math.PI / 2;
+      cam[0] = x - Math.cos(hd) * 13 - Math.cos(PV.a) * 1.3; cam[1] = y - Math.sin(hd) * 13 - Math.sin(PV.a) * 1.3; cam[2] = PV.z + 0.4;   // a seat behind the wing
+      const ty = Math.atan2(-y, -x) - 0.12 + 0.1 * Math.sin(simT * 0.05);   // a little forward, so the wing tip shows at the edge
+      pvLook = [cam[0] + Math.cos(ty) * 100, cam[1] + Math.sin(ty) * 100, cam[2] - 100 * Math.tan(0.25)];
+      cur.tx = st.tx = Math.cos(PV.a) * PV.r * 0.45; cur.ty = st.ty = Math.sin(PV.a) * PV.r * 0.45; cur.dist = st.dist = 520; }
     const W = canvas.width, H = canvas.height, asp = W / H;
-    const fov = (asp < 0.8 ? 62 : 46) * Math.PI / 180;
-    cam0 = cam; const proj = persp(fov, asp, Math.max(0.5, Math.min(8, cur.dist * 0.02)), 6000);   /* v7.13: a farther near plane when zoomed out keeps distant roads from flickering */ if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
+    const fov = (PV.on ? (asp < 0.8 ? 58 : 40) : (asp < 0.8 ? 62 : 46)) * Math.PI / 180;
+    cam0 = cam; const proj = persp(fov, asp, PV.on ? 0.5 : Math.max(0.5, Math.min(8, cur.dist * 0.02)), 6000);   /* v7.13: a farther near plane when zoomed out keeps distant roads from flickering */ if (hero) proj[8] = -(opt.shiftX || 0); const view = lookAt(cam, pvLook || tgt, [0, 0, 1]), VP = mmul(proj, view); camNow = cam; VPinv = minv(VP);
     const px = H / (2 * Math.tan(fov / 2));
     // shadow pass
     let LVP = new Float32Array(16);
@@ -1981,9 +2036,10 @@ async function open(host, opt) {
     setWeather(w) { st.weather = w; },
     sound(v) { return v ? sound.start() : (sound.stop(), false); },
     get hour() { return st.hour; }, get auto() { return st.auto; }, get fps() { return fps; },
-    debug() { return { trams: trams.map(t => along(t.e, t.s).slice(0, 2).map(Math.round)), flocks: flocks.map(f => [Math.round(f.c[0]), Math.round(f.c[1]), Math.round(f.h)]), nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
+    debug() { return { cam: cam0.map(Math.round), pv: PV.on, planes: planes.map(p => [Math.round(p.x), Math.round(p.y), Math.round(p.z)]), trams: trams.map(t => along(t.e, t.s).slice(0, 2).map(Math.round)), flocks: flocks.map(f => [Math.round(f.c[0]), Math.round(f.c[1]), Math.round(f.h)]), nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = cur.yaw = yaw; st.pitch = cur.pitch = pitch; st.dist = cur.dist = dist; },
     flyTo(x, y, o) { flyTo(x, y, o); },
+    planeView(on) { return planeView(on == null ? !PV.on : on); }, get inPlane() { return PV.on; },
     followTram() { // v7.13: the camera rides along with the nearest running tram until the hand takes over
       if (st.hour >= 1 && st.hour < 5) return false; let best = null, bd = 1e9; for (const t of trams) { if (t.wait > 0) continue; const q = along(t.e, t.s), d = Math.hypot(q[0], q[1]); if (d < bd) { bd = d; best = t; } }
       if (!best) return false; const q = along(best.e, best.s); flyTo(q[0], q[1], { yaw: Math.atan2(q[3], q[2]) + 2.4, pitch: 0.38, dist: 75 }); st.follow = best; return true; }, get target() { return [st.tx, st.ty]; },
