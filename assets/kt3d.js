@@ -1325,6 +1325,7 @@ function Sound() {
       ac = new C(); g.master = ac.createGain(); g.master.gain.value = 0.0; g.master.connect(ac.destination);
       g.traffic = chain(noise(4, true), 'lowpass', 380); g.wind = chain(noise(4), 'bandpass', 500, 0.6);
       g.water = chain(noise(4), 'bandpass', 1100, 0.8); g.rain = chain(noise(3), 'highpass', 2500);
+      g.cabin = chain(noise(4, true), 'lowpass', 240); g.whine = chain(noise(3), 'bandpass', 820, 1.4);   // v7.24 the cabin: engine roar through the hull and a faint fan whine
     }
     if (ac.state === 'suspended') ac.resume();
     on = true; g.master.gain.setTargetAtTime(0.9, ac.currentTime, 0.6); return true;
@@ -1339,11 +1340,13 @@ function Sound() {
     gn.gain.setValueAtTime(0, t); gn.gain.linearRampToValueAtTime(0.012, t + 0.02); gn.gain.linearRampToValueAtTime(0, t + 0.16);
     o.connect(gn); gn.connect(g.master); o.start(t); o.stop(t + 0.2); }
   function update(s) { // s: {cars, height, waterDist, rain, wind, day}
-    if (!on || !ac) return; const t = ac.currentTime, near = 1 / (1 + s.height / 60);
+    if (!on || !ac) return; const t = ac.currentTime, cab = s.cabin ? 1 : 0, near = cab ? 0 : 1 / (1 + s.height / 60);
+    g.cabin.gn.gain.setTargetAtTime(cab * (0.42 + 0.05 * Math.sin(t * 0.9) * Math.sin(t * 0.37)), t, 0.8); g.whine.gn.gain.setTargetAtTime(cab * 0.035, t, 0.8);
+    g.whine.fl.frequency.setTargetAtTime(800 + 30 * Math.sin(t * 0.21), t, 1.5);
     g.traffic.gn.gain.setTargetAtTime(Math.min(0.5, s.cars / 90) * (0.25 + 0.75 * near), t, 0.5);
-    g.wind.gn.gain.setTargetAtTime(0.03 + 0.12 * s.wind * (1 - near * 0.6), t, 0.8);
+    g.wind.gn.gain.setTargetAtTime(cab ? 0.05 : 0.03 + 0.12 * s.wind * (1 - near * 0.6), t, 0.8);
     g.wind.fl.frequency.setTargetAtTime(380 + 260 * Math.sin(t * 0.3) + 200 * s.wind, t, 1.2);
-    g.water.gn.gain.setTargetAtTime(0.09 * Math.max(0, 1 - s.waterDist / 220) * (0.6 + 0.4 * Math.sin(t * 1.3) * Math.sin(t * 0.47)), t, 0.3);
+    g.water.gn.gain.setTargetAtTime((1 - cab) * 0.09 * Math.max(0, 1 - s.waterDist / 220) * (0.6 + 0.4 * Math.sin(t * 1.3) * Math.sin(t * 0.47)), t, 0.3);
     g.rain.gn.gain.setTargetAtTime(s.rain * 0.12, t, 0.8);
     timer -= 1;
     if (timer < 0) { timer = 60 + Math.random() * 240; if (Math.random() < 0.25 * Math.min(1, s.cars / 40) * near) horn(); else if (s.day > 0.5 && s.rain < 0.5 && Math.random() < 0.6 * near) { bird(); setTimeout(bird, 180); } }
@@ -1648,7 +1651,7 @@ async function open(host, opt) {
      reflection, the blind pulled a little down. Drawn as an SVG over the canvas, sized to the viewport so the window keeps its shape. */
   function pvLayout() {
     const o = PV.ov; if (!o) return; const W = o.clientWidth || innerWidth, H = o.clientHeight || innerHeight;
-    let hh = H * 0.74, ww = hh * 0.72; if (ww > W * 0.78) { ww = W * 0.78; hh = ww / 0.72; }
+    let hh = H * (W < H ? 0.66 : 0.74), ww = hh * 0.72; if (ww > W * 0.78) { ww = W * 0.78; hh = ww / 0.72; }
     const cx = W / 2, cy = H * 0.48, x = cx - ww / 2, y = cy - hh / 2, rr = (k, e) => `x="${cx - ww * k / 2 - (e || 0)}" y="${cy - hh * k / 2 - (e || 0)}" width="${ww * k + 2 * (e || 0)}" height="${hh * k + 2 * (e || 0)}" rx="${ww * k * 0.46 + (e || 0)}" ry="${hh * k * 0.33 + (e || 0)}"`;
     const sh = hh * 0.13;
     o.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;display:block"><defs>
@@ -2112,7 +2115,7 @@ async function open(host, opt) {
     if (gradeOn) grade(W, H, E);
     // sound
     let wd = 1e9; for (let i = 0; i < waterPts.length; i += 3) { const q = waterPts[i]; const d = Math.hypot(q[0] - cam[0], q[1] - cam[1]); if (d < wd) wd = d; }
-    sound.update({ cars: nCars, height: cam[2], waterDist: Math.hypot(wd, cam[2]), rain: st.rainK, wind: st.wind, day: E.day });
+    sound.update({ cabin: PV.on, cars: nCars, height: cam[2], waterDist: Math.hypot(wd, cam[2]), rain: st.rainK, wind: st.wind, day: E.day });
     // adaptive quality: drop shadows, then reflections, if the device struggles
     frames++;
     if (now - fpsT > 2500 && (opt.quality == null || opt.adapt)) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;

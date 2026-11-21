@@ -2057,8 +2057,8 @@ main .btn.primary{background-color:var(--ink);background-image:linear-gradient(1
 main .btn.primary:hover{background-position:100% 0;box-shadow:0 10px 26px -12px var(--sun)}
 main a[class*="-card"],main .st-card{transition:translate .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s ease}
 main a[class*="-card"]:hover,main .st-card:hover{translate:0 -4px;box-shadow:0 22px 40px -22px color-mix(in srgb,var(--sun) 70%,transparent)}
-.fx .rv{opacity:0;translate:0 22px;transition:opacity .8s ease var(--rd,0s),translate .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s)}
-.fx .rv.in{opacity:1;translate:none}
+.fx .fxr{opacity:0;translate:0 22px;transition:opacity .8s ease var(--rd,0s),translate .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s)}
+.fx .fxr.in{opacity:1;translate:none}
 .fx-line{height:3px;border:0;margin:0;background:linear-gradient(90deg,transparent,var(--sun-2),var(--sun),var(--rose),transparent);background-size:200% 100%;animation:fxLine 9s linear infinite;opacity:.75}
 @keyframes fxLine{to{background-position:-200% 0}}
 .fx-band{height:clamp(130px,19vw,260px);margin-top:48px;background:var(--paper-2) center 58%/cover no-repeat;opacity:0;transition:opacity 1.6s ease;
@@ -2066,5 +2066,41 @@ main a[class*="-card"]:hover,main .st-card:hover{translate:0 -4px;box-shadow:0 2
 .fx-band.on{opacity:1;animation:fxPan 60s ease-in-out infinite alternate}
 @keyframes fxPan{from{background-position:40% 58%}to{background-position:60% 58%}}
 footer{border-top:0}
-@media (prefers-reduced-motion: reduce){.fx .rv{opacity:1;translate:none}.fx-sky::after,.brand b,.fx-line,.fx-band{animation:none!important}}
+@media (prefers-reduced-motion: reduce){.fx .fxr{opacity:1;translate:none}.fx-sky::after,.brand b,.fx-line,.fx-band{animation:none!important}}
 @media print{.fx-sky,.fx-band,.fx-line{display:none}}
+
+/* ===== v7.23 mobile pass ===== */
+.hero .eyebrow{text-wrap:pretty}
+@media (max-width:760px){
+  /* hero: the render on top with its caption legible at its foot, then the title */
+  .hero-kt{height:52vh}
+  .hero:has(.hero-kt){padding-top:calc(52vh + 10px)}
+  .hero-kt::after{background:linear-gradient(0deg,#0b1016 0%,rgba(11,16,22,.35) 18%,rgba(11,16,22,0) 40%)}
+  .kt-cap{position:absolute;top:calc(52vh - 6px);transform:translateY(-100%);left:0;right:0;font-size:11.5px;line-height:1.35;text-shadow:0 1px 4px #000}
+  .kt-cap small{font-size:11px}
+  .hero:has(.hero-kt) h1{font-size:clamp(46px,15vw,64px)}
+  /* the language offer: one slim bar at the very bottom, out of the way of the text */
+  .lang-hint{left:0;right:0;bottom:0;transform:none;max-width:none;border-width:1px 0 0;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px)) 14px;font-size:13px;gap:4px 12px;flex-wrap:nowrap;justify-content:space-between;box-shadow:0 -6px 18px #0006}
+  .lang-hint span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lang-hint a{padding:10px 4px}
+  .lang-hint button{min-width:44px;min-height:44px}
+  .lang-hint.gone{transform:translateY(110%);transition:transform .3s ease}
+  /* tap targets */
+  .foot-nav{gap:2px 6px}
+  .foot-nav a{display:inline-block;padding:10px 6px}
+  .foot-nav span,.foot-nav i{align-self:center}
+  .chips a,.chips button,.subnav a,.pills button,.filters button{min-height:40px}
+  /* small type: nothing under 11.5 px on a phone */
+  .mono small,.cap small,figcaption small,.credit,.st-k{font-size:max(11.5px,1em)}
+  /* 3D quarter: the tool groups become one row you swipe, with finger-size buttons */
+  .q3tools{left:0;right:0;top:8px;padding:0 10px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;pointer-events:auto}
+  .q3tools::-webkit-scrollbar{display:none}
+  .q3tools .grp{flex:none;flex-wrap:nowrap}
+  .q3tools button{white-space:nowrap;min-height:40px;padding:8px 12px;font-size:12px}
+  .q3tools .grp.sun{flex:none;min-height:40px}
+  .q3leg{top:62px}
+}
+@media (max-width:420px){
+  .nav-cur{display:none}
+  .dn-chip small{display:none}
+}
