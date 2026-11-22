@@ -1131,7 +1131,7 @@ html.q3-fs{overflow:hidden}
    ===================================================================== */
 :root{
   --paper:#eee7d8; --paper-2:#e5dcc8; --card:#f7f2e6; --ink:#211c16; --ink-2:#4b4338; --muted:#655a4b;
-  --rule:#d2c5ad; --rose:#b8441c; --rose-soft:#b8441c1a; --amber:#9a520f; --moss:#4f6a39; --steel:#3c5870;
+  --rule:#d2c5ad; --rose:#a83c15; --rose-soft:#a83c151a; --amber:#9a520f; --moss:#4f6a39; --steel:#3c5870;
   --stamp:#ff7b1c; --print:#fbf8f1; --tape:#efe3b8b8;
   --shadow:0 1px 1px #2a1f1214, 0 14px 30px -18px #3a2a1466;
   --print-shadow:0 1px 2px #2a1f1226, 0 10px 22px -12px #3a2a1470;
@@ -1224,6 +1224,7 @@ a{text-underline-offset:.18em;text-decoration-thickness:1px}
 .door-body b{font-size:26px;font-weight:800}
 .door-body i{font-family:var(--f-hand);font-size:22px}
 .gs-ph{padding:10px 10px 36px!important}
+.gs-ph img{inset:10px 10px 36px;width:calc(100% - 20px);height:calc(100% - 46px)}   /* v7.26: the photo stops above the caption strip (it covered the credit) */
 .gs-ph figcaption{background:none!important;color:#655a4b!important;left:12px;right:12px;bottom:8px;padding:0!important}
 .gs-ph figcaption a{color:var(--rose)!important}
 .upd-img{padding:8px 8px 30px}
@@ -2104,3 +2105,4 @@ footer{border-top:0}
   .nav-cur{display:none}
   .dn-chip small{display:none}
 }
+.upd-sv{font-weight:inherit}
