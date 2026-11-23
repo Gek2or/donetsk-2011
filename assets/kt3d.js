@@ -497,7 +497,7 @@ function buildCity(G, D, F) {
     if (area2(p) < 0) p = p.reverse();
     let bSkirt = 0; { const zz = p.map(q => tzS(q[0], q[1])), z0 = Math.min(...zz), z1 = Math.max(...zz); G.zf = null; G.zc = z0 + Math.min(1.2, 0.3 * (z1 - z0)); bSkirt = z0 - G.zc - 0.4; }
     const ty = Math.floor(b[1] / 10), h = Math.max(3, b[0] / 10), hk = hashS('b' + bi + ':' + b[5] + ',' + b[6]);
-    const near = p.some(q => Math.hypot(q[0], q[1]) < NEAR);
+    const near = p.some(q => Math.hypot(q[0], q[1]) < NEAR), nearB = near || (!D._mob && p.some(q => Math.hypot(q[0], q[1]) < 380));   // v7.27: balconies a bit further out (seen from the home view)
     let col = (ty === 1 || ty === 4) ? APAL[hk % 4] : (ty === 0 || ty === 8) ? PAL[hk % 5] : ty === 2 ? [0.84, 0.82, 0.76] : [0.8, 0.79, 0.75];
     let roofC = (ty === 0 || ty === 8) ? RPH[(hk >>> 4) % 4] : [[0.47, 0.47, 0.46], [0.51, 0.5, 0.48], [0.43, 0.44, 0.44]][(hk >>> 8) % 3];
     if (b[3] >= 0) col = rgbi(b[3]); if (b[4] >= 0) roofC = rgbi(b[4]);
@@ -535,9 +535,14 @@ function buildCity(G, D, F) {
         G.quad([q[0] - n[0] * ii, q[1] - n[1] * ii, h], [a[0] - n[0] * ii, a[1] - n[1] * ii, h], [a[0] - n[0] * ii, a[1] - n[1] * ii, h + parapet], [q[0] - n[0] * ii, q[1] - n[1] * ii, h + parapet], M.STONE, col.map(v => v * 0.8), null, [-n[0], -n[1], 0]);
         G.quad([a[0], a[1], h + parapet], [q[0], q[1], h + parapet], [q[0] - n[0] * ii, q[1] - n[1] * ii, h + parapet], [a[0] - n[0] * ii, a[1] - n[1] * ii, h + parapet], M.STONE, col.map(v => v * 0.9), null, [0, 0, 1]);
       }
-      if (near && apt) {
+      if (nearB && apt) {
         // roof exits: one small box per ~25 m of the longest edge (typical for panel blocks)
-        const o = obb(p); if (o) { const n = Math.max(1, Math.round(o.a * 2 / 25)); for (let k = 0; k < n; k++) { const s = -o.a + (k + 0.5) * 2 * o.a / n, c = [o.c[0] + o.u[0] * s, o.c[1] + o.u[1] * s]; G.box(c[0], c[1], h, 3.2, 4.2, 2.2, Math.atan2(o.u[1], o.u[0]), M.STONE, col.map(v => v * 0.85)); } }
+        const o = obb(p); if (o) { const n = Math.max(1, Math.round(o.a * 2 / 25)); for (let k = 0; k < n; k++) { const s = -o.a + (k + 0.5) * 2 * o.a / n, c = [o.c[0] + o.u[0] * s, o.c[1] + o.u[1] * s]; const an = Math.atan2(o.u[1], o.u[0]), ux = o.u[0], uy = o.u[1], vx = -uy, vy = ux; G.box(c[0], c[1], h, 3.2, 4.2, 2.2, an, M.STONE, col.map(v => v * 0.78));
+            G.box(c[0], c[1], h + 2.2, 3.5, 4.5, 0.16, an, M.ROOF, [0.24, 0.24, 0.25]);   // v7.27: a bitumen cap over the exit
+            { const d = 1.61, P = (t, zz) => [c[0] + vx * d + ux * t, c[1] + vy * d + uy * t, zz]; G.quad(P(-0.45, h + 0.05), P(0.45, h + 0.05), P(0.45, h + 1.95), P(-0.45, h + 1.95), M.STONE, [0.3, 0.27, 0.24], null, [vx, vy, 0]); }   // a metal door
+            if ((hk >>> (k + 3)) & 1) G.box(c[0] + ux * 3.4, c[1] + uy * 3.4, h, 0.9, 0.9, 1.1, an, M.STONE, col.map(v => v * 0.7));   // a vent stack
+            for (const t of [-1, 1]) if ((hk >>> (k * 2 + (t > 0 ? 7 : 9))) & 1) { const ax = c[0] + ux * t * 5.5 + vx * (t * 1.5), ay = c[1] + uy * t * 5.5 + vy * (t * 1.5);   // a TV aerial (typical for 2011 roofs, placed at random)
+              G.box(ax, ay, h, 0.07, 0.07, 3.2, an, M.METAL, [0.4, 0.41, 0.42]); for (const zz of [2.2, 2.8]) G.box(ax, ay, h + zz, 0.05, 1.6 - (zz - 2.2), 0.05, an + 0.6 * t, M.METAL, [0.4, 0.41, 0.42]); } } }
         // balconies on the two longest walls, every window column, from the 2nd floor (typical; the actual side is to be checked on panoramas)
         const long = edges.slice().sort((x, y) => y.L - x.L).slice(0, 2);
         const floors = Math.floor(h / 2.8);
