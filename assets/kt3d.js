@@ -2037,7 +2037,7 @@ async function open(host, opt) {
     if (hero) { if (st.paused || now - heroT < 31) return; heroT = now; } // v7.6 hero: 30 fps at most, paused off screen
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
-    if (hero) { if (hero0 == null) hero0 = st.yaw; heroA += dt; st.yaw = hero0 + 0.2 * Math.sin(heroA * 0.035); }   // v7.22: a slow sway round the chosen view, not a full turn (the close view must stay clear)
+    if (hero && opt.sway !== false) { if (hero0 == null) hero0 = st.yaw; heroA += dt; st.yaw = hero0 + 0.2 * Math.sin(heroA * 0.035); }   // v7.22: a slow sway round the chosen view, not a full turn (the close view must stay clear)
     if (st.follow) { if (st.follow.wait > 0) st.follow = null; else { const q = along(st.follow.e, st.follow.s); st.tx = q[0]; st.ty = q[1]; clampT(); } }
     { const k = hero ? 1 : 1 - Math.exp(-dt * 7); for (const q of ['yaw', 'pitch', 'dist', 'tx', 'ty']) cur[q] += (st[q] - cur[q]) * k; }
     // v7.5: a very long frame (after warm-up) means the GPU is near its limit: shed shadows and reflections at once
