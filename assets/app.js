@@ -1,3 +1,15 @@
+/* v7.30: one client for the shared counters (Abacus). The service answers slowly (often 10-30 s), so: at most 3 requests at a
+   time, a 30 s timeout, one retry, and the last value of every counter kept on this device to show at once next time. */
+window.__ab=window.__ab||(function(){const API='https://abacus.jasoncameron.dev',NS='donetsk2011-gek2or',CK='d11-abc';
+  let C={};try{C=JSON.parse(localStorage.getItem(CK)||'{}')}catch(e){}
+  let sv=0;const save=()=>{clearTimeout(sv);sv=setTimeout(()=>{try{localStorage.setItem(CK,JSON.stringify(C))}catch(e){}},400)};
+  const Q=[];let act=0;const pump=()=>{while(act<3&&Q.length){const j=Q.shift();act++;j().finally(()=>{act--;pump()})}};
+  const q=f=>new Promise((res,rej)=>{Q.push(()=>f().then(res,rej));pump()});
+  const req=(op,k,tries)=>q(()=>{const ac=window.AbortController?new AbortController():null,t=setTimeout(()=>ac&&ac.abort(),30000);
+      return fetch(`${API}/${op}/${NS}/${k}`,ac?{signal:ac.signal}:{}).then(r=>op==='get'&&r.status===404?{value:0}:(r.ok?r.json():Promise.reject(r.status))).finally(()=>clearTimeout(t))})
+    .then(j=>{const v=+(j&&j.value)||0;C[k]=[v,Date.now()];save();return v})
+    .catch(e=>tries>0?new Promise(r=>setTimeout(r,1500)).then(()=>req(op,k,tries-1)):Promise.reject(e));
+  return {get:k=>req('get',k,1),hit:k=>req('hit',k,1),peek:k=>C[k]?C[k][0]:null,age:k=>C[k]?Date.now()-C[k][1]:Infinity};})();
 
 (function(){
 const NUL=new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>'':(k==='length'?0:NUL),set:()=>true,apply:()=>NUL});
@@ -433,8 +445,8 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
 (function(){const AB='https://abacus.jasoncameron.dev',NS='donetsk2011-gek2or';
   const LIST=['UA','FI','DE','PL','US','GB','IL','CZ','NL','IT','ES','FR','CA','KZ','GE','LV','LT','EE','SE','NO','DK','TR','MD','AT','CH','BE','PT','IE','RO','BG','HU','SK','GR','AU','JP','AZ','AM','UZ','RU','BY'];
   const LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-  const hit=k=>fetch(`${AB}/hit/${NS}/${k}`).then(r=>r.ok?r.json():null).catch(()=>null);
-  const get=k=>fetch(`${AB}/get/${NS}/${k}`).then(r=>r.status===404?{value:0}:(r.ok?r.json():null)).then(j=>j?j.value||0:null).catch(()=>null);
+  const hit=k=>__ab.hit(k).catch(()=>null);
+  const get=k=>__ab.get(k).catch(()=>null);
   /* one visit per device per day, on any page */
   const day=new Date().toISOString().slice(0,10);
   let counted=Promise.resolve();
@@ -458,8 +470,18 @@ if(ba){const f=ba.querySelector('.cmp'),a=f.querySelector('.cmp-a'),b=f.querySel
     if(data.other>0)h+=`<li class="other${my&&!LIST.includes(my)?' me':''}"><span class="fl">+</span><span class="cn">${T('gv5')}</span><span class="ct">${fmt(data.other)}</span></li>`;
     list.innerHTML=h||`<li class="empty">${T('gv7')}</li>`;
     if(my){me.hidden=false;me.textContent=T('gv6').replace('{c}',name(my))}else me.hidden=true}
-  async function load(){await counted;const keys=['visits','c-other',...LIST.map(c=>'c-'+c)];const vals=await Promise.all(keys.map(get));
-    data={total:vals[0],other:vals[1]||0,c:{}};LIST.forEach((c,i)=>{data.c[c]=vals[i+2]||0});draw()}
+  /* v7.30: draw the values kept from the last visit at once, then refresh: first the total, "other" and the countries that already
+     have guests, the rest of the list at most twice a day (it is 40 slow requests). Each answer is drawn as it arrives. */
+  const LD={ru:'Загружаю счётчики…',uk:'Завантажую лічильники…',en:'Loading the counters…',fi:'Ladataan laskureita…'};
+  let busy=false;
+  function fromCache(){data={total:__ab.peek('visits'),other:__ab.peek('c-other')||0,c:{}};LIST.forEach(c=>{data.c[c]=__ab.peek('c-'+c)||0})}
+  const _draw=draw;draw=function(){_draw();if(busy&&list.querySelector('.empty'))list.innerHTML=`<li class="empty">${LD[lang()]||LD.ru}</li>`};
+  async function load(){fromCache();busy=true;draw();await counted;fromCache();draw();const my=LS.g('d11-cc');
+    const first=['visits','c-other',...LIST.filter(c=>data.c[c]>0||c===my).map(c=>'c-'+c)];
+    const rest=__ab.age('c-PL')>432e5?LIST.filter(c=>!(data.c[c]>0)&&c!==my).map(c=>'c-'+c):[];
+    let t=0;const up=()=>{clearTimeout(t);t=setTimeout(()=>{fromCache();draw()},250)};
+    await Promise.all(first.map(k=>get(k).then(up)));busy=false;fromCache();draw();
+    await Promise.all(rest.map(k=>get(k).then(up)));fromCache();draw()}
   if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();load()}},{rootMargin:'300px'});io.observe(box)}else load();
   addEventListener('d11lang',()=>setTimeout(draw,0));
 })();
@@ -741,7 +763,7 @@ resize();center(OX,OY,1.8);renderPins();renderList();load();
 const RSET=new Set(window.__RSET||[]);const RS=(u,sz)=>RSET.has(u)?` srcset="${u.slice(0,-4)}-480.webp 480w, ${u.slice(0,-4)}-960.webp 960w, ${u} 1600w" sizes="${sz}"`:'';
 /* Update feed: newest first. Texts live in i18n data (L.UPD[id]); "@key" reuses a static string. */
 const E=[
- {id:'2026-11-23-v729',d:'2026-11-23',ty:'site',v:'v7.29'},{id:'2026-11-23-v728',d:'2026-11-23',ty:'site',v:'v7.28'},{id:'2026-11-23-v727',d:'2026-11-23',ty:'site',v:'v7.27'},{id:'2026-11-22-v726',d:'2026-11-22',ty:'site',v:'v7.26'},{id:'2026-11-21-v725',d:'2026-11-21',ty:'site',v:'v7.25'},{id:'2026-11-21-v724',d:'2026-11-21',ty:'site',v:'v7.24'},{id:'2026-11-21-v723',d:'2026-11-21',ty:'site',v:'v7.23'},{id:'2026-11-20-v722',d:'2026-11-20',ty:'site',v:'v7.22'},{id:'2026-11-20-v721',d:'2026-11-20',ty:'site',v:'v7.21'},{id:'2026-11-19-v720',d:'2026-11-19',ty:'site',v:'v7.20'},{id:'2026-11-19-v719',d:'2026-11-19',ty:'site',v:'v7.19'},{id:'2026-11-18-v718',d:'2026-11-18',ty:'site',v:'v7.18'},{id:'2026-11-18-v717',d:'2026-11-18',ty:'site',v:'v7.17'},{id:'2026-11-18-v716',d:'2026-11-18',ty:'site',v:'v7.16'},{id:'2026-11-18-v715',d:'2026-11-18',ty:'site',v:'v7.15'},{id:'2026-11-18-v714',d:'2026-11-18',ty:'site',v:'v7.14'},{id:'2026-11-14-v713',d:'2026-11-14',ty:'site',v:'v7.13'},{id:'2026-11-13-v712',d:'2026-11-13',ty:'site',v:'v7.12'},{id:'2026-11-13-v711',d:'2026-11-13',ty:'site',v:'v7.11'},{id:'2026-11-09-v710',d:'2026-11-09',ty:'site',v:'v7.10',cta:['city.html#tram','tr0']},{id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
+ {id:'2026-11-24-v730',d:'2026-11-24',ty:'site',v:'v7.30'},{id:'2026-11-23-v729',d:'2026-11-23',ty:'site',v:'v7.29'},{id:'2026-11-23-v728',d:'2026-11-23',ty:'site',v:'v7.28'},{id:'2026-11-23-v727',d:'2026-11-23',ty:'site',v:'v7.27'},{id:'2026-11-22-v726',d:'2026-11-22',ty:'site',v:'v7.26'},{id:'2026-11-21-v725',d:'2026-11-21',ty:'site',v:'v7.25'},{id:'2026-11-21-v724',d:'2026-11-21',ty:'site',v:'v7.24'},{id:'2026-11-21-v723',d:'2026-11-21',ty:'site',v:'v7.23'},{id:'2026-11-20-v722',d:'2026-11-20',ty:'site',v:'v7.22'},{id:'2026-11-20-v721',d:'2026-11-20',ty:'site',v:'v7.21'},{id:'2026-11-19-v720',d:'2026-11-19',ty:'site',v:'v7.20'},{id:'2026-11-19-v719',d:'2026-11-19',ty:'site',v:'v7.19'},{id:'2026-11-18-v718',d:'2026-11-18',ty:'site',v:'v7.18'},{id:'2026-11-18-v717',d:'2026-11-18',ty:'site',v:'v7.17'},{id:'2026-11-18-v716',d:'2026-11-18',ty:'site',v:'v7.16'},{id:'2026-11-18-v715',d:'2026-11-18',ty:'site',v:'v7.15'},{id:'2026-11-18-v714',d:'2026-11-18',ty:'site',v:'v7.14'},{id:'2026-11-14-v713',d:'2026-11-14',ty:'site',v:'v7.13'},{id:'2026-11-13-v712',d:'2026-11-13',ty:'site',v:'v7.12'},{id:'2026-11-13-v711',d:'2026-11-13',ty:'site',v:'v7.11'},{id:'2026-11-09-v710',d:'2026-11-09',ty:'site',v:'v7.10',cta:['city.html#tram','tr0']},{id:'2026-11-05-v79',d:'2026-11-05',ty:'site',v:'v7.9',cta:['city.html#tram','tr0']},{id:'2026-11-02-v78',d:'2026-11-02',ty:'site',v:'v7.8',cta:['city.html#tram','tr0']},{id:'2026-11-02-v77',d:'2026-11-02',ty:'site',v:'v7.7'},{id:'2026-11-01-v76',d:'2026-11-01',ty:'site',v:'v7.6',cta:['city.html#tram','tr0']},{id:'2026-11-01-v75',d:'2026-11-01',ty:'site',v:'v7.5',cta:['city.html#tram','tr0']},{id:'2026-10-31-v74',d:'2026-10-31',ty:'site',v:'v7.4'},{id:'2026-10-30-v73',d:'2026-10-30',ty:'site',v:'v7.3'},{id:'2026-10-29-v72',d:'2026-10-29',ty:'site',v:'v7.2'},{id:'2026-10-29-v71',d:'2026-10-29',ty:'site',v:'v7.1'},{id:'2026-10-29-v70',d:'2026-10-29',ty:'site',v:'v7.0'},
  {id:'2026-10-28-v69',d:'2026-10-28',ty:'site',v:'v6.9'},
  {id:'2026-10-23-v68',d:'2026-10-23',ty:'site',v:'v6.8',cta:['city.html#tram','tr0']},
  {id:'2026-10-22-v67',d:'2026-10-22',ty:'site',v:'v6.7',cta:['city.html#tram','tr0']},
@@ -870,24 +892,26 @@ function react(e){const m=mine[e.id],c=CNT[e.id];const l=c?c.l:null,d=c?c.d:null
 <button type="button" class="bat like${m==='l'?' on':''}" data-r="l" aria-pressed="${m==='l'}">${BAT}<span class="b-lab">${esc(T('ur1'))}</span><b class="b-n mono">${l==null?'':l}</b></button>
 <button type="button" class="bat dis${m==='d'?' on':''}" data-r="d" aria-pressed="${m==='d'}">${BAT}<span class="b-lab">${esc(T('ur2'))}</span><b class="b-n mono">${d==null?'':d}</b></button>
 <span class="b-meter mono">${pct==null?(c&&!tot?esc(T('ur6')):''):`<i style="--p:${pct}%"></i>${esc(T('ur3').replace('{p}',pct))}`}</span>
-${offline.v?`<span class="b-off mono">${esc(T('ur5'))}</span>`:''}</div>`}
-const get=k=>fetch(`${API}/get/${NS}/${k}`).then(r=>r.status===404?{value:0}:(r.ok?r.json():Promise.reject(r.status))).then(j=>+j.value||0);
-const hit=k=>fetch(`${API}/hit/${NS}/${k}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+${failed.has(e.id)?`<span class="b-off mono">${esc(T('ur5'))}</span>`:''}</div>`}
+const get=k=>__ab.get(k);
+const hit=k=>__ab.hit(k);
+/* v7.30: the last known counts are shown at once from this device; a failed card says so only on that card */
+{const pk=k=>__ab.peek(k);E.forEach(e=>{const v=['l','lx','d','dx'].map(x=>pk(`${e.id}-${x}`));if(v.every(x=>x!=null))CNT[e.id]={l:Math.max(0,v[0]-v[1]),d:Math.max(0,v[2]-v[3]),old:1}})}
 const loading=new Set();
 /* v5.3: a failed request is remembered, so a counter service that is down or blocked is asked once per card, not in a loop */
 const failed=new Set();
-function load(id){if(CNT[id]||loading.has(id)||failed.has(id))return;if(offline.v){failed.add(id);paint(id);return}loading.add(id);
-  Promise.all(['l','lx','d','dx'].map(s=>get(`${id}-${s}`))).then(([l,lx,d,dx])=>{CNT[id]={l:Math.max(0,l-lx),d:Math.max(0,d-dx)};loading.delete(id);paint(id)}).catch(()=>{offline.v=true;failed.add(id);loading.delete(id);paint(id)})}
+function load(id){if((CNT[id]&&!CNT[id].old)||loading.has(id)||failed.has(id))return;loading.add(id);
+  Promise.all(['l','lx','d','dx'].map(s=>get(`${id}-${s}`))).then(([l,lx,d,dx])=>{CNT[id]={l:Math.max(0,l-lx),d:Math.max(0,d-dx)};loading.delete(id);paint(id)}).catch(()=>{if(!CNT[id])failed.add(id);loading.delete(id);paint(id)})}
 function paint(id){const box=list&&list.querySelector(`.upd-react[data-id="${id}"]`);if(!box)return;const e=E.find(x=>x.id===id);const tmp=document.createElement('div');tmp.innerHTML=react(e);box.replaceWith(tmp.firstElementChild);wireReact()}
 let io=null;
 function wireReact(){if(!list)return;
   if(!io&&'IntersectionObserver' in window)io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){load(en.target.dataset.id);io.unobserve(en.target)}}),{rootMargin:'300px'});
-  list.querySelectorAll('.upd-react').forEach(box=>{if(box.dataset.w)return;box.dataset.w=1;const id=box.dataset.id;if(!CNT[id]){if(io)io.observe(box);else load(id)}
+  list.querySelectorAll('.upd-react').forEach(box=>{if(box.dataset.w)return;box.dataset.w=1;const id=box.dataset.id;if(!CNT[id]||CNT[id].old){if(io)io.observe(box);else load(id)}
     box.querySelectorAll('.bat').forEach(b=>b.onclick=()=>vote(id,b.dataset.r,b))})}
 function vote(id,r,btn){const prev=mine[id];const next=prev===r?null:r;
   const c=CNT[id]||(CNT[id]={l:0,d:0});
-  if(prev){c[prev]=Math.max(0,c[prev]-1);hit(`${id}-${prev}x`).catch(()=>{offline.v=true})}
-  if(next){c[next]++;hit(`${id}-${next}`).catch(()=>{offline.v=true})}
+  if(prev){c[prev]=Math.max(0,c[prev]-1);hit(`${id}-${prev}x`).catch(()=>{failed.add(id);paint(id)})}
+  if(next){c[next]++;hit(`${id}-${next}`).catch(()=>{failed.add(id);paint(id)})}
   if(next)mine[id]=next;else delete mine[id];saveMine();
   paint(id);const nb=list.querySelector(`.upd-react[data-id="${id}"] .bat.${(next||prev)==='l'?'like':'dis'}`);
   if(nb){nb.classList.add(next?'anim':'anim-off');setTimeout(()=>nb.classList.remove('anim','anim-off'),1300)}}
@@ -923,8 +947,8 @@ const pts=km=>Math.round(1000*Math.exp(-km/2));
 const sq=km=>km<=.3?5:km<=.75?4:km<=1.5?3:km<=3?2:km<=6?1:0;
 /* ---------- shared counters (same service as the update batteries) ---------- */
 const AB='https://abacus.jasoncameron.dev',NS='donetsk2011-gek2or';
-const hit=k=>fetch(`${AB}/hit/${NS}/${k}`).then(r=>r.ok?r.json():null).then(j=>j?j.value:null).catch(()=>null);
-const get=k=>fetch(`${AB}/get/${NS}/${k}`).then(r=>r.status===404?{value:0}:(r.ok?r.json():null)).then(j=>j?(j.value||0):null).catch(()=>null);
+const hit=k=>__ab.hit(k).catch(()=>null);
+const get=k=>__ab.get(k).catch(()=>null);   // v7.30: the shared queue, timeout and retry
 async function count(base,ok){const [n,o]=await Promise.all([hit(base+'-n'),ok?hit(base+'-ok'):get(base+'-ok')]);return n==null||o==null?null:{n,o}}
 function statLine(el,s,key){if(!el)return;if(!s){el.textContent='';return}el.textContent=s.n<10?T('qz19').replace('{n}',s.n):T(key||'qz18').replace('{p}',Math.round(100*s.o/s.n)).replace('{n}',fmtN(s.n))}
 /* ---------- photo block ---------- */
