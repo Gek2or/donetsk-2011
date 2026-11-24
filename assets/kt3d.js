@@ -2027,7 +2027,7 @@ async function open(host, opt) {
   let heroT = 0, hero0 = null, heroA = 0;
   let gradeOn = opt.grade !== false, bloomOn = opt.bloom !== false, shOn = !!shFb && (quality >= 2 || !!opt.shadows), refOn = quality >= 1, frames = 0, fpsT = performance.now(), fps = 60;
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, hero ? 1 : mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
+    const dpr = opt.dpr || Math.min(window.devicePixelRatio || 1, hero ? 1 : mobile ? 1.5 : 1.75), w = Math.max(1, Math.round(host.clientWidth * dpr)), h = Math.max(1, Math.round(host.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   }
   function frame(now) {
