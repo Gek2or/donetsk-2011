@@ -1,7 +1,7 @@
 /* Donetsk 2011 · service worker (v4.1). Pages you open stay readable offline. */
-const V='661e4f33';
+const V='75aaaa4a';
 const CORE='d11-core-'+V,PAGES='d11-pages',IMG='d11-img',IMG_MAX=240;
-const PRE=["offline.html", "assets/site.css?v=9c9744c1", "assets/app.js?v=661e4f33", "assets/fonts/fonts.css", "icon-192.png", "assets/fonts/alegreya-normal-cyrillic.woff2", "assets/fonts/alegreya-normal-latin.woff2", "assets/fonts/literata-normal-cyrillic.woff2", "assets/fonts/literata-normal-latin.woff2"];
+const PRE=["offline.html", "assets/site.css?v=843befca", "assets/app.js?v=75aaaa4a", "assets/fonts/fonts.css", "icon-192.png", "assets/fonts/alegreya-normal-cyrillic.woff2", "assets/fonts/alegreya-normal-latin.woff2", "assets/fonts/literata-normal-cyrillic.woff2", "assets/fonts/literata-normal-latin.woff2"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CORE).then(c=>c.addAll(PRE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('d11-core-')&&k!==CORE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 const trim=async(name,max)=>{const c=await caches.open(name),ks=await c.keys();for(let i=0;i<ks.length-max;i++)await c.delete(ks[i])};
@@ -16,6 +16,7 @@ self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;c
   if(u.origin!==location.origin||!u.pathname.startsWith(new URL(self.registration.scope).pathname))return;
   if(r.mode==='navigate'){e.respondWith(page(r));return}
   const p=u.pathname;
+  if(/\.(mp4|webm)$/i.test(p)||r.headers.has('range'))return;   // v7.31: video goes straight to the network (range requests, no 4 MB cache entries)
   if(/\/assets\/.+\?v=|\/assets\/fonts\//.test(p+u.search)){e.respondWith(first(CORE,r));return}
   if(/\/(photos|maps|img)\/.+\.(webp|jpe?g|png|svg)$/i.test(p)||/\/assets\/(og|hero|peek|press)\//.test(p)){e.respondWith(first(IMG,r));return}
   e.respondWith(fresh(PAGES,r))});

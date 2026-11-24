@@ -2032,8 +2032,8 @@ async function open(host, opt) {
   }
   function frame(now) {
     if (!st.alive) return;
-    st.raf = requestAnimationFrame(frame);
-    if (document.hidden) return;
+    if (!opt.capture) st.raf = requestAnimationFrame(frame);
+    if (document.hidden && !opt.capture) return;
     if (hero) { if (st.paused || now - heroT < 31) return; heroT = now; } // v7.6 hero: 30 fps at most, paused off screen
     resize();
     const dt = Math.min(0.1, (now - lastT) / 1000);
@@ -2127,7 +2127,7 @@ async function open(host, opt) {
       if (fps < 24 && shOn) shOn = false; else if (fps < 18 && gradeOn) gradeOn = false; else if (fps < 14 && bloomOn) bloomOn = false; else if (fps < 20 && refOn && quality >= 2) quality = 1; else if (fps < 16 && refOn) refOn = false; }
   }
   gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
-  st.raf = requestAnimationFrame(frame);
+  let capT = performance.now(); if (!opt.capture) st.raf = requestAnimationFrame(frame);   // v7.31 capture: frames are drawn on demand with a fixed step (for the home video)
   return {
     setAuto(v) { st.auto = !!v; if (v) st.lapse = false; },
     setHour(h) { st.auto = false; st.hour = ((h % 24) + 24) % 24; },
@@ -2138,6 +2138,7 @@ async function open(host, opt) {
     debug() { return { cam: cam0.map(Math.round), pv: PV.on, planes: planes.map(p => [Math.round(p.x), Math.round(p.y), Math.round(p.z)]), trams: trams.map(t => along(t.e, t.s).slice(0, 2).map(Math.round)), flocks: flocks.map(f => [Math.round(f.c[0]), Math.round(f.c[1]), Math.round(f.h)]), nStat, nGnd, nFol, nImp, cars: cars.length, people: people.length, edges: NET.edges.length, walks: NET.walks.length, lamps: lamps.length, shOn, refOn, fps, quality }; },
     setView(yaw, pitch, dist) { st.yaw = cur.yaw = yaw; st.pitch = cur.pitch = pitch; st.dist = cur.dist = dist; },
     flyTo(x, y, o) { flyTo(x, y, o); },
+    capture(dt, q) { capT += dt * 1000; heroT = -1e9; frame(capT); return canvas.toDataURL('image/jpeg', q || 0.93); },
     planeView(on) { return planeView(on == null ? !PV.on : on); }, get inPlane() { return PV.on; },
     followTram() { // v7.13: the camera rides along with the nearest running tram until the hand takes over
       if (st.hour >= 1 && st.hour < 5) return false; let best = null, bd = 1e9; for (const t of trams) { if (t.wait > 0) continue; const q = along(t.e, t.s), d = Math.hypot(q[0], q[1]); if (d < bd) { bd = d; best = t; } }

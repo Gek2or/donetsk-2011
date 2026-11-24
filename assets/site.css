@@ -2106,3 +2106,8 @@ footer{border-top:0}
   .dn-chip small{display:none}
 }
 .upd-sv{font-weight:inherit}
+
+/* v7.31: the hero video over its poster */
+.hero-kt .kt-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% 42%;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+.hero-kt .kt-vid.on{opacity:1}
+@media (max-width:760px){.hero-kt .kt-vid{object-position:76% 40%}}
