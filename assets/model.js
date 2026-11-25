@@ -840,6 +840,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
      and brown metal, some green paint and bare galvanised sheet (typical, class E). Industrial and plain buildings get a few
      period wall materials (concrete, grey and silicate brick, red brick, sheet metal) and dark bitumen roofs instead of one grey. */
   const gmH=gz;
+  const fTop=pts=>{let m=-Infinity;for(let i=0;i<pts.length;i++){const a=pts[i],c=pts[(i+1)%pts.length],n=Math.max(1,Math.ceil(Math.hypot(c[0]-a[0],c[1]-a[1])/5));for(let s=0;s<n;s++)m=Math.max(m,gmH(a[0]+(c[0]-a[0])*s/n,a[1]+(c[1]-a[1])*s/n))}return m};
   const fBase=pts=>{let m=Infinity;for(let i=0;i<pts.length;i++){const a=pts[i],c=pts[(i+1)%pts.length],n=Math.max(1,Math.ceil(Math.hypot(c[0]-a[0],c[1]-a[1])/5));m=Math.min(m,hX(a[0],a[1]));for(let s=0;s<n;s++)m=Math.min(m,gmH(a[0]+(c[0]-a[0])*s/n,a[1]+(c[1]-a[1])*s/n))}return m};
   const RPW=[[.55,.57,.58],[.55,.57,.58],[.5,.52,.53],[.55,.57,.58],[.47,.49,.5],[.6,.61,.6],[.5,.52,.53],[.55,.32,.26],[.5,.3,.25],[.55,.32,.26],[.38,.5,.43],[.45,.31,.25],[.68,.68,.64],[.52,.54,.55]],
     IPAL=[[.78,.77,.73],[.7,.7,.68],[.66,.43,.34],[.84,.82,.76],[.62,.66,.68],[.74,.72,.66]],IRF=[[.34,.34,.34],[.38,.37,.36],[.31,.32,.33],[.42,.41,.39],[.43,.37,.33]],
@@ -885,7 +886,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
         push(W(a[0],a[1],za),[0,1,0],da,0);push(W(c[0],c[1],zc),[0,1,0],dc,0);push(W(C2[0],C2[1],gmH(...C2)+.2),[0,1,0],gc2,0);push(W(a[0],a[1],za),[0,1,0],da,0);push(W(C2[0],C2[1],gmH(...C2)+.2),[0,1,0],gc2,0);push(W(A2[0],A2[1],gmH(...A2)+.2),[0,1,0],ga,0)}}
     /* v7.14: the roof stays where it was (lowest corner + height); a hair of height per building keeps overlapping OSM outlines
        of the same height from z-fighting; the walls go down to the lowest point of the drawn ground along the whole outline */
-    const top=base+.4+h+(k%5)*.035,cb=col.map(v=>v*.88),kd=ill?(ty===9&&(hs===1||hs===2||hs===4)&&h>=8&&!ind?2:ind?3:KIND[ty]):0;base=Math.min(base,fBase(ccw)-.4);
+    const top=Math.max(base+.4+h,fTop(ccw)+Math.min(h,2.6)+.15)+(k%5)*.035,cb=col.map(v=>v*.88),kd=ill?(ty===9&&(hs===1||hs===2||hs===4)&&h>=8&&!ind?2:ind?3:KIND[ty]):0;base=Math.min(base,fBase(ccw)-.4);
     const fh=kd===1?2.8:3.1,band=(kd===1||kd===2)&&!XLITE&&top-base>=8,wl=ill&&(kd===1||kd===2),lp=kd===1?22:30;
     for(let i=0;i<ccw.length;i++){const a=ccw[i],c=ccw[(i+1)%ccw.length],L=Math.hypot(c[0]-a[0],c[1]-a[1]),wc=i%2?col:cb,Hh=top-base,fz=kd*100+Math.min(99,Hh);
       if(band&&L>=10){const lv=[0];for(let z=.6+fh;z<Hh-.5;z+=fh)lv.push(z);lv.push(Hh);const c0=wc.map(x=>x*(kd===1?.85:.9));
@@ -1378,40 +1379,50 @@ HP+`varying float z;void main(){vec4 e=fract(z*vec4(1.,255.,65025.,16581375.));e
 let WC=true;try{WC=localStorage.getItem('d11-wc')!=='0'}catch(e){}/* v7.20: the watercolour is the main look of the 3D model (owner's decision); the button turns it off and that is remembered */
 const WDX=gl.getExtension('WEBGL_depth_texture');
 const WCP=prog(`attribute vec2 p;varying vec2 u;void main(){u=p*.5+.5;gl_Position=vec4(p,0.,1.);}`,
-HP+`varying vec2 u;uniform sampler2D tc,td,tn;uniform vec2 rs,nz;uniform vec3 pap,ink;uniform float hd,px,nt,dk;
+HP+`varying vec2 u;uniform sampler2D tc,td,tn;uniform vec2 rs,nz;uniform vec3 pap,ink,fg;uniform float hd,px,nt,dk;
 float N(vec2 q){return texture2D(tn,q/256.).r;}
 float N2(vec2 q){return texture2D(tn,q/256.).g;}
 float fb(vec2 q){return N(q)*.5+N(q*2.03+17.)*.3+N(q*4.07+41.)*.2;}
 float lz(vec2 q){float z=texture2D(td,q).r*2.-1.;return 2.*nz.x*nz.y/(nz.y+nz.x-z*(nz.y-nz.x));}
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
 vec3 C(vec2 q){return texture2D(tc,q).rgb;}
-void main(){vec2 P=u*rs/px;vec2 o=px/rs;
-  vec2 w=vec2(fb(P/70.),fb(P/70.+vec2(91.,37.)))-.5;vec2 uv=u+w*3.2*o;
+void main(){vec2 P=u*rs/px;vec2 o=px/rs;float dy=1.-nt;
+  vec2 w=vec2(fb(P/70.),fb(P/70.+vec2(91.,37.)))-.5;vec2 uv=u+w*2.6*o;
   vec3 c0=C(uv),cb=(C(uv+vec2(2.,0.)*o)+C(uv-vec2(2.,0.)*o)+C(uv+vec2(0.,2.)*o)+C(uv-vec2(0.,2.)*o))*.25;
-  vec3 c=mix(c0,cb,.4);float L=lum(c);
+  vec3 c=mix(c0,cb,.3);float L=lum(c);
+  float zc=60.,ob=1.;if(hd>.5){zc=lz(u);ob=step(texture2D(td,u).r,.99999);}float hz=1.-smoothstep(.015,.07,length(C(u)-fg));ob*=1.-hz;float far=smoothstep(700.,5200.,zc);
+  /* v7.32 palette after the owner's watercolour: warm brick, ochre and cream walls, juicy yellow-green foliage, light warm asphalt */
+  float wa=clamp((c.r-c.b)*3.,0.,1.),gr=clamp((c.g-max(c.r,c.b))*5.,0.,1.),gy=1.-clamp(length(c-vec3(L))*6.,0.,1.);
+  float sat=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b)),bo=1.-smoothstep(.18,.45,sat);c=mix(vec3(L),c,1.+(.55*wa+.6*gr)*dy*bo);c+=dy*(wa*vec3(.05,.01,-.03)+gr*vec3(.02,.04,-.04)+gy*vec3(.035,.025,-.005));c=clamp(c,0.,1.);
   /* flat washes: luminance in soft steps, hue kept */
-  float q=L*5.;float qs=(floor(q)+smoothstep(.3,.7,fract(q)))/5.;c*=mix(1.,(qs+.03)/(L+.03),.3);
-  /* transparent pigment: a little lighter and less saturated in daylight */
-  float Lq=lum(c);c=mix(vec3(Lq),c,1.22-.12*nt);c=clamp(c,0.,1.);c=mix(c,1.-(1.-c)*.8,1.-nt);c=pow(c,vec3(.92));Lq=lum(c);
-  /* darker rims where a wash meets another one */
-  float rim=clamp(length(c0-cb)*2.2,0.,1.);c*=1.-.18*rim*(1.-nt*.5);
-  /* pigment grain and uneven washes */
-  c*=1.-.09*(fb(P/2.2)-.5)-.12*(N2(P/150.)-.5)*(1.-nt*.6);
-  /* hatching in the shade (two directions in the darkest places) */
-  float h1=abs(fract((P.x+P.y+N(P/9.)*3.)/5.)-.5)*2.,h2=abs(fract((P.x-P.y+N2(P/9.)*3.)/5.)-.5)*2.;
-  float sh=smoothstep(.42,.26,Lq)*(1.-nt);float hat=(1.-smoothstep(.1,.35,h1))*sh*.2+(1.-smoothstep(.1,.35,h2))*smoothstep(.26,.14,Lq)*(1.-nt)*.16;
-  /* ink: depth silhouettes and creases, colour edges, with their own small wobble */
-  vec2 lu=u+(vec2(N(P/23.),N2(P/23.))-.5)*1.8*o;float ln=0.,zc=60.;
-  if(hd>.5){zc=lz(lu);float zl=lz(lu-vec2(o.x,0.)),zr=lz(lu+vec2(o.x,0.)),zd=lz(lu-vec2(0.,o.y)),zu=lz(lu+vec2(0.,o.y));
-    float ed=max(max(abs(zl-zc),abs(zr-zc)),max(abs(zd-zc),abs(zu-zc)))/zc;
-    float ic=1./zc,cr=max(abs(1./zl+1./zr-2.*ic),abs(1./zd+1./zu-2.*ic))/ic;
+  L=lum(c);float q=L*5.;float qs=(floor(q)+smoothstep(.3,.7,fract(q)))/5.;c*=mix(1.,(qs+.03)/(L+.03),.25);
+  /* transparent pigment over white paper */
+  c=mix(c,1.-(1.-c)*.84,dy);c=pow(c,vec3(.93));float Lq=lum(c);
+  /* shade is painted cool, light warm (classic watercolour), weaker at night */
+  float sd=smoothstep(.5,.25,Lq);c=mix(c,c*vec3(.8,.87,1.06)+vec3(.0,.01,.04),sd*.7*dy);c=mix(c,c*vec3(1.03,1.01,.95),(1.-sd)*.6*dy);
+  /* darker rims where one wash meets another, pigment pooling */
+  float rim=clamp(length(c0-cb)*2.4,0.,1.);c*=1.-.2*rim*(1.-nt*.5);
+  /* uneven washes: grain, large warm and cool blooms, a few backruns */
+  float bl=N2(P/210.);
+  c*=1.-.08*(fb(P/2.2)-.5)-.1*(bl-.5)*(1.-nt*.6)*ob;c=mix(c,c*vec3(1.04,1.,.93),ob*dy*.5*smoothstep(.45,.75,N(P/330.+9.)));
+  /* fine hatching in the shade (cross-hatched only in the darkest places), thinner far away */
+  float sp=mix(4.,6.,far),h1=abs(fract((P.x+P.y+N(P/9.)*3.)/sp)-.5)*2.,h2=abs(fract((P.x-P.y+N2(P/9.)*3.)/sp)-.5)*2.;
+  float hat=(1.-smoothstep(.08,.3,h1))*smoothstep(.44,.28,Lq)*dy*.22+(1.-smoothstep(.08,.3,h2))*smoothstep(.27,.14,Lq)*dy*.17;hat*=1.-far*.7;
+  /* ink: silhouettes and creases from depth, colour edges; near facades also get the window strokes */
+  vec2 lu=u+(vec2(N(P/23.),N2(P/23.))-.5)*1.6*o;float ln=0.;
+  if(hd>.5){float zm=lz(lu),zl=lz(lu-vec2(o.x,0.)),zr=lz(lu+vec2(o.x,0.)),zd=lz(lu-vec2(0.,o.y)),zu=lz(lu+vec2(0.,o.y));
+    float ed=max(max(abs(zl-zm),abs(zr-zm)),max(abs(zd-zm),abs(zu-zm)))/zm;
+    float ic=1./zm,cr=max(abs(1./zl+1./zr-2.*ic),abs(1./zd+1./zu-2.*ic))/ic;
     ln=max(smoothstep(.02,.06,ed),smoothstep(.006,.02,cr)*.6);}
   vec3 a=C(lu-vec2(o.x,0.)),b=C(lu+vec2(o.x,0.)),d=C(lu-vec2(0.,o.y)),e=C(lu+vec2(0.,o.y));
-  float ce=length(a-b)+length(d-e);ln=max(ln,smoothstep(.28,.6,ce)*.5);
-  ln*=(.6+.4*N2(P/11.))*.85*(1.-smoothstep(120.,1400.,zc)*.85)*(1.-nt*.55);
-  /* paper fibre over everything, and a ragged unpainted edge like a sheet */
-  float fib=fb(vec2(P.x/5.,P.y/1.4))*.6+fb(P/1.5)*.4;
-  vec3 col=mix(c,c*.6+ink*.2,clamp(hat,0.,1.));col=mix(col,ink,clamp(ln,0.,1.));col*=.955+.07*fib;
+  float ce=length(a-b)+length(d-e);float near=1.-smoothstep(90.,420.,zc);
+  ln=max(ln,smoothstep(.28,.6,ce)*.5);ln=max(ln,smoothstep(.12,.3,ce)*.32*near);
+  ln*=(.55+.45*N2(P/11.))*.85*(1.-smoothstep(120.,1400.,zc)*.85)*(1.-nt*.55);
+  /* aerial perspective: the far city fades into the paper as in the drawing */
+  c=mix(c,mix(pap,vec3(.78,.84,.9),.25),far*.42*dy);
+  /* paper fibre, warm sepia ink, ragged unpainted edge like a sheet */
+  float fib=fb(vec2(P.x/5.,P.y/1.4))*.6+fb(P/1.5)*.4;vec3 ik=mix(ink,vec3(.25,.19,.16),dy*.6);
+  c=mix(c,mix(pap,c,.25),hz*dy);vec3 col=mix(c,c*.62+ik*.18,clamp(hat,0.,1.));col=mix(col,ik,clamp(ln,0.,1.));col*=.955+.07*fib;
   vec2 m=min(u,1.-u)*rs/px;float edge=smoothstep(0.,26.,min(m.x,m.y)-14.*fb(P/30.));col=mix(pap,col,mix(1.,edge,1.-nt*.7));
   gl_FragColor=vec4(col,1.);}`);
 let wFB=null,wCT=null,wDT=null,wDR=null,wNT=null,wW=0,wH=0,wQB=null;
@@ -1426,11 +1437,11 @@ function wcBind(){const w=cv.width,h=cv.height;
     else{wDR=wDR||gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,wDR);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,w,h);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,wDR)}
     wW=w;wH=h}
   gl.bindFramebuffer(gl.FRAMEBUFFER,wFB);if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){gl.bindFramebuffer(gl.FRAMEBUFFER,null);return false}return true}
-function wcPost(near,far){gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,cv.width,cv.height);const bl=gl.isEnabled(gl.BLEND);gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
+function wcPost(near,far,fg){gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,cv.width,cv.height);const bl=gl.isEnabled(gl.BLEND);gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
   gl.useProgram(WCP);const U=n=>gl.getUniformLocation(WCP,n);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,wCT);gl.uniform1i(U('tc'),1);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,WDX?wDT:null);gl.uniform1i(U('td'),2);gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,wNT);gl.uniform1i(U('tn'),3);
   gl.uniform2f(U('rs'),cv.width,cv.height);gl.uniform2f(U('nz'),near,far);gl.uniform1f(U('hd'),WDX?1:0);gl.uniform1f(U('px'),dpr);gl.uniform1f(U('nt'),NF);gl.uniform1f(U('dk'),C.dark?1:0);
-  const pp=C.paper||[.96,.94,.9];gl.uniform3fv(U('pap'),mix(pp,C.dark?[.045,.055,.085]:[.15,.17,.26],NF*.94));gl.uniform3fv(U('ink'),C.dark?[.08,.07,.09]:[.17,.145,.15]);
+  const pp=C.paper||[.96,.94,.9];gl.uniform3fv(U('fg'),fg||[1,1,1]);gl.uniform3fv(U('pap'),mix(pp,C.dark?[.045,.055,.085]:[.15,.17,.26],NF*.94));gl.uniform3fv(U('ink'),C.dark?[.08,.07,.09]:[.17,.145,.15]);
   gl.bindBuffer(gl.ARRAY_BUFFER,wQB);const l=gl.getAttribLocation(WCP,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.disableVertexAttribArray(l);
   for(const t of [gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3]){gl.activeTexture(t);gl.bindTexture(gl.TEXTURE_2D,null)}gl.activeTexture(gl.TEXTURE0);gl.enable(gl.DEPTH_TEST);if(bl)gl.enable(gl.BLEND)}
 let SMS=2048,smFB=null,smTex=null,smRB=null,LM=null,SMC={c:[0,0,0],R:1,on:false},SMB=.0016;
@@ -1581,7 +1592,7 @@ function draw(){if(!inited||gl.isContextLost())return;
   gl.disable(gl.BLEND);
   labels();
 
-  if(WCN)wcPost(XON?Math.max(2,cam.d/70):Math.max(1.5,cam.d/120),XON?16000:5000);}
+  if(WCN)wcPost(XON?Math.max(2,cam.d/70):Math.max(1.5,cam.d/120),XON?16000:5000,bg);}
 /* v5.4: rendered height of the non-house types (class E estimates; must match TYP and canopy() in build) */
 const TYH={garage:2.7,shed:4.8,tp:3.9,substation:8.4,outbuilding:2.5,canopy:4.1};const bH=b=>TYH[b[5]]||b[3];
 const TYK={house:'q87',outbuilding:'q88',garage:'q89',canopy:'q90',tp:'q91',substation:'q92',shed:'q93',apartments:'q94'};
