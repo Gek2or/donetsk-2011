@@ -746,8 +746,10 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       for(const [a,c] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1]]){const ii=i+a,jj=j+c;if(ii<0||jj<0||ii>g.nx||jj>g.ny)continue;const xb=x+a*g.s,yb=y+c*g.s;if(wIn(xb,yb))continue;
         const di=dist(w,i,j,x,y),db=Math.max(.5,dist(w,ii,jj,xb,yb)),rise=Math.max(.3,gv[jj][ii][0][1]-w.lv);any=true;za=Math.min(za,w.lv-Math.max(.05,di/db*rise))}
       if(any){const v=gv[j][i][0];gv[j][i][0]=[v[0],Math.max(w.lv-4,za),v[2]]}}}
+  /* v7.35 B1: smooth ground normals (central differences of the drawn heights) */
+  const GH=(i,j)=>gv[Math.max(0,Math.min(g.ny,j))][Math.max(0,Math.min(g.nx,i))][0][1],GN=(i,j)=>{const dx=(GH(i+1,j)-GH(i-1,j))/(2*g.s),dy=(GH(i,j+1)-GH(i,j-1))/(2*g.s),l=Math.hypot(dx,1,dy);return[-dx/l,1/l,dy/l]};
   for(let j=0;j<g.ny;j++)for(let i=0;i<g.nx;i++){const xa=g.x+i*g.s,ya=g.y+j*g.s;if(xa>=t0&&xa+g.s<=t2&&ya>=t1&&ya+g.s<=t3)continue;
-    const v=[gv[j][i],gv[j][i+1],gv[j+1][i+1],gv[j+1][i]],n=nrm(v[0][0],v[1][0],v[3][0]);for(const k of [0,1,2,0,2,3])push(v[k][0],n,v[k][1],0)}
+    const v=[gv[j][i],gv[j][i+1],gv[j+1][i+1],gv[j+1][i]],vn=[GN(i,j),GN(i+1,j),GN(i+1,j+1),GN(i,j+1)];for(const k of [0,1,2,0,2,3])push(v[k][0],vn[k],v[k][1],0)}
   /* v7.14 audit: the height of the ground as drawn (the grid's triangles), so that trees stand on it rather than on the finer terrain
      (up to 1.7 m apart on the slopes); inside the quarter its own terrain */
   XGV=gv;const gz=(x,y)=>{if(x>t0&&x<t2&&y>t1&&y<t3)return hX(x,y);const fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,i=Math.max(0,Math.min(g.nx-1,Math.floor(fx))),j=Math.max(0,Math.min(g.ny-1,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j));
@@ -1088,6 +1090,12 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       for(let k=0;k<n;k++){const a=k*1.0472+(h%7)*.3,rr=r*(k%2?.86:1);R1.push(W(x+Math.cos(a)*rr,y+Math.sin(a)*rr,cz+(k%2?r*.18:-r*.06)))}
       for(let k=0;k<n;k++){const a=R1[k],b=R1[(k+1)%n];tri3(a,b,top,gc,0);tri3(b,a,bot,gd,0)}};
     const st=X.st||[];for(let i=0;i<st.length;i+=XLITE?6:3)stree(st[i]/10,st[i+1]/10,st[i+2]);
+    /* v7.36 living city: trees in the yards of the blocks of flats, in the live sectors (typical; kinds and positions illustrative):
+       two rows 5.5-10.5 and 12-17 m off every long wall, about one tree per 8 m, clear of the roads, buildings, mapped places and water, 6 m apart */
+    {const TC=new Set(),tk=(x,y)=>Math.floor(x/6)+','+Math.floor(y/6),near=(x,y)=>{const i=Math.floor(x/6),j=Math.floor(y/6);for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++)if(TC.has((i+a)+','+(j+c)))return true;return false};
+      const PTR=(X.pt||[]).map(([k,f])=>xy(f));const inPt=(x,y)=>PTR.some(r=>inPoly(r,x,y));
+      for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const n=Math.max(1,Math.floor(L/8));for(let row=0;row<2;row++)for(let k=0;k<n;k++){const h=hash(id+':'+row+':'+k),e=(k+.5)/n*L-L/2+((h%30)/10-1.5),d=(row?12:5.5)+(h>>>5)%50/10,x=mx+ux*e+nx*d,y=my+uy*e+ny*d;
+        if((h>>>11)%10<1||near(x,y)||!xclr(x,y,2.2)||inPt(x,y))continue;TC.add(tk(x,y));stree(x,y,(h>>>14)%9===0?1:(h>>>14)%9===1?2:0)}}}
     /* v7.14 audit: fruit trees in the gardens of the private houses (the yards of Donetsk are green; positions and kinds illustrative):
        up to two beside each mapped house, clear of the roads, the buildings and the water; a low round crown on a short trunk */
     {const GL=[[.34,.47,.26],[.4,.5,.28],[.45,.52,.3],[.36,.44,.27]],gk=dk?[.18,.14,.11]:[.4,.32,.25];
@@ -1215,6 +1223,14 @@ function hXB(x,y,hx,hy){for(const b of XBR){if(x<b.bb[0]||x>b.bb[2]||y<b.bb[1]||
     for(let i=1;i<S.length;i++){const p=S[i-1],q=S[i],dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);if(l<.05)continue;if(hx!=null&&Math.abs((dx*hx+dy*hy)/l)<.8)continue;
       const u=((x-p[0])*dx+(y-p[1])*dy)/(l*l);if(u<-.02||u>1.02)continue;if(Math.abs((x-p[0])*dy-(y-p[1])*dx)/l>b.hw+3.6)continue;const t=Math.max(0,Math.min(1,u));return Math.max(hR(x,y),b.Z[i-1]+(b.Z[i]-b.Z[i-1])*t)}}
   return hR(x,y)}
+/* v7.36 living city, sector by sector (grid A1-D3 of the reference map, see the sector plan). LIVE lists the sectors done so far */
+const LIVE=new Set(["A1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
+function secAt(x,y){let c=-1,r=-1;for(let i=0;i<4;i++)if(x>=SXS[i]&&x<SXS[i+1])c=i;for(let i=0;i<3;i++)if(y<=SYS[i]&&y>SYS[i+1])r=i;return c<0||r<0?'':'ABCD'[c]+(r+1)}
+const liveAt=(x,y)=>LIVE.has(secAt(x,y));
+function gridZ(x,y){if(!XGV||!XD)return hX(x,y);const g=XD.g,[t0,t1,t2,t3]=D.tb;if(x>t0&&x<t2&&y>t1&&y<t3)return hX(x,y);const fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,i=Math.max(0,Math.min(g.nx-1,Math.floor(fx))),j=Math.max(0,Math.min(g.ny-1,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j)),gv=XGV;const a=gv[j][i][0][1],b=gv[j][i+1][0][1],c=gv[j+1][i+1][0][1],d=gv[j+1][i][0][1];return u>=v?a+(b-a)*u+(c-b)*v:a+(c-d)*u+(d-a)*v}
+/* outward wall segments of the blocks of flats in the live sectors: [mx,my,nx,ny,ux,uy,L,id] for walls of 12 m and more */
+function flatWalls(){const out=[];if(!XD)return out;for(const b of XD.b){if(Math.floor(b[4]/10)!==1)continue;const f=b[6],r=[];for(let i=0;i<f.length;i+=2)r.push([f[i]/10,f[i+1]/10]);let cx=0,cy=0;for(const q of r){cx+=q[0];cy+=q[1]}cx/=r.length;cy/=r.length;if(!liveAt(cx,cy))continue;
+  for(let i=0;i<r.length;i++){const a=r[i],c=r[(i+1)%r.length],dx=c[0]-a[0],dy=c[1]-a[1],L=Math.hypot(dx,dy);if(L<12)continue;const ux=dx/L,uy=dy/L,mx=(a[0]+c[0])/2,my=(a[1]+c[1])/2;let nx=uy,ny=-ux;if(inPoly(r,mx+nx*.8,my+ny*.8)){nx=-nx;ny=-ny}out.push([mx,my,nx,ny,ux,uy,L,b[0]])}}return out}
 function xsim(){const T=XN;if(!T)return null;
   const P=(f,i)=>[f[i*2]/10,f[i*2+1]/10],xy=f=>{const o=[];for(let i=0;i<f.length;i+=2)o.push([f[i]/10,f[i+1]/10]);return o};
   const mkE=(a,b,pts,o)=>{const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return Object.assign({a,b,pts,cum,len:cum[cum.length-1],cars:[]},o)};
@@ -1320,7 +1336,11 @@ function xsim(){const T=XN;if(!T)return null;
   {const PC2=[[.2,.22,.3],[.45,.12,.12],[.3,.3,.32],[.55,.45,.3],[.62,.62,.6],[.16,.3,.24],[.4,.2,.35],[.12,.12,.14]];
     const stand=(E,st,o0)=>{const e=E[st.e];if(!e)return;const n=1+((rnd()*3)|0);for(let j=0;j<n;j++){const [x,y,dx,dy]=at(e,st.s+(rnd()-.5)*5),o=(o0+rnd()*.9)*st.side;
         PED.push({m:'ped',ped:true,stat:true,x:x+dy*o,y:y-dx*o,hx:-dy*st.side,hy:dx*st.side,col:PC2[(rnd()*PC2.length)|0],id:4000+PED.length,mv:false})}};
-    for(const st of BS){const e=RE[st.e];if(e)stand(RE,st,e.w/2+.5)}for(const st of TS)stand(TE,st,2.4)}
+    for(const st of BS){const e=RE[st.e];if(e)stand(RE,st,e.w/2+.5)}for(const st of TS)stand(TE,st,2.4)
+    /* v7.36 living city: people by the blocks of flats in the live sectors (illustrative): one or two at about every second entrance
+       side, a few more out in the yard; standing, facing the wall or each other */
+    for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const n=Math.floor(L/14);for(let k=0;k<n;k++){const h=hash('p'+id+k);if(h%10<5)continue;const e=(k+.5)/n*L-L/2,m=1+(h>>>4)%2;
+      for(let j=0;j<m;j++){const d=1.6+((h>>>(7+j*3))%8)/2,o=e+(j?.8:0),x=mx+ux*o+nx*d,y=my+uy*o+ny*d,f=j&&d>3?-1:1;PED.push({m:'ped',ped:true,stat:true,yd:true,x,y,hx:-nx*f,hy:-ny*f,col:PC2[(h>>>(12+j*3))%PC2.length],id:5000+PED.length,mv:false})}}}}
   /* traffic-light heads: one per approach, on the right before the stop line */
   const heads=[];RE.forEach((e,i)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){const c=NC[n];if(!c||(dir<0&&e.ow)||e.len<10)continue;const sl=e.len-7;const [x,y,dx,dy]=at(e,dir>0?sl:e.len-sl),hx=dx*dir,hy=dy*dir;
       const half=e.w/2+1.2;heads.push({x:x+hy*half,y:y-hx*half,hx,hy,c,ph:phaseOf(c,e,dir)})}});
@@ -1528,7 +1548,7 @@ if(vc.x>1.2)c=mix(c,min(vc,vec3(1.)),nf);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,
       gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.3);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
     if(bound)off()}
   if(XON&&XSIM){if(XSIM.PED&&cam.d<900)for(const pk of ['ped','ped2']){let bound=false;const M=VM[pk],tq=XSIM.clock()*2.2;for(const c of XSIM.PED){if(c.off||(pk==='ped2')!==(!!c.mv&&Math.floor(tq+c.id*.37)%2===1))continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>3.6e5)continue;if(!bound){attr(PCar,'p','vm'+pk+'p',3);attr(PCar,'n','vm'+pk+'n',3);attr(PCar,'c','vm'+pk+'c',3);bound=true}
-        gl.uniform3f(uo,c.x,c.y,hXB(c.x,c.y,c.hx,c.hy)+.45);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}if(bound)off()}
+        if(c.yd&&c.gz==null)c.gz=gridZ(c.x,c.y);gl.uniform3f(uo,c.x,c.y,(c.yd?c.gz-.38:hXB(c.x,c.y,c.hx,c.hy))+.45);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}if(bound)off()}
     for(const k of ['sedan','hatch','van','bus','trolley','tram']){let bound=false;const M=VM[k];
       for(const c of XSIM.all){if(c.m!==k||c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>2.6e6)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
         gl.uniform3f(uo,c.x,c.y,(k==='tram'?hR(c.x,c.y):hXB(c.x,c.y,c.hx,c.hy))+(k==='tram'?.43:.3));gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col||[.6,.2,.2]);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
