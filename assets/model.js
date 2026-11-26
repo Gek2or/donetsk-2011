@@ -280,7 +280,7 @@ function build(evid){FEN=[];
     if(evid){col=C.gF;roof=C.gE}else if(fac){const m=matOf(b);col=m.c;roof=m.r;kind=m.k;if(pr){col=tone(WALLC[pr.wall]||m.c);roof=tone(ROOFC[pr.roof]||m.r)}}
     pitch=!lvl;RT=det?(pr?pr.roof_type:((sd>>>3)%2?'gable':'hip')):'hip';const info=addB(b[2],b[3],col,roof,i+1,kind);
     if(det){if(kind===2&&info.o)detailHouse(info,col,roof,i+1,sd);else if(kind===1)detailBlock(info,col,i+1,sd)}});pitch=false;RT='hip';
-  D.DF.forEach((b,i)=>{const col=evid?C.gE:mix(C.rose,[1,1,1],.12),rc=evid?col:mix(C.rose,[0,0,0],.08),det=fac&&!evid;const num=((b[0]||'').match(/(\d+[а-яa-z]?)\s*$/)||[])[1]||'',pr=PRP[num];pitch=!evid;RT=det&&pr?pr.roof_type:'hip';
+  D.DF.forEach((b,i)=>{let col=evid?C.gE:mix(C.rose,[1,1,1],.12),rc=evid?col:mix(C.rose,[0,0,0],.08);const det=fac&&!evid;const num=((b[0]||'').match(/(\d+[а-яa-z]?)\s*$/)||[])[1]||'',pr=PRP[num];if(det&&pr){col=tone(WALLC[pr.wall]||col);rc=tone(ROOFC[pr.roof]||rc)}/* v7.34 B2: the study houses in their researched colours */pitch=!evid;RT=det&&pr?pr.roof_type:'hip';
     const info=addB(b[2],3.2,col,rc,1000+i,det?2:0);if(det&&info.o)detailHouse(info,col,rc,1000+i,hash(b[1]||String(i)))});pitch=false;RT='hip';
   /* 2011 centerlines */
   const Hc=[];if(showHist)for(const [,segs] of D.HC)for(const [p,q] of segs){const L=Math.hypot(q[0]-p[0],q[1]-p[1]);const n=Math.max(1,Math.ceil(L/10));const ox=-(q[1]-p[1])/L*1.8,oy=(q[0]-p[0])/L*1.8;for(let k=0;k<n;k++){const t0=k/n,t1=(k+1)/n;const ax=p[0]+(q[0]-p[0])*t0,ay=p[1]+(q[1]-p[1])*t0,bx=p[0]+(q[0]-p[0])*t1,by=p[1]+(q[1]-p[1])*t1;const A=W(ax-ox,ay-oy,H(ax,ay)+.9),B2=W(bx-ox,by-oy,H(bx,by)+.9),C2=W(bx+ox,by+oy,H(bx,by)+.9),D2=W(ax+ox,ay+oy,H(ax,ay)+.9);Hc.push(...A,...B2,...C2,...A,...C2,...D2)}}
@@ -713,12 +713,15 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const wIn=(x,y)=>{for(const w of WP)if(x>=w.bb[0]&&x<=w.bb[2]&&y>=w.bb[1]&&y<=w.bb[3]&&inPoly(w.r,x,y))return w;return null};
   const HD=new Uint8Array((g.nx+1)*(g.ny+1));for(const b of X.b){const ty=Math.floor(b[4]/10);if(ty!==0&&ty!==8)continue;const f=b[6],i=Math.round((f[0]/10-g.x)/g.s),j=Math.round((f[1]/10-g.y)/g.s);
     for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const ii=i+a,jj=j+c;if(ii>=0&&ii<=g.nx&&jj>=0&&jj<=g.ny&&HD[jj*(g.nx+1)+ii]<9)HD[jj*(g.nx+1)+ii]++}}
+  const HD2=new Uint8Array((g.nx+1)*(g.ny+1));for(const b of X.b){const f=b[6];for(let q=0;q<f.length;q+=2){const i=Math.round((f[q]/10-g.x)/g.s),j=Math.round((f[q+1]/10-g.y)/g.s);if(i>=0&&i<=g.nx&&j>=0&&j<=g.ny&&HD2[j*(g.nx+1)+i]<9)HD2[j*(g.nx+1)+i]++}}
   const gbase=(x,y)=>evid?mix(C.ground,C.gC,.28):mix(C.ground,C.groundHi,Math.max(0,Math.min(1,(hX(x,y)/EX+6)/12))*.6);
   const vcol=(i,j)=>{const k=g.c[j][i],x=g.x+i*g.s,y=g.y+j*g.s;if(evid)return mix(C.ground,C.gC,.28);const base=gbase(x,y);
     if(!ill&&k!=='w')return base;if(k==='.'){const q=Math.min(1,HD[j*(g.nx+1)+i]/3);return dk?mix(base,GARD.map(v=>v*.42),.1+q*.3):mix(base,GARD,.15+q*.45)}
     if(k==='h'){/* v7.18: the slag only on the heap itself (how far the point stands above the ground 260 m around), not as a soft stain over the flat land beside it */
       let lo=Infinity;for(let q=0;q<16;q++){const an=q/16*6.2832;lo=Math.min(lo,hX(x+Math.cos(an)*260,y+Math.sin(an)*260))}const e=Math.max(0,Math.min(1,((hX(x,y)-lo)/(EX||1)-6)/10)),lc=mix([.43,.41,.39],[.5,.42,.37],((i*7919+j*104729)%97)/97*.3);
       return dk?mix(base,lc.map(v=>v*.5),.15+e*.45):mix(base,lc,.12+e*.5)}
+    if(k==='i'){/* v7.34 C2: industrial ground in concrete, bare earth and scrub (typical) */const vn=(u,v)=>{const a=Math.floor(u),b=Math.floor(v),f=u-a,e=v-b,hh=(p,q)=>(((Math.imul(p,73856093)^Math.imul(q,19349663))>>>0)%1000)/1000,s=t=>t*t*(3-2*t);return hh(a,b)+(hh(a+1,b)-hh(a,b))*s(f)+(hh(a,b+1)-hh(a,b))*s(e)+(hh(a,b)-hh(a+1,b)-hh(a,b+1)+hh(a+1,b+1))*s(f)*s(e)};
+      const n1=vn(x/70,y/70),n2=vn(x/45+31,y/45+17),bz=Math.min(1,HD2[j*(g.nx+1)+i]/2);let lc=mix([.57,.5,.41],[.68,.67,.64],Math.min(1,Math.max(0,(n1-.25)*1.8)+bz*.5));lc=mix(lc,[.48,.57,.4],Math.min(1,Math.max(0,n2-.5)*2.4)*(1-bz));return dk?mix(base,lc.map(v=>v*.5),.78):mix(base,lc,.82)}
     const lc=LUC[k];return dk?mix(base,lc.map(v=>v*.5),.78):mix(base,lc,.8)};
   /* v7.14 audit: trees keep clear of the carriageways, rails, buildings and water (a 25 m hash of the mapped roads, rails and footprints) */
   const CLR=new Map(),CK=(i,j)=>i*4096+j,cadd=(x0,y0,x1,y1,o)=>{for(let i=Math.floor((x0-2)/25);i<=Math.floor((x1+2)/25);i++)for(let j=Math.floor((y0-2)/25);j<=Math.floor((y1+2)/25);j++){const k=CK(i,j);let a=CLR.get(k);if(!a)CLR.set(k,a=[]);a.push(o)}};
@@ -733,6 +736,8 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const gv=[];for(let j=0;j<=g.ny;j++){const row=[];for(let i=0;i<=g.nx;i++){const x=g.x+i*g.s,y=g.y+j*g.s,h=hX(x,y),wp=wIn(x,y);/* v7.18: every grid point inside a mapped pond goes under its surface, whatever the land-use cell says (the green teeth along the shores) */let z=wp?Math.min(h,wp.lv-1.2):h-(g.c[j][i]==='w'?1.6:0);
     if(!wp&&g.c[j][i]!=='w'&&(gw2(i-1,j)||gw2(i+1,j)||gw2(i,j-1)||gw2(i,j+1))){let w=null;for(const [a,c] of [[-1,0],[1,0],[0,-1],[0,1]])if(gw2(i+a,j+c))w=w||wIn(x+a*g.s,y+c*g.s);if(w&&h>w.lv+.3&&h<w.lv+6&&!busy(x,y))z=w.lv+.3}
     row.push([W(x,y,z),vcol(i,j)])}gv.push(row)}
+  /* v7.34 B2: soft land-use borders (3x3 average of the grid colours) instead of 20 m stair steps */
+  if(ill)for(let pass=0;pass<2;pass++){const ny=gv.length,nx=gv[0].length,src=gv.map(r=>r.map(v=>v[1]));for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){let r0=0,g0=0,b0=0,w=0;for(let b=-1;b<=1;b++)for(let a=-1;a<=1;a++){const jj=j+b,ii=i+a;if(jj<0||jj>=ny||ii<0||ii>=nx)continue;const q=a||b?(a&&b?.5:1):2,c=src[jj][ii];r0+=c[0]*q;g0+=c[1]*q;b0+=c[2]*q;w+=q}gv[j][i][1]=[r0/w,g0/w,b0/w]}}
   /* v7.18: the shore line on the mapped outline. A grid point under a pond is set just so deep that, along every grid edge to a dry
      neighbour, the ground meets the water surface where the edge crosses the outline (depth = rise of the neighbour above the water
      x its distance ratio, the deepest of its edges, so any error falls outside, under the bank strip), instead of 1.2 m everywhere, which made the 20 m triangles cut the water in saw teeth */
@@ -870,7 +875,8 @@ function buildX(){const X=XD;if(!X)return;XS=false;
   const scan=(p,o,t)=>{const xs=[];for(let i=0;i<p.length;i++){const a=p[i],c=p[(i+1)%p.length];const ta=(a[0]-o.c[0])*o.v[0]+(a[1]-o.c[1])*o.v[1],tc=(c[0]-o.c[0])*o.v[0]+(c[1]-o.c[1])*o.v[1];if((ta>t)===(tc>t))continue;
       const f=(t-ta)/(tc-ta),sa=(a[0]-o.c[0])*o.u[0]+(a[1]-o.c[1])*o.u[1],sc=(c[0]-o.c[0])*o.u[0]+(c[1]-o.c[1])*o.u[1];xs.push(sa+(sc-sa)*f)}xs.sort((x,y)=>x-y);const r=[];for(let i=0;i+1<xs.length;i+=2)r.push([xs[i],xs[i+1]]);return r};
   const isect=(A,B)=>{const r=[];for(const a of A)for(const b of B){const s0=Math.max(a[0],b[0]),s1=Math.min(a[1],b[1]);if(s1>s0)r.push([s0,s1])}return r};
-  X.b.forEach((b,k)=>{const id=20000+k,ty=Math.floor(b[4]/10),hs=b[4]%10,h=b[3]/10;let pts=xy(b[6]);const ccw=area(pts)>0?pts:pts.slice().reverse();const r=hash(b[0]);
+  const DFX=new Set(D.DF.map(q=>'w'+q[1]));/* v7.34 B2: the study houses at house 33 are drawn by the quarter; the reference map left a second, grey roof over them */
+  X.b.forEach((b,k)=>{if(DFX.has(b[0]))return;const id=20000+k,ty=Math.floor(b[4]/10),hs=b[4]%10,h=b[3]/10;let pts=xy(b[6]);const ccw=area(pts)>0?pts:pts.slice().reverse();const r=hash(b[0]);
     let cx0=0,cy0=0;for(const p of ccw){cx0+=p[0]/ccw.length;cy0+=p[1]/ccw.length}const gi0=Math.round((cx0-g.x)/g.s),gj0=Math.round((cy0-g.y)/g.s),lu=gj0>=0&&gj0<=g.ny&&gi0>=0&&gi0<=g.nx?g.c[gj0][gi0]:'.',ind=ty===3||ty===9&&lu==='i'&&hs!==1&&hs!==2;
     let col,roof;if(evid){col=C.gF;roof=C.gE}else if(ill){col=tn(ty===1||ty===4?APAL[r%4]:ty===0||ty===8?PAL[r%5]:ty===2?[.84,.82,.76]:ind?IPAL[r%6]:GPAL[r%5]);roof=tn(ty===0||ty===8?RPW[(r>>>4)%14]:ind?IRF[(r>>>8)%5]:[[.47,.47,.46],[.51,.5,.48],[.43,.44,.44]][(r>>>8)%3]);if(b[7]>=0)col=tn(rgbi(b[7]));if(b[8]>=0)roof=tn(rgbi(b[8]))}else{col=hs?C.lvl:C.est;roof=hs?col:C.roof}
     let base=Infinity;for(const p of ccw)base=Math.min(base,hX(p[0],p[1]));base-=.4;
