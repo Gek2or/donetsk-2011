@@ -2126,6 +2126,7 @@ footer{border-top:0}
 .svx-load small{max-width:34ch;color:#b9b1a3;font-size:12.5px;line-height:1.45}
 .svx-load i{font-style:normal;justify-self:center;border:1px solid #f08a4b;color:#f08a4b;padding:8px 14px;font:600 13px var(--f-body)}
 .svx-load:hover i,.svx-load:focus-visible i{background:#f08a4b;color:#14110d}
+@media (max-width:520px){.svx-load{padding:34px 12px 12px;gap:8px}.svx-load small{display:none}.svx-load b{font-size:15px}}
 .svx-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 18px;padding:14px 4px 0}
 .svx-meta b{font-size:18px}
 .svx-meta p{grid-column:1/-1;margin:0;color:var(--ink-2);font-size:15px;line-height:1.55}
