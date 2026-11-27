@@ -1144,30 +1144,6 @@ function buildX(){const X=XD;if(!X)return;XS=false;
             let s=.4;for(let k=0;s<L-.6&&k<9;k++){const hh=hash(id+'w'+k),w=.4+(hh%50)/100,ht=.35+((hh>>>6)%45)/100,t=(hh>>>12)&1?.3:-.3;if((hh>>>14)%4===0){s+=w*.6;continue}
               const q0=s/L,q1=Math.min(1,(s+w)/L),zt=q=>za+(zb-za)*q+R-.12*Math.sin(q*Math.PI)-.02,P=(q,z)=>W(ax+(bx_-ax)*q-sy*t,ay+(by_-ay)*q+sx*t,z);
               two(P(q0,zt(q0)),P(q1,zt(q1)),P(q1,zt(q1)-ht),P(q0,zt(q0)-ht),LAU[(hh>>>16)%LAU.length]);s+=w+.12}}}}}
-    /* v7.44 living city, courtyards of the flats (typical, class E, positions illustrative): benches by the entrances, a bin pad,
-       a sandpit with a mushroom roof, a swing frame, a carpet-beating rack and washing poles; each only where the ground is clear */
-    {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
-        quad(P(s1,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s1,t0,z1),c,0);quad(P(s0,t1,z0),P(s0,t0,z0),P(s0,t0,z1),P(s0,t1,z1),cs,0);quad(P(s0,t0,z0),P(s1,t0,z0),P(s1,t0,z1),P(s0,t0,z1),cs,0);quad(P(s1,t1,z0),P(s0,t1,z0),P(s0,t1,z1),P(s1,t1,z1),c,0);quad(P(s0,t0,z1),P(s1,t0,z1),P(s1,t1,z1),P(s0,t1,z1),ct,0)};
-      const WOOD=[[.5,.36,.22],[.36,.5,.34],[.3,.42,.58]].map(tn),MET=tn([.34,.35,.37]),BIN=[[.22,.45,.3],[.4,.42,.45],[.2,.34,.55]].map(tn),SAND=tn([.74,.66,.46]),RED=tn([.72,.28,.22]),YEL=tn([.82,.68,.24]),RUST=tn([.45,.3,.22]);
-      const YC=new Set(),yk=(x,y)=>Math.floor(x/4)+','+Math.floor(y/4),yn=(x,y)=>{const i=Math.floor(x/4),j=Math.floor(y/4);for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++)if(YC.has((i+a)+','+(j+c)))return true;return false};
-      const ok=(x,y,m)=>xclr(x,y,m)&&!yn(x,y);
-      const bench=(x,y,ux,uy,c)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-.8,.8,-.2,.2,.38,.45,c);bx3(x,y,ux,uy,z,-.8,.8,-.24,-.18,.45,.85,c);for(const s0 of [-.65,.55])bx3(x,y,ux,uy,z,s0,s0+.1,-.2,.2,0,.38,MET)};
-      const bins=(x,y,ux,uy,h)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-1.5,1.5,-.9,-.84,0,1.2,RUST);bx3(x,y,ux,uy,z,-1.5,-1.44,-.9,.9,0,1.2,RUST);bx3(x,y,ux,uy,z,1.44,1.5,-.9,.9,0,1.2,RUST);
-        for(let k=0;k<3;k++)bx3(x,y,ux,uy,z,-1.2+k*.85,-.5+k*.85,-.35,.35,0,.95+((h>>>k)%2)*.1,BIN[(h>>>(k*2))%BIN.length])};
-      const sandpit=(x,y,ux,uy)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-1.4,1.4,-1.4,-1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.4,1.4,1.3,1.4,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.4,-1.3,-1.3,1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,1.3,1.4,-1.3,1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.3,1.3,-1.3,1.3,0,.12,SAND);
-        bx3(x,y,ux,uy,z,-.05,.05,-.05,.05,0,1.5,YEL);bx3(x,y,ux,uy,z,-.7,.7,-.7,.7,1.5,1.6,RED)};
-      const swing=(x,y,ux,uy,c)=>{const z=gz(x,y);for(const t of [-1.2,1.2]){bx3(x,y,ux,uy,z,-.5,-.4,t-.05,t+.05,0,2.2,MET);bx3(x,y,ux,uy,z,.4,.5,t-.05,t+.05,0,2.2,MET)}bx3(x,y,ux,uy,z,-.5,.5,-1.25,1.25,2.2,2.3,MET);
-        for(const t of [-.5,.5]){bx3(x,y,ux,uy,z,-.01,.01,t-.2,t-.19,.5,2.2,MET);bx3(x,y,ux,uy,z,-.01,.01,t+.19,t+.2,.5,2.2,MET);bx3(x,y,ux,uy,z,-.12,.12,t-.2,t+.2,.45,.5,c)}};
-      const rack=(x,y,ux,uy)=>{const z=gz(x,y);for(const t of [-1.4,1.4])bx3(x,y,ux,uy,z,-.06,.06,t-.06,t+.06,0,2.3,MET);bx3(x,y,ux,uy,z,-.04,.04,-1.45,1.45,2.2,2.3,MET)};
-      const poles=(x,y,ux,uy)=>{const z=gz(x,y);for(const t of [-2,2])bx3(x,y,ux,uy,z,-.06,.06,t-.06,t+.06,0,2.2,RUST);for(const s0 of [-.4,0,.4])bx3(x,y,ux,uy,z,s0-.01,s0+.01,-2,2,2.15,2.17,tn([.8,.8,.78]))};
-      for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const ns=Math.max(1,Math.round(L/42)),sl=L/ns;for(let sg=0;sg<ns;sg++){const c0=-L/2+(sg+.5)*sl,h=hash('y'+id+Math.round(mx)+Math.round(my)+':'+sg),px=(e,d)=>[mx+ux*(c0+e)+nx*d,my+uy*(c0+e)+ny*d];
-        /* benches by two entrances (a bench pair is the commonest picture of a Soviet courtyard) */
-        for(const k of [-1,1]){if((h>>>(k+3))%10<3)continue;const e=k*sl*.22+((h>>>5)%30)/10-1.5,[x,y]=px(e,3.4);if(ok(x,y,1.2)){YC.add(yk(x,y));bench(x,y,ux,uy,WOOD[(h>>>(8+k))%WOOD.length])}}
-        /* a bin pad at the end of the wall, long side to the wall */
-        if((h>>>11)%100<55){let x=0,y=0,f=0;for(const d of [6.5,5,8.5,10.5]){[x,y]=px(sl*.38,d);if(ok(x,y,2)){f=1;break}}if(f){YC.add(yk(x,y));bins(x,y,ux,uy,h)}}
-        /* playground: sandpit and a swing frame further out */
-        if((h>>>14)%100<45){let x=0,y=0,d0=0;for(const d of [11,14,18,22,27]){[x,y]=px(-sl*.15,d+(h>>>17)%30/10);if(ok(x,y,2.4)){d0=d+(h>>>17)%30/10;break}}if(d0){YC.add(yk(x,y));sandpit(x,y,ux,uy);const [x2,y2]=px(-sl*.15+5.5,d0+.5);if(ok(x2,y2,2.6)){YC.add(yk(x2,y2));swing(x2,y2,ux,uy,WOOD[(h>>>20)%WOOD.length])}}}
-        if((h>>>22)%100<30){let x=0,y=0,f=0;for(const d of [15,19,23,28]){[x,y]=px(sl*.12,d+(h>>>24)%30/10);if(ok(x,y,2.2)){f=1;break}}if(f){YC.add(yk(x,y));(h>>>27)%2?rack(x,y,ux,uy):poles(x,y,ux,uy)}}}}}
     /* v7.39 more detail, private sector of the live sectors (typical, class E): a street fence with a double gate and a wicket in
        front of every house, side fences back along the plot, a concrete path and porch step to the door side, vegetable beds behind */
     {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
@@ -1319,7 +1295,7 @@ function hXB(x,y,hx,hy){for(const b of XBR){if(x<b.bb[0]||x>b.bb[2]||y<b.bb[1]||
       const u=((x-p[0])*dx+(y-p[1])*dy)/(l*l);if(u<-.02||u>1.02)continue;if(Math.abs((x-p[0])*dy-(y-p[1])*dx)/l>b.hw+3.6)continue;const t=Math.max(0,Math.min(1,u));return Math.max(hR(x,y),b.Z[i-1]+(b.Z[i]-b.Z[i-1])*t)}}
   return hR(x,y)}
 /* v7.36 living city, sector by sector (grid A1-D3 of the reference map, see the sector plan). LIVE lists the sectors done so far */
-const LIVE=new Set(["A1", "B1", "C1", "D1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
+const LIVE=new Set(["A1", "B1", "C1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
 function secAt(x,y){let c=-1,r=-1;for(let i=0;i<4;i++)if(x>=SXS[i]&&x<SXS[i+1])c=i;for(let i=0;i<3;i++)if(y<=SYS[i]&&y>SYS[i+1])r=i;return c<0||r<0?'':'ABCD'[c]+(r+1)}
 const liveAt=(x,y)=>LIVE.has(secAt(x,y));
 function gridZ(x,y){if(!XGV||!XD)return hX(x,y);const g=XD.g,[t0,t1,t2,t3]=D.tb;if(x>t0&&x<t2&&y>t1&&y<t3)return hX(x,y);const fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,i=Math.max(0,Math.min(g.nx-1,Math.floor(fx))),j=Math.max(0,Math.min(g.ny-1,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j)),gv=XGV;const a=gv[j][i][0][1],b=gv[j][i+1][0][1],c=gv[j+1][i+1][0][1],d=gv[j+1][i][0][1];return u>=v?a+(b-a)*u+(c-b)*v:a+(c-d)*u+(d-a)*v}
