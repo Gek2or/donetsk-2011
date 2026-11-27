@@ -72,6 +72,8 @@ fi:{code:'Sekvensseri',h:'Sävellä Donetskin 2010 melodia',
  note:'Pohjat eivät ole vuoden 2010 kappaleita vaan yksinkertaisia rytmejä ja kulkuja tyylilajien hengessä; oikeiden laulujen melodioita ei toisteta. Kaikki ääni syntyy selaimessa lennossa, ilman äänitteitä tai sampleja. Itse pelin musiikki kirjoitetaan käsin, ja se tulee yllä olevaan äänipäiväkirjaan.'}
 };
 const T=()=>TX[L()];
+const PHT={"ru": {"mode": {"phone": "Телефон", "grid": "Сетка шагов"}, "title": "Композитор", "aria": "Телефон с композитором мелодий", "tracks": ["Ударные", "Бас", "Аккорды", "Акценты"], "trs": ["Удр", "Бас", "Акк", "Акц"], "groups": ["Вступление", "Куплет", "Припев", "Брейк"], "play": "Играть", "stop": "Стоп", "more": "Ещё", "sel": "Выбрать", "back": "Назад", "ins": "Вставить", "edit": "Изменить", "m_ins": "Вставить блок", "m_copy": "Копировать", "m_paste": "Вставить", "m_del": "Удалить блок", "m_tempo": "Темп", "m_vol": "Громкость", "m_spk": "Звук: динамик телефона", "m_hp": "Звук: наушники", "m_demo": "Демо-мелодия", "m_clear": "Очистить всё", "m_share": "Поделиться ссылкой", "m_grp": "Выбор группы", "empty": "пусто", "bar": "Такт", "bpm": "уд/мин", "copied": "Блок скопирован", "nothing": "Буфер пуст", "pasted": "Блок вставлен", "deleted": "Блок удалён", "cleared": "Мелодия очищена", "demo": "Демо загружено", "confirm": "Очистить всю мелодию?", "yes": "Да", "no": "Нет", "linkOk": "Ссылка скопирована: пришли её другу", "linkMan": "Скопируй ссылку вручную:", "fromLink": "Мелодия открыта из ссылки", "keys": {"1": "Вст", "2": "Куп", "3": "Прп", "4": "Брк", "5": "▶", "7": "−темп", "9": "+темп", "0": "Удал", "*": "Копир", "#": "Встав"}, "helpH": "Как пользоваться", "help": ["Джойстик или стрелки на клавиатуре двигают рамку по дорожкам и тактам.", "Центр джойстика (Enter) вставляет блок: сначала группа, потом сам блок. Пока листаешь список, блок играет.", "Левая софт-клавиша или пробел играют мелодию с текущего такта, правая открывает меню.", "Цифры: 1–4 сразу открывают вступление, куплет, припев и брейк; 0 удаляет блок; * копирует, # вставляет; 7 и 9 меняют темп.", "Блоки с одинаковым номером в басу, аккордах и акцентах звучат в одной гармонии."], "about": "Так были устроены композиторы мелодий на телефонах Sony Ericsson середины 2000-х: четыре дорожки (ударные, бас, аккорды и акценты) и готовые блоки по такту, разложенные на вступление, куплет, припев и брейк. Блоки и звуки здесь свои, а не из телефона: полифония собрана из FM-синтеза, как у мелодий тех лет, и по умолчанию звучит через «маленький динамик». Можно поставить до 32 тактов."}, "uk": {"mode": {"phone": "Телефон", "grid": "Сітка кроків"}, "title": "Композитор", "aria": "Телефон із композитором мелодій", "tracks": ["Ударні", "Бас", "Акорди", "Акценти"], "trs": ["Удр", "Бас", "Акр", "Акц"], "groups": ["Вступ", "Куплет", "Приспів", "Брейк"], "play": "Грати", "stop": "Стоп", "more": "Ще", "sel": "Вибрати", "back": "Назад", "ins": "Вставити", "edit": "Змінити", "m_ins": "Вставити блок", "m_copy": "Копіювати", "m_paste": "Вставити", "m_del": "Видалити блок", "m_tempo": "Темп", "m_vol": "Гучність", "m_spk": "Звук: динамік телефона", "m_hp": "Звук: навушники", "m_demo": "Демо-мелодія", "m_clear": "Очистити все", "m_share": "Поділитися посиланням", "m_grp": "Вибір групи", "empty": "порожньо", "bar": "Такт", "bpm": "уд/хв", "copied": "Блок скопійовано", "nothing": "Буфер порожній", "pasted": "Блок вставлено", "deleted": "Блок видалено", "cleared": "Мелодію очищено", "demo": "Демо завантажено", "confirm": "Очистити всю мелодію?", "yes": "Так", "no": "Ні", "linkOk": "Посилання скопійовано: надішли його другові", "linkMan": "Скопіюй посилання вручну:", "fromLink": "Мелодію відкрито з посилання", "keys": {"1": "Вст", "2": "Куп", "3": "Прс", "4": "Брк", "5": "▶", "7": "−темп", "9": "+темп", "0": "Вид", "*": "Коп", "#": "Встав"}, "helpH": "Як користуватися", "help": ["Джойстик або стрілки на клавіатурі рухають рамку доріжками й тактами.", "Центр джойстика (Enter) вставляє блок: спершу група, потім сам блок. Поки гортаєш список, блок грає.", "Ліва софт-клавіша або пробіл грають мелодію з поточного такту, права відкриває меню.", "Цифри: 1–4 одразу відкривають вступ, куплет, приспів і брейк; 0 видаляє блок; * копіює, # вставляє; 7 і 9 змінюють темп.", "Блоки з однаковим номером у басі, акордах і акцентах звучать в одній гармонії."], "about": "Так були влаштовані композитори мелодій на телефонах Sony Ericsson середини 2000-х: чотири доріжки (ударні, бас, акорди й акценти) і готові блоки по такту, розкладені на вступ, куплет, приспів і брейк. Блоки й звуки тут свої, а не з телефона: поліфонію зібрано з FM-синтезу, як у мелодій тих років, і за замовчуванням вона звучить через «маленький динамік». Можна поставити до 32 тактів."}, "en": {"mode": {"phone": "Phone", "grid": "Step grid"}, "title": "Composer", "aria": "Phone with a tune composer", "tracks": ["Drums", "Bass", "Chords", "Accents"], "trs": ["Drm", "Bas", "Chd", "Acc"], "groups": ["Intro", "Verse", "Chorus", "Break"], "play": "Play", "stop": "Stop", "more": "More", "sel": "Select", "back": "Back", "ins": "Insert", "edit": "Change", "m_ins": "Insert block", "m_copy": "Copy", "m_paste": "Paste", "m_del": "Delete block", "m_tempo": "Tempo", "m_vol": "Volume", "m_spk": "Sound: phone speaker", "m_hp": "Sound: headphones", "m_demo": "Demo tune", "m_clear": "Clear all", "m_share": "Share link", "m_grp": "Choose group", "empty": "empty", "bar": "Bar", "bpm": "bpm", "copied": "Block copied", "nothing": "Nothing to paste", "pasted": "Block pasted", "deleted": "Block deleted", "cleared": "Tune cleared", "demo": "Demo loaded", "confirm": "Clear the whole tune?", "yes": "Yes", "no": "No", "linkOk": "Link copied: send it to a friend", "linkMan": "Copy the link by hand:", "fromLink": "Tune opened from a link", "keys": {"1": "Intr", "2": "Vrs", "3": "Chor", "4": "Brk", "5": "▶", "7": "−bpm", "9": "+bpm", "0": "Del", "*": "Copy", "#": "Paste"}, "helpH": "How to use it", "help": ["The joystick or the arrow keys move the frame across tracks and bars.", "The joystick centre (Enter) inserts a block: first the group, then the block itself. The block plays while you scroll the list.", "The left soft key or Space plays the tune from the current bar; the right one opens the menu.", "Digits: 1–4 open intro, verse, chorus and break straight away; 0 deletes a block; * copies, # pastes; 7 and 9 change the tempo.", "Blocks with the same number in bass, chords and accents share one harmony."], "about": "This is how the tune composers on mid-2000s Sony Ericsson phones worked: four tracks (drums, bass, chords and accents) and ready-made one-bar blocks sorted into intro, verse, chorus and break. The blocks and sounds here are our own, not taken from a phone: the polyphony is built from FM synthesis, like ringtones of the time, and by default plays through a “small speaker”. A tune can be up to 32 bars."}, "fi": {"mode": {"phone": "Puhelin", "grid": "Askelruudukko"}, "title": "Säveltäjä", "aria": "Puhelin, jossa on melodiasäveltäjä", "tracks": ["Rummut", "Basso", "Soinnut", "Aksentit"], "trs": ["Rum", "Bas", "Soi", "Aks"], "groups": ["Intro", "Säkeistö", "Kertosäe", "Break"], "play": "Soita", "stop": "Seis", "more": "Lisää", "sel": "Valitse", "back": "Takaisin", "ins": "Lisää", "edit": "Vaihda", "m_ins": "Lisää lohko", "m_copy": "Kopioi", "m_paste": "Liitä", "m_del": "Poista lohko", "m_tempo": "Tempo", "m_vol": "Äänenvoimakkuus", "m_spk": "Ääni: puhelimen kaiutin", "m_hp": "Ääni: kuulokkeet", "m_demo": "Esimerkkimelodia", "m_clear": "Tyhjennä kaikki", "m_share": "Jaa linkki", "m_grp": "Valitse ryhmä", "empty": "tyhjä", "bar": "Tahti", "bpm": "bpm", "copied": "Lohko kopioitu", "nothing": "Ei liitettävää", "pasted": "Lohko liitetty", "deleted": "Lohko poistettu", "cleared": "Melodia tyhjennetty", "demo": "Esimerkki ladattu", "confirm": "Tyhjennetäänkö koko melodia?", "yes": "Kyllä", "no": "Ei", "linkOk": "Linkki kopioitu: lähetä se ystävälle", "linkMan": "Kopioi linkki käsin:", "fromLink": "Melodia avattiin linkistä", "keys": {"1": "Intr", "2": "Säk", "3": "Kert", "4": "Brk", "5": "▶", "7": "−bpm", "9": "+bpm", "0": "Pois", "*": "Kop", "#": "Liitä"}, "helpH": "Näin se toimii", "help": ["Ohjain tai nuolinäppäimet siirtävät kehystä raidoilla ja tahdeissa.", "Ohjaimen keskikohta (Enter) lisää lohkon: ensin ryhmä, sitten itse lohko. Lohko soi, kun selaat listaa.", "Vasen valintanäppäin tai välilyönti soittaa melodian nykyisestä tahdista, oikea avaa valikon.", "Numerot: 1–4 avaavat suoraan intron, säkeistön, kertosäkeen ja breakin; 0 poistaa lohkon; * kopioi, # liittää; 7 ja 9 muuttavat tempoa.", "Saman numeron lohkot basossa, soinnuissa ja aksenteissa soivat samassa harmoniassa."], "about": "Näin toimivat 2000-luvun puolivälin Sony Ericsson -puhelinten melodiasäveltäjät: neljä raitaa (rummut, basso, soinnut ja aksentit) ja valmiita yhden tahdin lohkoja, jotka on jaettu introon, säkeistöön, kertosäkeeseen ja breakiin. Lohkot ja äänet ovat tässä omia, eivät puhelimesta: polyfonia on rakennettu FM-synteesillä kuten sen ajan soittoäänet, ja oletuksena se soi ”pienen kaiuttimen” kautta. Melodia voi olla enintään 32 tahtia."}};
+
 
 /* ---------- model ---------- */
 const NR=7, ROWS=['kick','snare','clap','hat','oh','tram','pip'], MAXS=32;
@@ -133,6 +135,62 @@ let msg='';
 })();
 let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('d11-seq',JSON.stringify({s:enc(),pr:S.pr,vol:S.vol}))}catch(e){}},300)};
 
+/* ---------- v7.37: phone composer, block-based like the tune composers on mid-2000s Sony Ericsson phones ----------
+   Four tracks (drums, bass, chords, accents); each cell holds a one-bar block from one of four groups (intro, verse, chorus,
+   break), eight blocks per group. All blocks are our own patterns; same-numbered blocks share a chord root (natural minor on A). */
+let MODE='phone';try{const m=localStorage.getItem('d11-seq-mode');if(m==='grid')MODE='grid'}catch(e){}
+const PH=()=>PHT[L()];
+const PNC=32,PROOT=[0,5,3,6,0,4,5,6],AM=[0,2,3,5,7,8,10];
+const pdeg=(d,o)=>{const k=((d%7)+7)%7;return 57+AM[k]+12*Math.floor(d/7)+12*o};
+const DRB=[
+ [{hat:'x.x.x.x.x.x.x.x.'},{kick:'x.......x.......',hat:'..x...x...x...x.'},{hat:'xxxxxxxxxxxxxxxx'},{kick:'x...............',crash:'x...............'},
+  {kick:'x.......x.......',hat:'x.x.x.x.x.x.x.x.'},{snare:'....x.......x...',hat:'x...x...x...x...'},{kick:'x..x..x.........',hat:'..x...x...x...x.'},{kick:'x...............',hat:'x.x.x.x.x.x.xxxx'}],
+ [{kick:'x...x...x...x...',snare:'....x.......x...',hat:'x.x.x.x.x.x.x.x.'},{kick:'x.....x...x.....',snare:'....x.......x...',hat:'xxxxxxxxxxxxxxxx'},
+  {kick:'x...x...x...x...',clap:'....x.......x...',oh:'..x...x...x...x.'},{kick:'x..x....x.x.....',snare:'....x.......x...',hat:'x.x.x.x.x.x.x.x.'},
+  {kick:'x.......x.......',snare:'....x.......x..x',hat:'x.xxx.xxx.xxx.xx'},{kick:'x...x...x...x...',snare:'....x.......x...',hat:'.x.x.x.x.x.x.x.x'},
+  {kick:'x......x..x.....',snare:'....x.......x...',hat:'x.x.x.x.x.x.x...',oh:'..............x.'},{kick:'x...x...x...x...',snare:'....x..x....x...',hat:'x.x.x.x.x.x.x.x.'}],
+ [{kick:'x...x...x...x...',clap:'....x.......x...',hat:'xx.xxx.xxx.xxx.x',oh:'..x...x...x...x.',crash:'x...............'},{kick:'x...x...x...x...',snare:'....x.......x...',clap:'....x.......x...',oh:'..x...x...x...x.'},
+  {kick:'x...x...x...x...',snare:'....x.......x...',hat:'xxxxxxxxxxxxxxxx'},{kick:'x.x.x...x.x.x...',snare:'....x.......x...',oh:'..x...x...x...x.'},
+  {kick:'x...x...x...x...',clap:'..x...x...x...x.',hat:'x.x.x.x.x.x.x.x.'},{kick:'x...x...x..xx...',snare:'....x.......x...',hat:'x.xxx.xxx.xxx.xx',crash:'x...............'},
+  {kick:'x...x...x...x...',snare:'....x...x...x.x.',hat:'xxxxxxxxxxxxxxxx'},{kick:'x...x...x...x...',clap:'....x.......x...',hat:'.x.x.x.x.x.x.x.x',oh:'..x...x...x...x.'}],
+ [{snare:'x.x.x.x.xxxxxxxx'},{tom:'x...x...x.x.x.x.'},{kick:'x...............',crash:'x...............'},{kick:'x.......x.......',snare:'....x.......xxxx'},
+  {hat:'xxxxxxxxxxxxxxxx',snare:'............xxxx'},{kick:'x..x..x..x..x.x.',snare:'............x.x.'},{clap:'x.x.x.x.x.x.x.x.'},{kick:'x.......',tom:'........x.x.xxxx'}]];
+const BSR=[['r---------------','r-------r-------','r.......5.......','r---....r---....'],['r.r.r.r.r.r.r.r.','..r...r...r...r.','r..r..r.r..r..r.','r.ro.r.5r.ro.r.5'],
+ ['rorororororororo','r.r.o.r.r.r.o.5.','.r.r.r.r.r.r.r.r','r-r-o-r-5-r-o-3-'],['r...............','r.r.r.r.rrrrrrrr','r..5..o..5..r...','o.5.3.r.........']];
+const CHR=[['c---------------','c-------c-------','a.a.a.a.a.a.a.a.','c---c---c---c---'],['..c...c...c...c.','c..c..c.c..c..c.','aaaaaaaaaaaaaaaa','c-..c-..c-..c-..'],
+ ['c.c.c.c.c.c.c.c.','.c.c.c.c.c.c.c.c','c--c--c-c--c--c-','aaaaaaaaaaaaaaaa'],['c...............','c.c.c.c.........','a.a.a.a.aaaaaaaa','c-------........']];
+const ACR=[['0...2...4...7...','7-6-4-2-0-------','0.4.7.4.0.4.7.4.','....4-----2-----'],['0.0.2.0.4...2...','4..2..0.....2-4-','0-2-4-2-0-......','..4.4.5.4...2...'],
+ ['7.7.6.4.4-2-4---','4.4.4.2.4.5.4-2-','0.2.4.7.9.7.4.2.','7---6---4---2---']];
+const ACBR=['Z...............','R...R...........','Z.Z.Z.Z.........','B...............','W...............','0.Z.4.Z.7.Z.....','B.......B.......','R.R.R.R.........'];
+const pcode=(g,n)=>1+g*8+n, pg=cd=>Math.floor((cd-1)/8), pn=cd=>(cd-1)%8;
+const PDEMO=[[[0,0],[0,1],[1,0],[1,0],[1,0],[1,6],[2,0],[2,0],[2,0],[2,2],[3,0],[2,0]],
+ [[0,0],[0,1],[1,0],[1,1],[1,2],[1,3],[2,0],[2,1],[2,2],[2,3],[3,1],[2,0]],
+ [[0,0],[0,1],[1,0],[1,1],[1,2],[1,3],[2,0],[2,1],[2,2],[2,3],[3,0],[2,0]],
+ [null,[0,0],null,[1,1],null,[1,3],[2,0],[2,1],[2,2],[2,3],[3,3],[2,0]]];
+const pblank=()=>[0,1,2,3].map(()=>Array(PNC).fill(0));
+let P={bpm:118,spk:1,tr:pblank()};
+function pDemo(){P.tr=pblank();PDEMO.forEach((row,r)=>row.forEach((v,c)=>{P.tr[r][c]=v?pcode(v[0],v[1]):0}));P.bpm=118}
+pDemo();
+function songLen(){let n=0;for(let r=0;r<4;r++)for(let c=0;c<PNC;c++)if(P.tr[r][c])n=Math.max(n,c+1);return Math.max(1,n)}
+const BC={};
+function blk(r,cd){const k=r+'_'+cd;if(BC[k])return BC[k];const g=pg(cd),n=pn(cd),E=Array.from({length:16},()=>[]);
+  if(r===0){const o=DRB[g][n];for(const row in o)for(let s=0;s<16;s++)if(o[row][s]==='x')E[s].push({d:row,v:row==='hat'||row==='oh'?(s%4===0?1:.75):1,s})}
+  else{const root=PROOT[n],str=r===1?BSR[g][n%4]:r===2?CHR[g][n%4]:(g===3?ACBR[n]:ACR[g][n%4]);
+    const ins=r===1?['sub','fmb','fmb2','fmb'][g]:r===2?['pad','ep','brass','ep'][g]:['bell','sql','fml','fml'][g];let ai=0;
+    for(let s=0;s<16;s++){const c=str[s];if(c==='.'||c==='-')continue;let len=1;while(s+len<16&&str[s+len]==='-')len++;
+      if(r===1){const d={r:0,o:7,5:4,3:2}[c]||0;E[s].push({m:pdeg(root+d,-1),L:len,i:ins})}
+      else if(r===2){if(c==='c')[0,2,4].forEach(d=>E[s].push({m:pdeg(root+d,0),L:len,i:ins,v:.55}));else{const d=[0,2,4,7][ai++%4];E[s].push({m:pdeg(root+d,g===2?1:0),L:len,i:ins,v:.6})}}
+      else{if(/[0-9]/.test(c))E[s].push({m:pdeg(root+(+c),1),L:len,i:ins,v:.8});else E[s].push({fx:c,L:len})}}}
+  return BC[k]=E}
+function phEnc(){return ['1',P.bpm,P.spk,P.tr.map(r=>r.map(v=>v.toString(36)).join('')).join('')].join('_')}
+function phDec(s){try{const a=String(s).split('_');if(a.length!==4||a[0]!=='1'||!/^[0-9a-w]{128}$/.test(a[3]))return null;
+  const n={bpm:Math.min(200,Math.max(60,parseInt(a[1],10)||118)),spk:a[2]==='0'?0:1,tr:pblank()};
+  for(let r=0;r<4;r++)for(let c=0;c<PNC;c++){const v=parseInt(a[3][r*PNC+c],36);n.tr[r][c]=v>=0&&v<=32?v:0}return n}catch(e){return null}}
+let phMsg='';
+(function(){const h=location.hash.match(/^#dj=([0-9a-z_]+)$/);if(h){const n=phDec(h[1]);if(n){P=n;MODE='phone';phMsg='fromLink';return}}
+  try{const v=localStorage.getItem('d11-dj');if(v){const n=phDec(v);if(n)P=n}}catch(e){}})();
+let phSaveT=0;const phSave=()=>{clearTimeout(phSaveT);phSaveT=setTimeout(()=>{try{localStorage.setItem('d11-dj',phEnc())}catch(e){}},300)};
+
 /* ---------- audio ---------- */
 let ac=null,master,outG,comp,nbuf,FX={},hissG;
 const mtof=m=>440*Math.pow(2,(m-69)/12);
@@ -158,10 +216,11 @@ function initAudio(){
     const f=ac.createOscillator(),fg=ac.createGain();f.frequency.value=6.3;fg.gain.value=.00018;f.connect(fg).connect(dl.delayTime);f.start();
     const h=ac.createBufferSource();h.buffer=nbuf;h.loop=true;hissG=ac.createGain();hissG.gain.value=0;chain(h,filt('highpass',3200,.5),hissG,outG);h.start();
     FX.tape={i:a,o:g} }
+  { const a=filt('highpass',430,.7),b=filt('peaking',2600,1,4),c=filt('lowpass',6800,.7),s=ac.createWaveShaper(),g=ac.createGain();s.curve=soft(2.2);g.gain.value=.75;chain(a,b,c,s,g);FX.spk={i:a,o:g} }
   for(const k in FX)FX[k].o.connect(outG);
   setFx();return ac;
 }
-function setFx(){if(!ac)return;try{comp.disconnect()}catch(e){}comp.connect((FX[S.fx]||FX.clean).i);hissG.gain.value=S.fx==='tape'?.011:0}
+function setFx(){if(!ac)return;const k=MODE==='phone'?(P.spk?'spk':'clean'):S.fx;try{comp.disconnect()}catch(e){}comp.connect((FX[k]||FX.clean).i);hissG.gain.value=k==='tape'?.011:0}
 function env(g,t,a,pk,hold,rel){const p=g.gain;p.setValueAtTime(.0001,t);p.linearRampToValueAtTime(pk,t+a);if(hold>0)p.setValueAtTime(pk,t+a+hold);p.setTargetAtTime(.0001,t+a+Math.max(0,hold),rel/4)}
 function perc(g,t,pk,dec){const p=g.gain;p.setValueAtTime(.0001,t);p.linearRampToValueAtTime(pk,t+.002);p.exponentialRampToValueAtTime(.0001,t+.002+dec)}
 function noise(t,dur,...nodes){const s=ac.createBufferSource();s.buffer=nbuf;chain(s,...nodes,master);s.start(t,Math.random()*1.5);s.stop(t+dur+.05)}
@@ -198,7 +257,7 @@ function bass(kind,m,t,dur,v){
   else if(kind==='pluck'){const lp=filt('lowpass',2200,2);lp.frequency.setValueAtTime(2200,t);lp.frequency.exponentialRampToValueAtTime(180,t+.25);osc('sawtooth',f,t,.8,lp,g);perc(g,t,.3*v,.55)}
   else {osc('square',f,t,dur+.15,filt('lowpass',1300,1),g);env(g,t,.002,.15*v,dur*.7,.04)}
 }
-const sd=()=>60/S.bpm/4;
+const sd=()=>60/(MODE==='phone'?P.bpm:S.bpm)/4;
 function trig(s,t){
   const acc=s%4===0?1:.82;
   ROWS.forEach((r,i)=>{if(S.d[i][s])DR[r](t,r==='hat'||r==='oh'?acc:1)});
@@ -208,20 +267,62 @@ function trig(s,t){
 function audition(tab,r){if(!initAudio())return;if(ac.state!=='running')ac.resume();const t=ac.currentTime+.02;
   if(tab==='d')DR[ROWS[r]](t,1);else if(tab==='m')lead(S.ld,midiOf(r,0),t,sd()*1.5,1);else bass(S.bs,midiOf(r,1),t,sd()*1.5,1)}
 
+/* v7.37: FM voices of a mid-2000s polyphonic ringtone chip, extra drums and phone effects */
+DR.tom=function(t,v,s){const g=ac.createGain(),f=210-(s||0)*7,o=osc('sine',f,t,.35,g);o.frequency.exponentialRampToValueAtTime(f*.55,t+.2);perc(g,t,.5*v,.3)};
+DR.crash=function(t,v){const g=ac.createGain();noise(t,1.4,filt('highpass',4200),filt('peaking',7000,1,5),g);perc(g,t,.13*v,1.25)};
+const FMP={
+ fmb:{mr:1,i0:2.2,i1:.6,tau:.08,a:.003,pk:.3,h:.8,r:.05},
+ fmb2:{mr:1,i0:3.4,i1:1.2,tau:.1,a:.003,pk:.28,h:.8,r:.05},
+ pad:{mr:2,i0:.8,i1:.8,a:.16,pk:.06,h:1,r:.28,vib:6,dt2:7},
+ ep:{mr:1,i0:1.8,i1:.15,tau:.22,perc:1},
+ brass:{mr:1,i0:.3,i1:2.4,rise:.07,a:.035,pk:.085,h:.85,r:.07},
+ bell:{mr:3.5,i0:4,i1:.4,tau:.35,perc:1.4,pk:.12},
+ fml:{mr:1,i0:2.4,i1:1.5,tau:.1,a:.005,pk:.085,h:.85,r:.05,vib:9}
+};
+function fm(kind,m,t,dur,v){
+  if(kind==='sub'){bass('sub',m,t,dur,v);return}
+  if(kind==='sql'){const f=mtof(m),g=ac.createGain(),o=osc('square',f,t,dur+.1,filt('lowpass',6000,.5),g);
+    const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=5.6;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(10,t+.3);l.connect(lg).connect(o.detune);l.start(t);l.stop(t+dur+.2);
+    env(g,t,.003,.06*v,dur*.85,.03);return}
+  const o=FMP[kind],f=mtof(m),g=ac.createGain();g.connect(master);
+  const perc1=kind==='ep'?Math.max(.6,dur*1.3):o.perc,end=t+(perc1?perc1+.08:dur+o.r+.12);
+  const voice=dt=>{const c=ac.createOscillator(),md=ac.createOscillator(),mg=ac.createGain();c.frequency.value=f;c.detune.value=dt;md.frequency.value=f*o.mr;
+    const I0=f*o.mr*o.i0,I1=f*o.mr*o.i1;mg.gain.setValueAtTime(I0,t);if(o.rise)mg.gain.linearRampToValueAtTime(I1,t+o.rise);else mg.gain.setTargetAtTime(I1,t+.001,o.tau||.1);
+    md.connect(mg);mg.connect(c.frequency);c.connect(g);
+    if(o.vib){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=5.4;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(o.vib,t+.3);l.connect(lg);lg.connect(c.detune);l.start(t);l.stop(end)}
+    c.start(t);md.start(t);c.stop(end);md.stop(end)};
+  voice(0);if(o.dt2)voice(o.dt2);
+  if(perc1)perc(g,t,(o.pk||.15)*v,perc1);else env(g,t,o.a,o.pk*v,dur*o.h,o.r)}
+function pfx(c,t,dur){
+  if(c==='B'){DR.tram(t,.9);return}
+  const g=ac.createGain();
+  if(c==='Z'){const o=osc('square',2400,t,.3,filt('lowpass',5000,.7),g);o.frequency.exponentialRampToValueAtTime(170,t+.24);perc(g,t,.07,.24)}
+  else if(c==='R'){const o=osc('square',1320,t,.5,filt('lowpass',6000,.5),g);for(let k=0;k<22;k++)o.frequency.setValueAtTime(k%2?1660:1320,t+k*.02);env(g,t,.003,.05,.42,.03)}
+  else if(c==='W'){const d=Math.max(.5,dur||sd()*16),b=filt('bandpass',300,3);b.frequency.setValueAtTime(300,t);b.frequency.exponentialRampToValueAtTime(6000,t+d);noise(t,d,b,g);
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.3,t+d*.95);g.gain.linearRampToValueAtTime(.0001,t+d)}
+}
+function pev(e,t){if(e.d){DR[e.d](t,e.v,e.s);return}if(e.fx){pfx(e.fx,t,e.L*sd());return}fm(e.i,e.m,t,e.L*sd()*.95,e.v||1)}
+let PV=null; // block preview while browsing the list: {r,cd}
+function phTrig(s,t){
+  if(PV){blk(PV.r,PV.cd)[s%16].forEach(e=>pev(e,t));return}
+  const b=Math.floor(s/16),st=s%16;for(let r=0;r<4;r++){const cd=P.tr[r][b];if(cd)blk(r,cd)[st].forEach(e=>pev(e,t))}}
+
 /* ---------- transport ---------- */
 let playing=false,step=0,nextT=0,timer=0,vq=[],raf=0,ph=-1;
-function sched(){const len=16*S.bars;while(nextT<ac.currentTime+.12){if(step>=len)step=0;const t=nextT+(step%2?S.sw/100*sd()*.66:0);trig(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
+const curLen=()=>MODE==='grid'?16*S.bars:(PV?16:16*songLen());
+function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:0,t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
 function vis(){raf=requestAnimationFrame(vis);if(!ac)return;let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
-function mark(){box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+let lastB=-9;
+function mark(){if(MODE==='phone'){const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
   const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
   if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
-function start(){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();playing=true;step=0;vq=[];nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
+function start(from){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();setFx();playing=true;step=from||0;vq=[];lastB=-9;nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
 function stop(){playing=false;clearInterval(timer);cancelAnimationFrame(raf);vq=[];ph=-1;mark();box.querySelectorAll('.sq-bar button.pl').forEach(b=>b.classList.remove('pl'));btn()}
-function btn(){const b=box.querySelector('.sq-play');if(b){b.textContent=(playing?'■ ':'▶ ')+(playing?T().stop:T().play);b.setAttribute('aria-pressed',playing)}}
+function btn(){if(MODE==='phone'){phR();return}const b=box.querySelector('.sq-play');if(b){b.textContent=(playing?'■ ':'▶ ')+(playing?T().stop:T().play);b.setAttribute('aria-pressed',playing)}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)stop()});
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target;
   if(tg&&tg.closest&&tg.closest('input,select,textarea,button,a,iframe,[contenteditable],dialog'))return;
-  const r=box.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;e.preventDefault();playing?stop():start()});
+  const r=box.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;e.preventDefault();if(MODE==='phone')phPlay();else playing?stop():start()});
 
 /* ---------- UI ---------- */
 let tab='m',page=0;
@@ -237,8 +338,10 @@ function grid(){
 function opts(list,cur,lab){return list.map(k=>`<option value="${k}"${k===cur?' selected':''}>${esc(lab[k]||k)}</option>`).join('')}
 function draw(){
   const t=T();
-  box.innerHTML=`<div class="head"><div><div class="code"><b>03</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>
-<div class="sq">
+  const pt=PH(),mt=`<div class="sq-mode" role="tablist">${['phone','grid'].map(k=>`<button type="button" role="tab" data-mode="${k}" aria-selected="${MODE===k}">${esc(pt.mode[k])}</button>`).join('')}</div>`;
+  const hd=`<div class="head"><div><div class="code"><b>03</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
+  if(MODE==='phone'){box.innerHTML=hd+phHTML();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
+  box.innerHTML=hd+`<div class="sq">
 <div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
 <div class="sq-top">
 <button type="button" class="btn primary sq-play" aria-pressed="${playing}"></button>
@@ -282,6 +385,10 @@ box.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elemen
   if(!c||c===paint.last||!box.contains(c))return;paint.last=c;const r=+c.dataset.r,s=+c.dataset.s;if(on(r,page*16+s)!==paint.v)setCell(r,s,paint.v)});
 addEventListener('pointerup',()=>{paint=null});
 box.addEventListener('click',e=>{
+  const md=e.target.closest('.sq-mode [data-mode]');if(md){const m=md.dataset.mode;if(m!==MODE){if(playing)stop();PV=null;menu=null;MODE=m;try{localStorage.setItem('d11-seq-mode',m)}catch(x){}draw();setFx()}return}
+  const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
+  const pc=e.target.closest('.pc');if(pc){const r=+pc.dataset.r,c=+pc.dataset.c;if(r===cur.r&&c===cur.c)phKey('ok');else{cur={r,c};phR()}return}
+  const mi=e.target.closest('[data-mi]');if(mi&&menu){const i=+mi.dataset.mi;if(i===menu.i)phKey('ok');else{menu.i=i;if(menu.t==='blocks')preview();phR()}return}
   const c=e.target.closest('.sq-c');
   if(c){if(c.dataset.done){delete c.dataset.done;return}const r=+c.dataset.r,s=+c.dataset.s;setCell(r,s,!on(r,page*16+s));return} // keyboard activation
   const b=e.target.closest('button');if(!b)return;
@@ -306,6 +413,98 @@ box.addEventListener('input',e=>{const el=e.target,k=el.dataset.k;if(!k)return;
   if(k==='vol'){S.vol=+el.value/100;if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save();return}});
 box.addEventListener('change',e=>{const el=e.target,k=el.dataset.k;if(!k||el.tagName!=='SELECT')return;S[k]=el.value;if(k==='fx')setFx();if(k==='k'||k==='md')regrid();edited()});
 
+/* ---------- v7.37: phone UI ---------- */
+let cur={r:0,c:0},v0=0,menu=null,clip=0,toastT=0,toast='';
+const GC=['dg0','dg1','dg2','dg3'];
+function phTime(){const b=document.querySelector('.dn-chip b');const s=b&&b.textContent||'';return /\d/.test(s)?s:''}
+function softL(){const t=PH();if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
+  return [playing&&!PV?t.stop:t.play,P.tr[cur.r][cur.c]?t.edit:t.ins,t.more]}
+function moreItems(){const t=PH();return [['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
+function mItems(){const t=PH();if(!menu)return [];if(menu.t==='more')return moreItems();
+  if(menu.t==='groups')return t.groups.map((g,i)=>[i,g,GC[i]]);if(menu.t==='blocks')return Array.from({length:8},(_,i)=>[i,t.groups[menu.g]+' '+(i+1),GC[menu.g]]);return []}
+function mTitle(){const t=PH();if(menu.t==='more')return t.more;if(menu.t==='groups')return t.tracks[cur.r];if(menu.t==='blocks')return t.tracks[cur.r]+' · '+t.groups[menu.g];
+  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;return t.title}
+function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):'';
+  const cd=P.tr[cur.r][cur.c];return t.tracks[cur.r]+' · '+(cd?t.groups[pg(cd)]+' '+(pn(cd)+1):t.empty)+' · '+t.bar+' '+(cur.c+1)+'/'+songLen()}
+function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>=0?pc:cur.c;
+  if(fc<v0)v0=fc;if(fc>v0+7)v0=fc-7;v0=Math.max(0,Math.min(PNC-8,v0));
+  let h='<div class="pg"><span></span>';for(let c=v0;c<v0+8;c++)h+=`<span class="pn${c===pc?' on':''}">${c+1}</span>`;
+  for(let r=0;r<4;r++){h+=`<span class="pt pt${r}${r===cur.r?' on':''}">${esc(t.trs[r])}</span>`;
+    for(let c=v0;c<v0+8;c++){const cd=P.tr[r][c];h+=`<span class="pc${cd?' '+GC[pg(cd)]:''}${r===cur.r&&c===cur.c?' cur':''}${c===pc?' play':''}" data-r="${r}" data-c="${c}">${cd?pn(cd)+1:''}</span>`}}
+  return h+'</div>'}
+function menuH(){const t=PH();
+  if(menu.t==='tempo'||menu.t==='vol'){const isT=menu.t==='tempo',v=isT?P.bpm:Math.round(S.vol*10),mn=isT?60:0,mx=isT?200:10;
+    return `<div class="pv"><b>${v}</b><span>${isT?esc(t.bpm):'/ 10'}</span><i><s style="width:${Math.round((v-mn)/(mx-mn)*100)}%"></s></i></div>`}
+  if(menu.t==='confirm')return `<div class="pv pq"><span>${esc(t.confirm)}</span></div>`;
+  const it=mItems(),top=Math.max(0,Math.min(it.length-6,menu.i-2));
+  return '<ol class="pm">'+it.slice(top,top+6).map((x,k)=>{const i=top+k;return `<li class="${i===menu.i?'on':''}" data-mi="${i}">${x[2]?`<i class="${x[2]}"></i>`:''}<span>${esc(x[1])}</span></li>`}).join('')+'</ol>'+
+    (it.length>6?`<div class="psb"><s style="top:${Math.round(menu.i/(it.length-1)*80)}%"></s></div>`:'')}
+function scrH(){const t=PH(),[a,b,c]=softL();
+  return `<div class="ps-stat"><i class="psig" aria-hidden="true"><b></b><b></b><b></b><b></b></i><span>${esc(phTime())}</span><i class="pbat" aria-hidden="true"><b></b></i></div>
+<div class="ps-title"><span>${esc(menu?mTitle():t.title)}</span><b>${playing?'♪ ':''}${P.bpm}</b></div>
+<div class="ps-body">${menu?menuH():gridH()}</div>
+<div class="ps-info">${esc(info())}</div>
+<div class="ps-soft"><span>${esc(a)}</span><span>${esc(b)}</span><span>${esc(c)}</span></div>`}
+function phR(){const s=box.querySelector('.ph-scr');if(!s)return;s.innerHTML=scrH();const [a,,c]=softL();
+  const l=box.querySelector('[data-pk="sl"]'),r=box.querySelector('[data-pk="sr"]');if(l)l.setAttribute('aria-label',a);if(r)r.setAttribute('aria-label',c)}
+function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#'];
+  return `<div class="phw"><div class="ph" tabindex="0" role="application" aria-label="${esc(t.aria)}" aria-describedby="phHelp">
+<div class="ph-ear" aria-hidden="true"></div>
+<div class="ph-scr" aria-live="polite">${scrH()}</div>
+<div class="ph-nav"><button type="button" class="ph-sk" data-pk="sl"><i></i></button>
+<div class="ph-joy"><button type="button" data-pk="up" aria-label="↑"></button><button type="button" data-pk="left" aria-label="←"></button><button type="button" data-pk="ok" aria-label="OK"></button><button type="button" data-pk="right" aria-label="→"></button><button type="button" data-pk="down" aria-label="↓"></button></div>
+<button type="button" class="ph-sk" data-pk="sr"><i></i></button></div>
+<div class="ph-num">${K.map(k=>`<button type="button" data-pk="${k}"><b>${k}</b><small>${esc(t.keys[k]||'')}</small></button>`).join('')}</div>
+</div>
+<div class="ph-side" id="phHelp"><h3>${esc(t.helpH)}</h3><ol>${t.help.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p><p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
+function flash(s){toast=s;clearTimeout(toastT);phR();toastT=setTimeout(()=>{toast='';phR()},1600)}
+function closeMenu(){if(PV){PV=null;stop()}menu=null}
+function preview(){if(!initAudio())return;PV={r:cur.r,cd:pcode(menu.g,menu.i)};if(playing){step=0;vq=[];nextT=ac.currentTime+.04}else start(0)}
+function openBlocks(g,i){if(playing&&!PV)stop();menu={t:'blocks',g,i};preview()}
+function phPlay(){if(menu)closeMenu();if(playing){stop();return}const L=songLen();start(cur.c<L?cur.c*16:0)}
+function setBlk(v){P.tr[cur.r][cur.c]=v;phSave()}
+function act(a){const t=PH();
+  if(a==='ins'){const cd=P.tr[cur.r][cur.c];if(cd){menu=null;openBlocks(pg(cd),pn(cd))}else menu={t:'groups',i:0};return}
+  menu=null;
+  if(a==='copy'){clip=P.tr[cur.r][cur.c];flash(clip?t.copied:t.empty)}
+  else if(a==='paste'){if(clip){setBlk(clip);flash(t.pasted)}else flash(t.nothing)}
+  else if(a==='del'){setBlk(0);flash(t.deleted)}
+  else if(a==='tempo')menu={t:'tempo'};else if(a==='vol')menu={t:'vol'};
+  else if(a==='spk'){P.spk=P.spk?0:1;setFx();phSave();flash(P.spk?t.m_spk:t.m_hp)}
+  else if(a==='demo'){if(playing)stop();pDemo();cur={r:0,c:0};v0=0;phSave();flash(t.demo)}
+  else if(a==='clear')menu={t:'confirm'};
+  else if(a==='share'){const u=location.origin+location.pathname+'#dj='+phEnc(),m=box.querySelector('.ph-msg');
+    const ok=()=>{flash(t.linkOk);if(m)m.textContent=''},bad=()=>{if(!m)return;m.textContent=t.linkMan;const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.focus();i.select()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad()}}
+function adj(d){if(menu.t==='tempo'){P.bpm=Math.max(60,Math.min(200,P.bpm+d*2));phSave()}else{S.vol=Math.max(0,Math.min(1,Math.round(S.vol*10+d)/10));if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save()}}
+function phKey(k){const t=PH();
+  if(!menu){
+    if(k==='up')cur.r=(cur.r+3)%4;else if(k==='down')cur.r=(cur.r+1)%4;else if(k==='left')cur.c=Math.max(0,cur.c-1);else if(k==='right')cur.c=Math.min(PNC-1,cur.c+1);
+    else if(k==='ok')act('ins');else if(k==='sl'||k==='5'){phPlay()}else if(k==='sr')menu={t:'more',i:0};
+    else if('1234'.includes(k))openBlocks(+k-1,0);else if(k==='0'){setBlk(0);flash(t.deleted)}else if(k==='*')act('copy');else if(k==='#')act('paste');
+    else if(k==='7'||k==='9'){P.bpm=Math.max(60,Math.min(200,P.bpm+(k==='9'?5:-5)));phSave();flash(P.bpm+' '+t.bpm)}
+    else if(k==='8')cur.r=(cur.r+1)%4;else if(k==='6')cur.c=Math.min(PNC-1,cur.c+1);
+  }else if(menu.t==='tempo'||menu.t==='vol'){
+    if(k==='left'||k==='down'||k==='7')adj(-1);else if(k==='right'||k==='up'||k==='9')adj(1);else if(k==='ok'||k==='sl'||k==='sr')menu=null;
+  }else if(menu.t==='confirm'){
+    if(k==='ok'||k==='sl'){if(playing)stop();P.tr=pblank();cur={r:0,c:0};v0=0;phSave();menu=null;flash(t.cleared)}else if(k==='sr')menu=null;
+  }else{const n=mItems().length;
+    if(k==='up'||k==='down'){menu.i=(menu.i+(k==='up'?n-1:1))%n;if(menu.t==='blocks')preview()}
+    else if(/^[1-8]$/.test(k)&&+k<=n){menu.i=+k-1;if(menu.t==='blocks')preview()}
+    else if(k==='ok'||k==='sl'||k==='right'){
+      if(menu.t==='more')act(mItems()[menu.i][0]);
+      else if(menu.t==='groups')openBlocks(menu.i,0);
+      else if(menu.t==='blocks'){const cd=pcode(menu.g,menu.i);closeMenu();setBlk(cd)}}
+    else if(k==='sr'||k==='left'){if(menu.t==='blocks'){const g=menu.g;closeMenu();if(k==='left')menu={t:'groups',i:g}}else menu=null}}
+  phR()}
+function phMark(){if(!menu)phR()}
+
+const PKM={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'sr',Backspace:'0',Delete:'0',' ':'sl'};
+box.addEventListener('keydown',e=>{if(MODE!=='phone'||!e.target.closest||!e.target.closest('.ph')||e.ctrlKey||e.metaKey||e.altKey)return;
+  let k=PKM[e.key]||(/^[0-9*#]$/.test(e.key)?e.key:'');if(!k)return;
+  if(e.target.tagName==='BUTTON'&&(e.key==='Enter'||e.key===' '))return; // the focused key handles itself
+  if(k==='0'&&menu&&e.key==='Backspace')k='sr';
+  e.preventDefault();e.stopPropagation();if(initAudio()&&ac.state!=='running')ac.resume();phKey(k)});
 draw();
 addEventListener('d11lang',()=>setTimeout(draw,0));
 })();
