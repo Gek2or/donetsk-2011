@@ -10,8 +10,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 /* ---------- texts ---------- */
 const TX={
-ru:{code:'Секвенсор',h:'Собери рингтон Донецка 2010 года',
- p:'Собери мелодию, как на телефоне середины 2000-х: четыре дорожки, готовые блоки по такту, а потом поставь её на звонок. Во вкладке «Сетка шагов» можно писать по нотам в духе того, что звучало в городе около 2010 года: хаус, попса из маршрутки, шансон, рэп и рингтоны.',
+ru:{code:'Секвенсор',h:'Рингтоны Донецка 2010 года',
+ p:'24 мелодии, знакомые каждому, в шести жанрах: «К Элизе» в клубном ремиксе, «Коробейники» на баяне, Моцарт попсой из маршрутки. Выбери справа мелодию и жанр, поставь на звонок, а в композиторе собери свой рингтон из блоков.',
  pre:'Заготовки',play:'Играть',stop:'Стоп',tempo:'Темп',swing:'Свинг',key:'Тональность',mode:'Лад',lead:'Звук мелодии',bass:'Звук баса',listen:'Где слушаем',vol:'Громкость',
  len:'Длина',bar1:'1 такт',bar2:'2 такта',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодия',b:'Бас'},
@@ -25,8 +25,8 @@ ru:{code:'Секвенсор',h:'Собери рингтон Донецка 2010
  fromLink:'Мелодия открыта из ссылки.',step:'шаг',noAudio:'Этот браузер не умеет синтезировать звук (нет Web Audio).',
  hint:'Пробел: играть или остановить. Нажатая клетка сразу звучит. Мелодия сохраняется в этом браузере.',
  note:'Заготовки не песни 2010 года, а простые ритмы и ходы в духе жанров; мелодии настоящих песен здесь не воспроизводятся. Весь звук синтезирует браузер на лету, без записей и семплов. Музыка самой игры пишется вручную, она будет в звуковом дневнике выше.'},
-uk:{code:'Секвенсор',h:'Збери рингтон Донецька 2010 року',
- p:'Збери мелодію, як на телефоні середини 2000-х: чотири доріжки, готові блоки по такту, а потім постав її на дзвінок. У вкладці «Сітка кроків» можна писати по нотах у дусі того, що звучало в місті близько 2010 року: хаус, попса з маршрутки, шансон, реп і рингтони.',
+uk:{code:'Секвенсор',h:'Рингтони Донецька 2010 року',
+ p:'24 мелодії, знайомі кожному, у шести жанрах: «До Елізи» в клубному реміксі, «Коробейники» на баяні, Моцарт попсою з маршрутки. Обери праворуч мелодію й жанр, постав на дзвінок, а в композиторі збери свій рингтон із блоків.',
  pre:'Заготовки',play:'Грати',stop:'Стоп',tempo:'Темп',swing:'Свінг',key:'Тональність',mode:'Лад',lead:'Звук мелодії',bass:'Звук басу',listen:'Де слухаємо',vol:'Гучність',
  len:'Довжина',bar1:'1 такт',bar2:'2 такти',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодія',b:'Бас'},
@@ -40,8 +40,8 @@ uk:{code:'Секвенсор',h:'Збери рингтон Донецька 2010
  fromLink:'Мелодію відкрито з посилання.',step:'крок',noAudio:'Цей браузер не вміє синтезувати звук (немає Web Audio).',
  hint:'Пробіл: грати або зупинити. Натиснута клітинка одразу звучить. Мелодія зберігається в цьому браузері.',
  note:'Заготовки не пісні 2010 року, а прості ритми й ходи в дусі жанрів; мелодії справжніх пісень тут не відтворюються. Увесь звук синтезує браузер на льоту, без записів і семплів. Музика самої гри пишеться вручну, вона буде у звуковому щоденнику вище.'},
-en:{code:'Sequencer',h:'Build a Donetsk 2010 ringtone',
- p:'Build a tune like on a mid-2000s phone: four tracks, ready-made one-bar blocks, then set it as your ringtone. Under Step grid you can write note by note in the spirit of what played in the city around 2010: house, minibus pop, chanson, rap and ringtones.',
+en:{code:'Sequencer',h:'Donetsk ringtones, 2010',
+ p:'24 tunes everyone knows, in six genres: Für Elise as a club remix, Korobeiniki on a bayan, Mozart as minibus pop. Pick a tune and a genre on the right, set it as your ringtone, and build your own from blocks in the composer.',
  pre:'Presets',play:'Play',stop:'Stop',tempo:'Tempo',swing:'Swing',key:'Key',mode:'Scale',lead:'Melody sound',bass:'Bass sound',listen:'Where we listen',vol:'Volume',
  len:'Length',bar1:'1 bar',bar2:'2 bars',bar:'Bar',
  tabs:{d:'Rhythm',m:'Melody',b:'Bass'},
@@ -55,8 +55,8 @@ en:{code:'Sequencer',h:'Build a Donetsk 2010 ringtone',
  fromLink:'Tune opened from a link.',step:'step',noAudio:'This browser cannot synthesise sound (no Web Audio).',
  hint:'Space: play or stop. A cell sounds as soon as you press it. The tune is saved in this browser.',
  note:'The presets are not songs from 2010 but simple rhythms and moves in the spirit of the genres; no real song’s melody is reproduced here. All sound is synthesised by the browser on the fly, with no recordings or samples. The music of the game itself is written by hand and will appear in the sound diary above.'},
-fi:{code:'Sekvensseri',h:'Sävellä Donetskin 2010 soittoääni',
- p:'Kokoa melodia kuin 2000-luvun puolivälin puhelimessa: neljä raitaa, valmiita yhden tahdin lohkoja, ja aseta se sitten soittoääneksi. Askelruudukko-välilehdellä voi kirjoittaa nuotti kerrallaan siihen henkeen, mitä kaupungissa soi vuoden 2010 tienoilla: housea, marsrutkan poppia, šansonia, räppiä ja soittoääniä.',
+fi:{code:'Sekvensseri',h:'Donetskin soittoäänet 2010',
+ p:'24 kaikille tuttua melodiaa kuudessa tyylissä: Für Elise klubiremiksinä, Korobeiniki bajaanilla, Mozart marsrutkan poppina. Valitse oikealta melodia ja tyyli, aseta se soittoääneksi ja kokoa säveltäjässä oma lohkoista.',
  pre:'Pohjat',play:'Soita',stop:'Seis',tempo:'Tempo',swing:'Swing',key:'Sävellaji',mode:'Asteikko',lead:'Melodian ääni',bass:'Basson ääni',listen:'Missä kuunnellaan',vol:'Äänenvoimakkuus',
  len:'Pituus',bar1:'1 tahti',bar2:'2 tahtia',bar:'Tahti',
  tabs:{d:'Rytmi',m:'Melodia',b:'Basso'},
@@ -260,7 +260,7 @@ function bass(kind,m,t,dur,v){
   else if(kind==='pluck'){const lp=filt('lowpass',2200,2);lp.frequency.setValueAtTime(2200,t);lp.frequency.exponentialRampToValueAtTime(180,t+.25);osc('sawtooth',f,t,.8,lp,g);perc(g,t,.3*v,.55)}
   else {osc('square',f,t,dur+.15,filt('lowpass',1300,1),g);env(g,t,.002,.15*v,dur*.7,.04)}
 }
-const sd=()=>60/(MODE==='phone'?P.bpm:S.bpm)/4;
+const sd=()=>60/(MODE==='phone'?(PLY?PLY.bpm:P.bpm):S.bpm)/4;
 function trig(s,t){
   const acc=s%4===0?1:.82;
   ROWS.forEach((r,i)=>{if(S.d[i][s])DR[r](t,r==='hat'||r==='oh'?acc:1)});
@@ -307,17 +307,144 @@ function pfx(c,t,dur){
 function pev(e,t){if(e.d){DR[e.d](t,e.v,e.s);return}if(e.fx){pfx(e.fx,t,e.L*sd());return}fm(e.i,e.m,t,e.L*sd()*.95,e.v||1)}
 let PV=null; // block preview while browsing the list: {r,cd}
 function phTrig(s,t){
+  if(PLY){PLY.ev[s%PLY.len].forEach(e=>pv(e,t));return}
   if(PV){blk(PV.r,PV.cd)[s%16].forEach(e=>pev(e,t));return}
   const b=Math.floor(s/16),st=s%16;for(let r=0;r<4;r++){const cd=P.tr[r][b];if(cd&&!MUTE[r])blk(r,cd)[st].forEach(e=>pev(e,t))}}
 function kclick(){if(!KS||!ac)return;const t=ac.currentTime+.005,g=ac.createGain();osc('sine',1400,t,.05,g);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.05,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+.04)}
 
+/* ---------- v7.39: ringtone library: public-domain classics and folk tunes, arranged on the fly in six genres ---------- */
+const TUNES=[
+ {id:'elise',c:'cl',k:[9,'hm'],bar:6,bpm:72,n:{ru:'К Элизе',uk:'До Елізи',en:'Für Elise',fi:'Für Elise'},by:'Beethoven · 1810',
+  m:'r:4 E5:1 D#5:1 E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 A4:3 C4:1 E4:1 A4:1 B4:3 E4:1 G#4:1 B4:1 C5:3 E4:1 E5:1 D#5:1 E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 A4:3 C4:1 E4:1 A4:1 B4:3 E4:1 C5:1 B4:1 A4:6'},
+ {id:'ode',c:'cl',k:[2,'maj'],bar:16,bpm:116,n:{ru:'Ода к радости',uk:'Ода до радості',en:'Ode to Joy',fi:'Oodi ilolle'},by:'Beethoven · 1824',
+  m:'F#5:4 F#5:4 G5:4 A5:4 A5:4 G5:4 F#5:4 E5:4 D5:4 D5:4 E5:4 F#5:4 F#5:6 E5:2 E5:8 F#5:4 F#5:4 G5:4 A5:4 A5:4 G5:4 F#5:4 E5:4 D5:4 D5:4 E5:4 F#5:4 E5:6 D5:2 D5:8'},
+ {id:'serenade',c:'cl',k:[7,'maj'],bar:16,bpm:132,n:{ru:'Маленькая ночная серенада',uk:'Маленька нічна серенада',en:'Eine kleine Nachtmusik',fi:'Eine kleine Nachtmusik'},by:'Mozart · 1787',
+  m:'G5:4 r:2 D5:2 G5:4 r:2 D5:2 G5:2 D5:2 G5:2 B5:2 D6:4 r:4 C6:4 r:2 A5:2 C6:4 r:2 A5:2 C6:2 A5:2 F#5:2 A5:2 D5:4 r:4'},
+ {id:'turca',c:'cl',k:[9,'hm'],bar:8,bpm:120,n:{ru:'Турецкий марш',uk:'Турецький марш',en:'Rondo alla Turca',fi:'Turkkilainen marssi'},by:'Mozart · 1783',
+  m:'B4:1 A4:1 G#4:1 A4:1 C5:2 r:2 D5:1 C5:1 B4:1 C5:1 E5:2 r:2 F5:1 E5:1 D#5:1 E5:1 B5:1 A5:1 G#5:1 A5:1 B5:1 A5:1 G#5:1 A5:1 C6:4 B5:2 A5:2 G5:2 A5:2 B5:2 A5:2 G5:2 A5:2 B5:2 A5:2 G5:2 F#5:2 E5:4 r:4'},
+ {id:'sym40',c:'cl',k:[7,'hm'],bar:16,bpm:116,n:{ru:'Симфония № 40',uk:'Симфонія № 40',en:'Symphony No. 40',fi:'Sinfonia nro 40'},by:'Mozart · 1788',
+  m:'r:12 Eb5:2 D5:2 D5:4 Eb5:2 D5:2 D5:4 Eb5:2 D5:2 D5:4 Bb5:4 r:4 Bb5:2 A5:2 G5:4 G5:2 F5:2 Eb5:4 Eb5:2 D5:2 C5:4 C5:4 r:4 D5:2 C5:2 C5:4 D5:2 C5:2 C5:4 D5:2 C5:2 C5:4 A5:4 r:4 A5:2 G5:2 F#5:4 F#5:2 Eb5:2 D5:4 D5:2 C5:2 Bb4:4 Bb4:4 r:8'},
+ {id:'king',c:'cl',k:[11,'min'],bar:16,bpm:120,n:{ru:'В пещере горного короля',uk:'У печері гірського короля',en:'In the Hall of the Mountain King',fi:'Vuorenpeikkojen salissa'},by:'Grieg · 1875',
+  m:'B4:2 C#5:2 D5:2 E5:2 F#5:2 D5:2 F#5:4 F5:2 C#5:2 F5:4 E5:2 C5:2 E5:4 B4:2 C#5:2 D5:2 E5:2 F#5:2 D5:2 F#5:2 B5:2 A5:2 F#5:2 D5:2 F#5:2 A5:8'},
+ {id:'badinerie',c:'cl',k:[11,'hm'],bar:8,bpm:100,n:{ru:'Шутка',uk:'Жарт',en:'Badinerie',fi:'Badinerie'},by:'Bach · 1739',
+  m:'B5:2 D6:1 B5:1 F#5:2 B5:1 F#5:1 D5:2 F#5:1 D5:1 B4:4 F#4:1 B4:1 D5:1 B4:1 C#5:1 B4:1 C#5:1 B4:1 A#4:1 C#5:1 E5:1 C#5:1 D5:2 B4:2'},
+ {id:'morning',c:'cl',k:[4,'maj'],bar:12,bpm:72,n:{ru:'Утро',uk:'Ранок',en:'Morning Mood',fi:'Aamutunnelma'},by:'Grieg · 1875',
+  m:'B5:2 G#5:2 F#5:2 E5:2 F#5:2 G#5:2 B5:2 G#5:2 F#5:2 E5:2 F#5:2 G#5:2 F#5:2 G#5:2 B5:2 G#5:2 B5:2 C#6:2 G#5:2 C#6:2 B5:2 G#5:2 F#5:2 E5:2'},
+ {id:'swan',c:'cl',k:[11,'min'],bar:16,bpm:84,n:{ru:'Лебединое озеро',uk:'Лебедине озеро',en:'Swan Lake',fi:'Joutsenlampi'},by:'Tchaikovsky · 1876',
+  m:'F#5:12 B4:1 C#5:1 D5:1 E5:1 F#5:6 D5:2 F#5:6 D5:2 F#5:6 B4:2 D5:2 B4:2 G4:2 D5:2 B4:16'},
+ {id:'canon',c:'cl',k:[2,'maj'],bar:16,bpm:72,n:{ru:'Канон',uk:'Канон',en:'Canon in D',fi:'Kaanon D-duuri'},by:'Pachelbel · ~1680',
+  m:'F#5:4 E5:4 D5:4 C#5:4 B4:4 A4:4 B4:4 C#5:4 D5:4 C#5:4 B4:4 A4:4 G4:4 F#4:4 G4:4 E4:4'},
+ {id:'minuet',c:'cl',k:[7,'maj'],bar:12,bpm:112,n:{ru:'Менуэт соль мажор',uk:'Менует соль мажор',en:'Minuet in G',fi:'Menuetti G-duuri'},by:'Petzold · 1725',
+  m:'D5:4 G4:2 A4:2 B4:2 C5:2 D5:4 G4:4 G4:4 E5:4 C5:2 D5:2 E5:2 F#5:2 G5:4 G4:4 G4:4 C5:4 D5:2 C5:2 B4:2 A4:2 B4:4 C5:2 B4:2 A4:2 G4:2 F#4:4 G4:2 A4:2 B4:2 G4:2 A4:12'},
+ {id:'toccata',c:'cl',k:[2,'hm'],bar:16,bpm:60,n:{ru:'Токката ре минор',uk:'Токата ре мінор',en:'Toccata in D minor',fi:'Toccata d-molli'},by:'Bach · ~1704',
+  m:'A5:1 G5:1 A5:12 r:2 G5:1 F5:1 E5:1 D5:1 C#5:4 D5:8 A4:1 G4:1 A4:12 r:2 E4:2 F4:2 C#4:4 D4:8'},
+ {id:'bee',c:'cl',k:[9,'hm'],bar:16,bpm:132,n:{ru:'Полёт шмеля',uk:'Політ джмеля',en:'Flight of the Bumblebee',fi:'Kimalaisen lento'},by:'Rimsky-Korsakov · 1900',
+  m:'E5:1 D#5:1 D5:1 C#5:1 D5:1 C#5:1 C5:1 B4:1 C5:1 C#5:1 D5:1 D#5:1 E5:1 D#5:1 D5:1 C#5:1 E5:1 D#5:1 D5:1 C#5:1 D5:1 C#5:1 C5:1 B4:1 A4:1 A#4:1 B4:1 C5:1 C#5:1 D5:1 D#5:1 E5:1'},
+ {id:'spring',c:'cl',k:[4,'maj'],bar:16,bpm:100,n:{ru:'Весна',uk:'Весна',en:'Spring',fi:'Kevät'},by:'Vivaldi · 1725',
+  m:'r:14 E5:2 G#5:2 G#5:2 G#5:2 F#5:1 E5:1 B5:6 B5:1 A5:1 G#5:2 G#5:2 G#5:2 F#5:1 E5:1 B5:6 B5:1 A5:1 G#5:2 A5:2 B5:2 A5:2 G#5:2 F#5:2 D#5:2 B4:2 E5:8 r:8'},
+ {id:'fifth',c:'cl',k:[0,'hm'],bar:8,bpm:108,n:{ru:'Пятая симфония',uk:'П’ята симфонія',en:'Symphony No. 5',fi:'Sinfonia nro 5'},by:'Beethoven · 1808',
+  m:'r:2 G5:2 G5:2 G5:2 Eb5:8 r:2 F5:2 F5:2 F5:2 D5:8 r:2 G5:2 G5:2 G5:2 Eb5:2 Ab5:2 Ab5:2 Ab5:2 G5:2 Eb6:2 Eb6:2 Eb6:2 C6:8'},
+ {id:'korob',c:'fo',k:[9,'hm'],bar:16,bpm:140,n:{ru:'Коробейники',uk:'Коробейники',en:'Korobeiniki',fi:'Korobeiniki'},by:'народная · XIX в.',
+  m:'E5:4 B4:2 C5:2 D5:4 C5:2 B4:2 A4:4 A4:2 C5:2 E5:4 D5:2 C5:2 B4:6 C5:2 D5:4 E5:4 C5:4 A4:4 A4:8 r:2 D5:4 F5:2 A5:4 G5:2 F5:2 E5:6 C5:2 E5:4 D5:2 C5:2 B4:4 B4:2 C5:2 D5:4 E5:4 C5:4 A4:4 A4:8'},
+ {id:'shchedryk',c:'fo',k:[7,'min'],bar:12,bpm:120,n:{ru:'Щедрик',uk:'Щедрик',en:'Shchedryk',fi:'Štšedryk'},by:'Leontovych · 1916',
+  m:'Bb5:4 A5:2 Bb5:2 G5:4 Bb5:4 A5:2 Bb5:2 G5:4 Bb5:4 A5:2 Bb5:2 G5:4 Bb5:4 A5:2 Bb5:2 G5:4 D6:4 C6:2 D6:2 Bb5:4 D6:4 C6:2 D6:2 Bb5:4 Bb5:4 A5:2 Bb5:2 G5:4 Bb5:4 A5:2 Bb5:2 G5:4'},
+ {id:'green',c:'fo',k:[9,'hm'],bar:12,bpm:92,n:{ru:'Зелёные рукава',uk:'Зелені рукава',en:'Greensleeves',fi:'Greensleeves'},by:'английская · XVI в.',
+  m:'r:10 A4:2 C5:4 D5:2 E5:3 F5:1 E5:2 D5:4 B4:2 G4:3 A4:1 B4:2 C5:4 A4:2 A4:3 G#4:1 A4:2 B4:4 G#4:2 E4:4 A4:2 C5:4 D5:2 E5:3 F5:1 E5:2 D5:4 B4:2 G4:3 A4:1 B4:2 C5:3 B4:1 A4:2 G#4:3 F#4:1 G#4:2 A4:6 A4:6'},
+ {id:'bells',c:'ho',k:[0,'maj'],bar:16,bpm:132,n:{ru:'Бубенцы',uk:'Дзвіночки',en:'Jingle Bells',fi:'Kulkuset'},by:'Pierpont · 1857',
+  m:'E5:4 E5:4 E5:8 E5:4 E5:4 E5:8 E5:4 G5:4 C5:6 D5:2 E5:16 F5:4 F5:4 F5:6 F5:2 F5:4 E5:4 E5:4 E5:2 E5:2 E5:4 D5:4 D5:4 E5:4 D5:8 G5:8'},
+ {id:'bday',c:'ho',k:[0,'maj'],bar:12,bpm:100,n:{ru:'С днём рождения',uk:'З днем народження',en:'Happy Birthday',fi:'Paljon onnea'},by:'Hill · 1893',
+  m:'r:8 G4:3 G4:1 A4:4 G4:4 C5:4 B4:8 G4:3 G4:1 A4:4 G4:4 D5:4 C5:8 G4:3 G4:1 G5:4 E5:4 C5:4 B4:4 A4:4 F5:3 F5:1 E5:4 C5:4 D5:4 C5:12'},
+ {id:'lullaby',c:'ho',k:[0,'maj'],bar:12,bpm:84,n:{ru:'Колыбельная',uk:'Колискова',en:'Lullaby',fi:'Kehtolaulu'},by:'Brahms · 1868',
+  m:'r:8 E5:2 E5:2 G5:8 E5:2 E5:2 G5:8 E5:2 G5:2 C6:4 B5:6 A5:2 A5:4 G5:8 D5:2 E5:2 F5:4 D5:4 D5:2 E5:2 F5:8 D5:2 F5:2 B5:2 A5:2 G5:4 B5:4 C6:8'},
+ {id:'auld',c:'ho',k:[5,'maj'],bar:16,bpm:96,n:{ru:'Старое доброе время',uk:'Старі добрі часи',en:'Auld Lang Syne',fi:'Auld Lang Syne'},by:'шотландская · XVIII в.',
+  m:'r:12 C5:4 F5:6 F5:2 F5:4 A5:4 G5:6 F5:2 G5:4 A5:2 G5:2 F5:6 F5:2 A5:4 C6:4 D6:12 D6:4 C6:6 A5:2 A5:4 F5:4 G5:6 F5:2 G5:4 A5:4 F5:6 D5:2 D5:4 C5:4 F5:12 r:4'},
+ {id:'enter',c:'re',k:[0,'maj'],bar:16,bpm:84,n:{ru:'Артист эстрады',uk:'Артист естради',en:'The Entertainer',fi:'The Entertainer'},by:'Joplin · 1902',
+  m:'r:14 D5:1 D#5:1 E5:1 C6:2 E5:1 C6:2 E5:1 C6:9 C6:1 D6:1 D#6:1 E6:1 C6:1 D6:1 E6:2 B5:1 D6:2 C6:3 D5:1 D#5:1 E5:1 C6:2 E5:1 C6:2 E5:1 C6:9 A5:1 G5:1 F#5:1 A5:1 C6:1 E6:2 D6:1 C6:1 A5:1 D6:6'},
+ {id:'cuca',c:'re',k:[5,'maj'],bar:16,bpm:132,n:{ru:'Кукарача',uk:'Кукарача',en:'La Cucaracha',fi:'La Cucaracha'},by:'мексиканская · XIX в.',
+  m:'C5:2 C5:2 C5:2 F5:6 A5:4 C5:2 C5:2 C5:2 F5:6 A5:4 F5:4 F5:2 E5:2 E5:2 D5:2 D5:2 C5:2 C5:12 r:4'}
+];
+const TCAT=['cl','fo','ho','re'];
+const TGEN=['orig','club','pop','shan','chip','rap'];
+const TX9={ru:{cats:{cl:'Классика',fo:'Народные',ho:'Праздник',re:'Ретро'},gens:{orig:'Оригинал',club:'Клуб 2010',pop:'Попса',shan:'Шансон',chip:'8-бит',rap:'Рэп'},
+  lib:'Мелодии',now:'Сейчас играет',pick:'Каталог мелодий',genre:'Жанр',toComp:'Композитор',toLib:'Мелодии',m_lib:'Каталог мелодий',m_comp:'Открыть композитор',m_ringT:'Поставить на звонок',
+  folk:'народная',hint:'Выбери мелодию и жанр — она сразу заиграет на телефоне. Стрелки ◀ ▶ на джойстике меняют жанр, ▲ ▼ — мелодию.',
+  libNote:'Все мелодии — классика и народные песни, давно перешедшие в общественное достояние. Аранжировки в шести жанрах собираются прямо на странице и есть только здесь.',
+  helpL:'Мелодии: ◀ ▶ меняют жанр, ▲ ▼ — мелодию, центр играет и останавливает; в «Ещё» — каталог, звонок и композитор.'},
+ uk:{cats:{cl:'Класика',fo:'Народні',ho:'Свято',re:'Ретро'},gens:{orig:'Оригінал',club:'Клуб 2010',pop:'Попса',shan:'Шансон',chip:'8-біт',rap:'Реп'},
+  lib:'Мелодії',now:'Зараз грає',pick:'Каталог мелодій',genre:'Жанр',toComp:'Композитор',toLib:'Мелодії',m_lib:'Каталог мелодій',m_comp:'Відкрити композитор',m_ringT:'Поставити на дзвінок',
+  folk:'народна',hint:'Обери мелодію й жанр — вона одразу заграє на телефоні. Стрілки ◀ ▶ на джойстику змінюють жанр, ▲ ▼ — мелодію.',
+  libNote:'Усі мелодії — класика й народні пісні, що давно перейшли в суспільне надбання. Аранжування в шести жанрах збираються просто на сторінці й є лише тут.',
+  helpL:'Мелодії: ◀ ▶ змінюють жанр, ▲ ▼ — мелодію, центр грає й зупиняє; у «Ще» — каталог, дзвінок і композитор.'},
+ en:{cats:{cl:'Classical',fo:'Folk',ho:'Holiday',re:'Retro'},gens:{orig:'Original',club:'Club 2010',pop:'Pop',shan:'Chanson',chip:'8-bit',rap:'Rap'},
+  lib:'Tunes',now:'Now playing',pick:'Tune catalogue',genre:'Genre',toComp:'Composer',toLib:'Tunes',m_lib:'Tune catalogue',m_comp:'Open the composer',m_ringT:'Set as ringtone',
+  folk:'folk',hint:'Pick a tune and a genre and it starts playing on the phone. The joystick ◀ ▶ changes the genre, ▲ ▼ the tune.',
+  libNote:'Every tune is a classical piece or folk song long in the public domain. The arrangements in six genres are built right on this page and exist only here.',
+  helpL:'Tunes: ◀ ▶ change the genre, ▲ ▼ the tune, the centre plays and stops; More has the catalogue, the ringtone and the composer.'},
+ fi:{cats:{cl:'Klassinen',fo:'Kansanlaulut',ho:'Juhla',re:'Retro'},gens:{orig:'Alkuperäinen',club:'Klubi 2010',pop:'Pop',shan:'Šanson',chip:'8-bit',rap:'Räp'},
+  lib:'Melodiat',now:'Nyt soi',pick:'Melodialuettelo',genre:'Tyyli',toComp:'Säveltäjä',toLib:'Melodiat',m_lib:'Melodialuettelo',m_comp:'Avaa säveltäjä',m_ringT:'Aseta soittoääneksi',
+  folk:'kansanlaulu',hint:'Valitse melodia ja tyyli, niin se alkaa soida puhelimessa. Ohjaimen ◀ ▶ vaihtaa tyyliä, ▲ ▼ melodiaa.',
+  libNote:'Kaikki melodiat ovat klassisia teoksia tai kansanlauluja, jotka ovat olleet pitkään vapaasti käytettävissä. Kuuden tyylin sovitukset syntyvät tällä sivulla ja ovat vain täällä.',
+  helpL:'Melodiat: ◀ ▶ vaihtaa tyyliä, ▲ ▼ melodiaa, keskikohta soittaa ja pysäyttää; Lisää-valikossa ovat luettelo, soittoääni ja säveltäjä.'}};
+const T9=()=>TX9[L()];
+const FOLKBY={ru:null,uk:{'народная · XIX в.':'народна · XIX ст.','английская · XVI в.':'англійська · XVI ст.','шотландская · XVIII в.':'шотландська · XVIII ст.','мексиканская · XIX в.':'мексиканська · XIX ст.'},
+  en:{'народная · XIX в.':'Russian folk · 19th c.','английская · XVI в.':'English · 16th c.','шотландская · XVIII в.':'Scottish · 18th c.','мексиканская · XIX в.':'Mexican · 19th c.'},
+  fi:{'народная · XIX в.':'venäläinen kansanlaulu · 1800-l.','английская · XVI в.':'englantilainen · 1500-l.','шотландская · XVIII в.':'skotlantilainen · 1700-l.','мексиканская · XIX в.':'meksikolainen · 1800-l.'}};
+const byOf=tu=>{const m=FOLKBY[L()];return m&&m[tu.by]||tu.by};
+const NPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function pnotes(str){let s=0;const out=[];for(const tk of str.trim().split(/\s+/)){const [a,b]=tk.split(':'),L=+b;if(a!=='r'){const m=a.match(/^([A-G])([#b]?)(\d)$/);out.push({s,m:12*(+m[3]+1)+NPC[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0),L})}s+=L}return {notes:out,len:s}}
+const GDR={ // per genre: 16-step and 12-step drum rows
+ club:{16:{kick:'x...x...x...x...',clap:'....x.......x...',hat:'xx.xxx.xxx.xxx.x',oh:'..x...x...x...x.'},12:{kick:'x...x...x...',clap:'....x.......',oh:'..x...x...x.'}},
+ pop:{16:{kick:'x...x...x...x...',snare:'....x.......x...',hat:'.x.x.x.x.x.x.x.x',oh:'..x...x...x...x.'},12:{kick:'x...........',snare:'....x...x...',hat:'..x...x...x.'}},
+ shan:{16:{kick:'x.......x.......',snare:'....x.......x...',hat:'..x...x...x...x.'},12:{kick:'x...........',hat:'....x...x...'}},
+ chip:{16:{kick:'x.......x.......',snare:'....x.......x...',hat:'x.x.x.x.x.x.x.x.'},12:{kick:'x...........',snare:'....x...x...',hat:'x.x.x.x.x.x.'}},
+ rap:{16:{kick:'x......x..x.....',snare:'....x.......x...',hat:'x.x.x.x.x.x.x...',oh:'..............x.'},12:{kick:'x.....x.....',snare:'....x.......',hat:'x.x.x.x.x.x.'}}};
+const GBPM={club:126,pop:132,shan:100,rap:88};
+function harm(tu,notes,len){ // one diatonic triad per segment, chosen by how much of the melody it holds
+  const sc=(tu.k[1]==='maj'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10]).map(x=>(x+tu.k[0])%12),hm=tu.k[1]==='hm';
+  const triOf=d=>hm&&d===4?[sc[4],(tu.k[0]+11)%12,sc[1]]:[sc[d],sc[(d+2)%7],sc[(d+4)%7]];
+  const seg=tu.bar===16?8:tu.bar,out=[];let prev=0;
+  for(let a=0;a<len;a+=seg){const w=Array(12).fill(0);notes.forEach(n=>{const o=Math.min(n.s+n.L,a+seg)-Math.max(n.s,a);if(o>0)w[n.m%12]+=o*(n.s===a?1.6:1)});
+    let best=0,bs=-1;for(let d=0;d<7;d++){if(tu.k[1]!=='maj'&&d===1)continue;if(tu.k[1]==='maj'&&d===6)continue;const tri=triOf(d);
+      let v=tri.reduce((x,p)=>x+w[p],0)+([0,3,4].includes(d)?.6:0)+(d===prev?.3:0)+(a===0&&d===0?2:0)+(a+seg>=len&&d===0?1.5:0);
+      if(tu.k[1]!=='maj'&&d===4)v+=.4;if(v>bs){bs=v;best=d}}
+    prev=best;out.push({s:a,L:Math.min(seg,len-a),root:sc[best],tri:triOf(best)})}
+  return out}
+const near=(pc,lo)=>{let m=lo-((lo%12)-pc+12)%12;if(m<lo)m+=12;return m};
+let PLY=null; // current arrangement {tu,g,len,bpm,ev[step][]}
+function arrange(tu,g){const {notes,len}=pnotes(tu.m),ch=harm(tu,notes,len),bar=tu.bar,ev=Array.from({length:len},()=>[]);
+  const add=(s,e)=>{if(s>=0&&s<len)ev[s].push(e)};
+  const bpm=g==='orig'?tu.bpm:g==='chip'?Math.round(tu.bpm*1.08):GBPM[g];
+  const leadI={orig:tu.c==='ho'?'bell':'ep',club:'fml',pop:'lsaw',shan:'lreed',chip:'sql',rap:'lkeys'}[g],up=g==='chip'?12:0;
+  notes.forEach(n=>add(n.s,{m:n.m+up,L:n.L,i:leadI,v:g==='orig'?1:.95,mel:1}));
+  const pat=GDR[g],dp=pat&&(pat[bar]||pat[bar*2]||pat[16]);
+  if(dp){const dl=bar===8||bar===6?bar:dp.kick.length;for(let s=0;s<len;s++){const k=s%dl;for(const r in dp)if(dp[r][k]==='x')add(s,{d:r,v:r==='hat'||r==='oh'?(k%4===0?1:.7):1})}}
+  ch.forEach(c=>{const R=near(c.root,36),tri=c.tri.map(p=>near(p,55));
+    for(let s=c.s;s<c.s+c.L;s++){const k=s-c.s;
+      if(g==='orig'){if(k===0){add(s,{m:R+12,L:c.L,i:'sub',v:.55});tri.forEach(m=>add(s,{m,L:c.L,i:'pad',v:.5}))}}
+      else if(g==='club'){if(k%4===2)add(s,{m:R+12,L:2,i:'fmb',v:.75});if(k%4===2)tri.forEach(m=>add(s,{m:m+12,L:1,i:'brass',v:.32}))}
+      else if(g==='pop'){if(k%2===0)add(s,{m:R+(k%4===2?24:12),L:2,i:'fmb2',v:.7});if(k%4===0)tri.forEach(m=>add(s,{m,L:3,i:'ep',v:.38}))}
+      else if(g==='shan'){const odd=Math.floor(c.s/c.L)%2;
+        if(bar===12){if(k===0)add(s,{m:R+12,L:3,i:'bpluck',v:.8});else if(k===4||k===8)tri.forEach(m=>add(s,{m,L:2,i:'lreedc',v:.3}))}
+        else if(bar===6){if(k===0)add(s,{m:R+12,L:2,i:'bpluck',v:.8});else if(k===2||k===4)tri.forEach(m=>add(s,{m,L:1,i:'lreedc',v:.3}))}
+        else{if(k===0)add(s,{m:R+(odd?19:12),L:3,i:'bpluck',v:.8});else if(k===4)tri.forEach(m=>add(s,{m,L:2,i:'lreedc',v:.3}))}}
+      else if(g==='chip'){if(k%2===0)add(s,{m:R+12,L:2,i:'bsq',v:.55});add(s,{m:tri[k%3]+12,L:1,i:'sqarp',v:.22})}
+      else if(g==='rap'){if(k===0||k===7||k===10)add(s,{m:R,L:3,i:'sub',v:.9});if(k===0)tri.forEach(m=>add(s,{m,L:Math.min(6,c.L),i:'ep',v:.4}))}}});
+  return {tu,g,len,bpm,ev,ch}}
+function pv(e,t){if(e.d){DR[e.d](t,e.v,0);if(e.d==='kick')vizBump(.5);else if(e.d==='snare'||e.d==='clap')vizBump(.3);return}if(!e.mel&&e.m)vizL[e.m%8]=Math.max(vizL[e.m%8],.45);const d=e.L*sd()*.95,v=e.v||1;
+  if(e.i==='lsaw')lead('saw',e.m,t,d,v);else if(e.i==='lreed'||e.i==='lreedc')lead('reed',e.m,t,d,v);else if(e.i==='lkeys')lead('keys',e.m,t,d,v);
+  else if(e.i==='bpluck')bass('pluck',e.m,t,d,v);else if(e.i==='bsq')bass('sq',e.m,t,d,v);
+  else if(e.i==='sqarp'){const g=ac.createGain();osc('square',mtof(e.m),t,d+.05,filt('lowpass',4000,.5),g);env(g,t,.002,.04*v,d*.6,.02)}
+  else fm(e.i,e.m,t,d,v);
+  if(e.mel)vizHit(e.m)}
+let vizL=[0,0,0,0,0,0,0,0];function vizHit(m){vizL[m%8]=1;vizL[(m+3)%8]=Math.max(vizL[(m+3)%8],.6)}function vizBump(v){vizL=vizL.map((x,i)=>Math.max(x,v*(.6+.4*((i*37)%8)/8)))}
+
 /* ---------- transport ---------- */
 let playing=false,step=0,nextT=0,timer=0,vq=[],raf=0,ph=-1;
-const curLen=()=>MODE==='grid'?16*S.bars:(PV?16:16*songLen());
-function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:0,t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
-function vis(){raf=requestAnimationFrame(vis);if(!ac)return;let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
+const curLen=()=>MODE==='grid'?16*S.bars:(PLY?PLY.len:PV?16:16*songLen());
+function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:(PLY&&PLY.g==='rap'?26:0),t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
+function vis(){raf=requestAnimationFrame(vis);if(!ac)return;if(MODE==='phone'&&PLY&&menu&&menu.t==='lib')libTick();let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
 let lastB=-9;
-function mark(){if(MODE==='phone'){const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+function mark(){if(MODE==='phone'){if(PLY&&menu&&menu.t==='lib'){libTick();return}const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
   const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
   if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
 function start(from){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();setFx();playing=true;step=from||0;vq=[];lastB=-9;nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
@@ -344,7 +471,7 @@ function draw(){
   const t=T();
   const pt=PH(),mt=`<div class="sq-mode" role="tablist">${['phone','grid'].map(k=>`<button type="button" role="tab" data-mode="${k}" aria-selected="${MODE===k}">${esc(pt.mode[k])}</button>`).join('')}</div>`;
   const hd=`<div class="head"><div><div class="code"><b>01</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
-  if(MODE==='phone'){box.innerHTML=hd+phHTML();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
+  if(MODE==='phone'){if(phMsg==='fromLink'&&menu&&menu.t==='lib')menu=null;libCat=TUNES[LIB.i].c;box.innerHTML=hd+phHTML();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
   box.innerHTML=hd+`<div class="sq">
 <div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
 <div class="sq-top">
@@ -390,6 +517,9 @@ box.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elemen
 addEventListener('pointerup',()=>{paint=null});
 box.addEventListener('click',e=>{
   const md=e.target.closest('.sq-mode [data-mode]');if(md){const m=md.dataset.mode;if(m!==MODE){if(playing)stop();PV=null;menu=null;MODE=m;try{localStorage.setItem('d11-seq-mode',m)}catch(x){}draw();setFx()}return}
+  const lc=e.target.closest('.plb [data-cat]');if(lc){libCat=lc.dataset.cat;const pl=box.querySelector('.plb');if(pl)pl.innerHTML=libHTML();return}
+  const lt=e.target.closest('.plb [data-tune]');if(lt){if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};libSet(+lt.dataset.tune,undefined,true);return}
+  const lg=e.target.closest('.plb [data-gen]');if(lg){if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};libSet(undefined,lg.dataset.gen,true);return}
   const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();kclick();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
   const pc=e.target.closest('.pc');if(pc){const r=+pc.dataset.r,c=+pc.dataset.c;if(r===cur.r&&c===cur.c)phKey('ok');else{cur={r,c};phR()}return}
   const mi=e.target.closest('[data-mi]');if(mi&&menu){const i=+mi.dataset.mi;if(i===menu.i)phKey('ok');else{menu.i=i;if(menu.t==='blocks')preview();phR()}return}
@@ -418,21 +548,25 @@ box.addEventListener('input',e=>{const el=e.target,k=el.dataset.k;if(!k)return;
 box.addEventListener('change',e=>{const el=e.target,k=el.dataset.k;if(!k||el.tagName!=='SELECT')return;S[k]=el.value;if(k==='fx')setFx();if(k==='k'||k==='md')regrid();edited()});
 
 /* ---------- v7.37: phone UI ---------- */
-let cur={r:0,c:0},v0=0,menu=null,clip=0,toastT=0,toast='';
+let LIB={i:0,g:'club'};try{const v=JSON.parse(localStorage.getItem('d11-lib')||'null');if(v&&TUNES[v.i]&&TGEN.includes(v.g))LIB=v}catch(e){}
+const libSave=()=>{try{localStorage.setItem('d11-lib',JSON.stringify(LIB))}catch(e){}};
+let cur={r:0,c:0},v0=0,menu={t:'lib'},clip=0,toastT=0,toast='';
 const GC=['dg0','dg1','dg2','dg3'];
 function phTime(){const b=document.querySelector('.dn-chip b');const s=b&&b.textContent||'';return /\d/.test(s)?s:''}
-function softL(){const t=PH();if(menu&&menu.t==='ring')return softRing();if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
+function softL(){const t=PH();if(menu&&menu.t==='ring')return softRing();if(menu&&menu.t==='lib')return [playing&&PLY?t.stop:t.play,'◀ '+T9().genre+' ▶',t.more];if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
   return [playing&&!PV?t.stop:t.play,P.tr[cur.r][cur.c]?t.edit:t.ins,t.more]}
 function softRing(){const t=PH();return [t.answer,'',t.reject]}
-function moreItems(){const t=PH();return [['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['ring',t.m_ring],['mine',t.m_mine],['tracks',t.m_tracks],['keys',t.m_keys+' · '+(KS?t.on:t.off)],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
+function moreItems(){const t=PH();if(menu&&menu.lib)return [['cat',T9().m_lib],['ring',T9().m_ringT],['comp',T9().m_comp],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['keys',t.m_keys+' · '+(KS?t.on:t.off)]];return [['lib',T9().m_lib],['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['ring',t.m_ring],['mine',t.m_mine],['tracks',t.m_tracks],['keys',t.m_keys+' · '+(KS?t.on:t.off)],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
 function mItems(){const t=PH();if(!menu)return [];if(menu.t==='more')return moreItems();
   if(menu.t==='groups')return t.groups.map((g,i)=>[i,g,GC[i]]);if(menu.t==='blocks')return Array.from({length:8},(_,i)=>[i,t.groups[menu.g]+' '+(i+1),GC[menu.g]]);
+  if(menu.t==='cats')return TCAT.map((c,i)=>[c,T9().cats[c]+' · '+TUNES.filter(x=>x.c===c).length]);
+  if(menu.t==='tunes')return TUNES.map((x,i)=>[i,x]).filter(a=>a[1].c===menu.c).map(a=>[a[0],a[1].n[L()]||a[1].n.ru]);
   if(menu.t==='tracks')return t.tracks.map((x,i)=>[i,x+' · '+(MUTE[i]?t.off:t.on),'pt'+i+(MUTE[i]?' off':'')]);
   if(menu.t==='mine'){const a=slots();return [0,1,2,3,4].map(i=>[i,t.slot+' '+(i+1)+' · '+(a[i]?a[i].d:t.slotEmpty)])}
   if(menu.t==='slot'){const a=slots();return (a[menu.n]?[['open',t.s_open]]:[]).concat([['save',t.s_save]])}return []}
 function mTitle(){const t=PH();if(menu.t==='more')return t.more;if(menu.t==='groups')return t.tracks[cur.r];if(menu.t==='blocks')return t.tracks[cur.r]+' · '+t.groups[menu.g];
-  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;if(menu.t==='tracks')return t.m_tracks;if(menu.t==='mine')return t.m_mine;if(menu.t==='slot')return t.slot+' '+(menu.n+1);if(menu.t==='ring')return t.ringing;return t.title}
-function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):menu.t==='ring'?t.len+' '+fmtDur():'';
+  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;if(menu.t==='tracks')return t.m_tracks;if(menu.t==='mine')return t.m_mine;if(menu.t==='slot')return t.slot+' '+(menu.n+1);if(menu.t==='ring')return t.ringing;if(menu.t==='lib')return T9().lib;if(menu.t==='cats')return T9().pick;if(menu.t==='tunes')return T9().cats[menu.c];return t.title}
+function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):menu.t==='ring'?(PLY?PLY.tu.n[L()]||PLY.tu.n.ru:t.len+' '+fmtDur()):menu.t==='lib'?(playing&&PLY?T9().now+' · ':'')+T9().cats[TUNES[LIB.i].c]+' · '+(LIB.i+1)+'/'+TUNES.length:'';
   const cd=P.tr[cur.r][cur.c];return t.tracks[cur.r]+' · '+(cd?t.groups[pg(cd)]+' '+(pn(cd)+1):t.empty)+' · '+t.bar+' '+(cur.c+1)+'/'+songLen()}
 function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>=0?pc:cur.c;
   if(fc<v0)v0=fc;if(fc>v0+7)v0=fc-7;v0=Math.max(0,Math.min(PNC-8,v0));
@@ -441,6 +575,7 @@ function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>
     for(let c=v0;c<v0+8;c++){const cd=P.tr[r][c];h+=`<span class="pc${MUTE[r]?' mu':''}${cd?' '+GC[pg(cd)]:''}${r===cur.r&&c===cur.c?' cur':''}${c===pc?' play':''}" data-r="${r}" data-c="${c}">${cd?pn(cd)+1:''}</span>`}}
   return h+'<i class="pline" hidden></i></div>'}
 function menuH(){const t=PH();
+  if(menu.t==='lib'){const tu=TUNES[LIB.i],x=T9();return `<div class="plib"><b>${esc(tu.n[L()]||tu.n.ru)}</b><span>${esc(byOf(tu))}</span><div class="pgen" data-pk2="g"><i>◀</i><em>${esc(x.gens[LIB.g])}</em><i>▶</i></div><div class="pviz" aria-hidden="true">${vizL.map(()=>'<s></s>').join('')}</div><div class="pprog"><s></s></div></div>`}
   if(menu.t==='ring')return `<div class="pring"><div class="pr-ico" aria-hidden="true"><i></i></div><span>${esc(t.caller)}</span><b>${esc(t.ringNote)}</b></div>`;
   if(menu.t==='tempo'||menu.t==='vol'){const isT=menu.t==='tempo',v=isT?P.bpm:Math.round(S.vol*10),mn=isT?60:0,mx=isT?200:10;
     return `<div class="pv"><b>${v}</b><span>${isT?esc(t.bpm):'/ 10'}</span><i><s style="width:${Math.round((v-mn)/(mx-mn)*100)}%"></s></i></div>`}
@@ -465,34 +600,52 @@ function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#
 <button type="button" class="ph-sk" data-pk="sr"><i></i></button></div>
 <div class="ph-num">${K.map(k=>`<button type="button" data-pk="${k}"><b>${k}</b><small>${esc(t.keys[k]||'')}</small></button>`).join('')}</div>
 </div>
-<div class="ph-side" id="phHelp"><h3>${esc(t.helpH)}</h3><ol>${t.help.concat([t.help2]).map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p><p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
+<div class="ph-side" id="phHelp"><div class="plb">${libHTML()}</div>
+<details class="ph-help"><summary>${esc(t.helpH)}</summary><ol>${[T9().helpL].concat(t.help,[t.help2]).map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p></details>
+<p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
+function libHTML(){const x=T9(),l=L();
+  return `<h3>${esc(x.pick)}</h3><div class="plb-cats" role="tablist">${TCAT.map(c=>`<button type="button" role="tab" data-cat="${c}" aria-selected="${c===libCat}">${esc(x.cats[c])}</button>`).join('')}</div>
+<div class="plb-list">${TUNES.map((tu,i)=>tu.c!==libCat?'':`<button type="button" data-tune="${i}" aria-pressed="${i===LIB.i}"><b>${esc(tu.n[l]||tu.n.ru)}</b><small>${esc(byOf(tu))}</small></button>`).join('')}</div>
+<div class="plb-gen" role="group" aria-label="${esc(x.genre)}"><span>${esc(x.genre)}</span>${TGEN.map(g=>`<button type="button" data-gen="${g}" aria-pressed="${g===LIB.g}">${esc(x.gens[g])}</button>`).join('')}</div>
+<p class="plb-hint">${esc(x.hint)}</p><p class="plb-note">${esc(x.libNote)}</p>`}
 function flash(s){toast=s;clearTimeout(toastT);phR();toastT=setTimeout(()=>{toast='';phR()},1600)}
-function closeMenu(){if(PV){PV=null;stop()}if(menu&&menu.t==='ring'){stop();ringOff()}menu=null}
+function closeMenu(){if(PV){PV=null;stop()}if(menu&&menu.t==='ring'){stop();ringOff();if(PLY){menu={t:'lib'};return}}menu=null}
 function ringOff(){const f=box.querySelector('.ph');if(f)f.classList.remove('ringing')}
-let ringT=0;function ring(){if(playing)stop();menu={t:'ring'};start(0);const f=box.querySelector('.ph');if(f)f.classList.add('ringing');clearTimeout(ringT);ringT=setTimeout(()=>{if(menu&&menu.t==='ring'){closeMenu();phR()}},30000)}
+let ringT=0;function ring(){if(playing)stop();if(!(menu&&menu.lib))PLY=null;menu={t:'ring'};start(0);const f=box.querySelector('.ph');if(f)f.classList.add('ringing');clearTimeout(ringT);ringT=setTimeout(()=>{if(menu&&menu.t==='ring'){closeMenu();phR()}},30000)}
 function preview(){if(!initAudio())return;PV={r:cur.r,cd:pcode(menu.g,menu.i)};if(playing){step=0;vq=[];nextT=ac.currentTime+.04}else start(0)}
-function openBlocks(g,i){if(playing&&!PV)stop();menu={t:'blocks',g,i};preview()}
-function phPlay(){if(menu)closeMenu();if(playing){stop();return}const L=songLen();start(cur.c<L?cur.c*16:0)}
+function openBlocks(g,i){if(playing&&!PV)stop();PLY=null;menu={t:'blocks',g,i};preview()}
+function phPlay(){if(menu&&menu.t==='lib'){phKey('ok');return}if(menu)closeMenu();PLY=null;if(playing){stop();return}const L=songLen();start(cur.c<L?cur.c*16:0)}
 function setBlk(v){P.tr[cur.r][cur.c]=v;phSave()}
 function act(a){const t=PH();
+  if(a==='lib'){if(playing)stop();menu={t:'lib'};return}
+  if(a==='cat'){menu={t:'cats',i:TCAT.indexOf(TUNES[LIB.i].c),lib:1};return}
+  if(a==='comp'){if(playing)stop();PLY=null;menu=null;return}
+  if(a==='ring'&&menu&&menu.lib){PLY=arrange(TUNES[LIB.i],LIB.g);ring();return}
   if(a==='ins'){const cd=P.tr[cur.r][cur.c];if(cd){menu=null;openBlocks(pg(cd),pn(cd))}else menu={t:'groups',i:0};return}
-  menu=null;
+  const fromLib=menu&&menu.lib;menu=fromLib?{t:'lib'}:null;
   if(a==='copy'){clip=P.tr[cur.r][cur.c];flash(clip?t.copied:t.empty)}
   else if(a==='paste'){if(clip){setBlk(clip);flash(t.pasted)}else flash(t.nothing)}
   else if(a==='del'){setBlk(0);flash(t.deleted)}
-  else if(a==='tempo')menu={t:'tempo'};else if(a==='vol')menu={t:'vol'};
+  else if(a==='tempo')menu={t:'tempo'};else if(a==='vol')menu={t:'vol',lib:fromLib};
   else if(a==='spk'){P.spk=P.spk?0:1;setFx();phSave();flash(P.spk?t.m_spk:t.m_hp)}
   else if(a==='demo'){if(playing)stop();pDemo();cur={r:0,c:0};v0=0;phSave();flash(t.demo)}
   else if(a==='clear')menu={t:'confirm'};
   else if(a==='ring')ring();
   else if(a==='mine')menu={t:'mine',i:0};
   else if(a==='tracks')menu={t:'tracks',i:0};
-  else if(a==='keys'){KS=KS?0:1;try{localStorage.setItem('d11-dj-ks',KS?'1':'0')}catch(e){}menu={t:'more',i:moreItems().findIndex(x=>x[0]==='keys')}}
+  else if(a==='keys'){KS=KS?0:1;try{localStorage.setItem('d11-dj-ks',KS?'1':'0')}catch(e){}menu={t:'more',i:0};menu.i=moreItems().findIndex(x=>x[0]==='keys')}
   else if(a==='share'){const u=location.origin+location.pathname+'#dj='+phEnc(),m=box.querySelector('.ph-msg');
     const ok=()=>{flash(t.linkOk);if(m)m.textContent=''},bad=()=>{if(!m)return;m.textContent=t.linkMan;const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.focus();i.select()};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad()}}
 function adj(d){if(menu.t==='tempo'){P.bpm=Math.max(60,Math.min(200,P.bpm+d*2));phSave()}else{S.vol=Math.max(0,Math.min(1,Math.round(S.vol*10+d)/10));if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save()}}
 function phKey(k){const t=PH();
+  if(menu&&menu.t==='lib'){
+    if(k==='up'||k==='2')libSet(LIB.i-1);else if(k==='down'||k==='8')libSet(LIB.i+1);
+    else if(k==='left'||k==='4')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+TGEN.length-1)%TGEN.length]);else if(k==='right'||k==='6')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+1)%TGEN.length]);
+    else if(k==='ok'||k==='sl'||k==='5'){if(playing)stop();else libPlay(true)}
+    else if(k==='sr')menu={t:'more',i:0,lib:1};
+    else if(k==='1'){libCat=TCAT[(TCAT.indexOf(libCat)+1)%TCAT.length];menu={t:'tunes',c:libCat,i:0,lib:1}}
+    phR();return}
   if(!menu){
     if(k==='up')cur.r=(cur.r+3)%4;else if(k==='down')cur.r=(cur.r+1)%4;else if(k==='left')cur.c=Math.max(0,cur.c-1);else if(k==='right')cur.c=Math.min(PNC-1,cur.c+1);
     else if(k==='ok')act('ins');else if(k==='sl'||k==='5'){phPlay()}else if(k==='sr')menu={t:'more',i:0};
@@ -500,7 +653,7 @@ function phKey(k){const t=PH();
     else if(k==='7'||k==='9'){P.bpm=Math.max(60,Math.min(200,P.bpm+(k==='9'?5:-5)));phSave();flash(P.bpm+' '+t.bpm)}
     else if(k==='8')cur.r=(cur.r+1)%4;else if(k==='6')cur.c=Math.min(PNC-1,cur.c+1);
   }else if(menu.t==='tempo'||menu.t==='vol'){
-    if(k==='left'||k==='down'||k==='7')adj(-1);else if(k==='right'||k==='up'||k==='9')adj(1);else if(k==='ok'||k==='sl'||k==='sr')menu=null;
+    if(k==='left'||k==='down'||k==='7')adj(-1);else if(k==='right'||k==='up'||k==='9')adj(1);else if(k==='ok'||k==='sl'||k==='sr')menu=menu.lib?{t:'lib'}:null;
   }else if(menu.t==='ring'){closeMenu();
   }else if(menu.t==='confirm'){
     if(k==='ok'||k==='sl'){if(playing)stop();P.tr=pblank();cur={r:0,c:0};v0=0;phSave();menu=null;flash(t.cleared)}else if(k==='sr')menu=null;
@@ -509,6 +662,8 @@ function phKey(k){const t=PH();
     else if(/^[1-8]$/.test(k)&&+k<=n){menu.i=+k-1;if(menu.t==='blocks')preview()}
     else if(k==='ok'||k==='sl'||k==='right'){
       if(menu.t==='more')act(mItems()[menu.i][0]);
+      else if(menu.t==='cats'){libCat=TCAT[menu.i];menu={t:'tunes',c:libCat,i:0,lib:1}}
+      else if(menu.t==='tunes'){const id=mItems()[menu.i][0];menu={t:'lib'};libSet(id,undefined,true);return}
       else if(menu.t==='groups')openBlocks(menu.i,0);
       else if(menu.t==='blocks'){const cd=pcode(menu.g,menu.i);closeMenu();setBlk(cd)}
       else if(menu.t==='tracks'){MUTE[menu.i]=MUTE[menu.i]?0:1}
@@ -516,12 +671,20 @@ function phKey(k){const t=PH();
       else if(menu.t==='slot'){const it=mItems()[menu.i][0],n=menu.n;
         if(it==='save'){const d=new Date();putSlot(n,{s:phEnc(),d:String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')});menu={t:'mine',i:n};flash(t.saved)}
         else{const v=slots()[n],m=v&&phDec(v.s);if(m){if(playing)stop();P=m;cur={r:0,c:0};v0=0;phSave();menu=null;flash(t.opened)}}}}
+    else if((k==='sr'||k==='left')&&menu.lib){if(menu.t==='tunes')menu={t:'cats',i:TCAT.indexOf(menu.c),lib:1};else menu={t:'lib'}}
     else if(k==='sr'||k==='left'){if(menu.t==='blocks'){const g=menu.g;closeMenu();if(k==='left')menu={t:'groups',i:g}}else if(menu.t==='slot')menu={t:'mine',i:menu.n};else if(menu.t==='tracks'||menu.t==='mine')menu={t:'more',i:moreItems().findIndex(x=>x[0]===menu.t)};else menu=null}}
   phR()}
 function phMark(){if(!menu||menu.t==='ring')phR()}
+function libTick(){const vs=box.querySelectorAll('.pviz s');if(!vs.length)return;vs.forEach((e,i)=>{vizL[i]*=.9;e.style.transform='scaleY('+(.08+vizL[i]*.92).toFixed(3)+')'});
+  const p=box.querySelector('.pprog s');if(p)p.style.width=(playing&&PLY&&ph>=0?((ph+1)/PLY.len*100):0)+'%'}
+function libPlay(restart){const was=playing;if(was)stop();if(!restart&&was)return;PV=null;PLY=arrange(TUNES[LIB.i],LIB.g);libSave();start(0)}
+function libSet(i,g,play){if(i!==undefined)LIB.i=(i+TUNES.length)%TUNES.length;if(g!==undefined)LIB.g=g;if(!menu||menu.t!=='lib')menu={t:'lib'};
+  if(play||playing){PLY=null;libPlay(true)}else{PLY=arrange(TUNES[LIB.i],LIB.g);libSave()}phR();libSide()}
+function libSide(){const el=box.querySelector('.plb');if(!el)return;libCat=TUNES[LIB.i].c;const sc=el.querySelector('.plb-list');const st=sc?sc.scrollTop:0;el.innerHTML=libHTML();const n=el.querySelector('.plb-list');if(n)n.scrollTop=st}
+let libCat='cl';
 function pline(){const l=box.querySelector('.pline');if(!l)return;if(!playing||PV||ph<0){l.hidden=true;return}
   const c=box.querySelector(`.pc[data-r="0"][data-c="${Math.floor(ph/16)}"]`);if(!c){l.hidden=true;return}l.hidden=false;l.style.left=(c.offsetLeft+c.offsetWidth*(ph%16)/16)+'px'}
-function fmtDur(){const sec=Math.round(songLen()*16*60/P.bpm/4);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
+function fmtDur(){const sec=Math.round((PLY&&menu&&(menu.t==='lib'||menu.t==='ring')?PLY.len*60/PLY.bpm/4:songLen()*16*60/P.bpm/4));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
 
 const PKM={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'sr',Backspace:'0',Delete:'0',' ':'sl'};
 box.addEventListener('keydown',e=>{if(MODE!=='phone'||!e.target.closest||!e.target.closest('.ph')||e.ctrlKey||e.metaKey||e.altKey)return;
