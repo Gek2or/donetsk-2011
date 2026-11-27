@@ -1,0 +1,311 @@
+/* Donetsk 2011 · mini step sequencer (v7.36, page «Музыка и звуки»)
+   Rhythm, melody and bass on a 16-step grid (1 or 2 bars), all synthesised by Web Audio on the fly: no recordings, no samples.
+   The presets are simple genre sketches in the spirit of what played in the city around 2010 (club house, pop on the minibus radio,
+   chanson, yard rap, polyphonic ringtones). They are not real songs: no real melody is reproduced here.
+   State lives in this browser (localStorage) and can be shared as a link (#seq=...). Nothing is uploaded, nothing is downloaded. */
+(function(){
+const box=document.getElementById('sq');if(!box)return;
+const L=()=>{const l=(document.documentElement.lang||'ru').slice(0,2);return {ru:1,uk:1,en:1,fi:1}[l]?l:'ru'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- texts ---------- */
+const TX={
+ru:{code:'Секвенсор',h:'Напиши мелодию Донецка 2010 года',
+ p:'Мини-секвенсор прямо в браузере: ритм, мелодия и бас в духе того, что звучало в городе около 2010 года: клубный хаус, попса из радио в маршрутке, шансон, рэп во дворе и полифонические рингтоны. Нажимай клетки, меняй темп и слушай, как это звучало бы из динамика маршрутки или с кассеты.',
+ pre:'Заготовки',play:'Играть',stop:'Стоп',tempo:'Темп',swing:'Свинг',key:'Тональность',mode:'Лад',lead:'Звук мелодии',bass:'Звук баса',listen:'Где слушаем',vol:'Громкость',
+ len:'Длина',bar1:'1 такт',bar2:'2 такта',bar:'Такт',
+ tabs:{d:'Ритм',m:'Мелодия',b:'Бас'},
+ modes:{min:'минор',hm:'гармонический минор',maj:'мажор'},
+ rows:['Бочка','Малый','Хлопок','Хэт','Откр. хэт','Трамвай','Сигнал'],
+ leads:{saw:'Суперпила (клуб)',sq:'Квадрат (рингтон)',reed:'Баян',keys:'Клавиши',pluck:'Щипок (гитара)'},
+ basses:{saw:'Пила',sub:'Саб',pluck:'Щипок',sq:'Квадрат'},
+ fx:{clean:'В наушниках',bus:'В маршрутке',phone:'С мобилки',tape:'С кассеты'},
+ presets:{house:'Клуб · хаус',pop:'Попса из маршрутки',shan:'Шансон у ларька',rap:'Рэп во дворе',ring:'Рингтон на мобилке',city:'Город',empty:'Чистый лист'},
+ rnd:'Случайно',clr:'Очистить дорожку',share:'Скопировать ссылку',copied:'Ссылка скопирована: в ней вся мелодия, пришли её другу.',copyMan:'Скопируй ссылку вручную:',
+ fromLink:'Мелодия открыта из ссылки.',step:'шаг',noAudio:'Этот браузер не умеет синтезировать звук (нет Web Audio).',
+ hint:'Пробел: играть или остановить. Нажатая клетка сразу звучит. Мелодия сохраняется в этом браузере.',
+ note:'Заготовки не песни 2010 года, а простые ритмы и ходы в духе жанров; мелодии настоящих песен здесь не воспроизводятся. Весь звук синтезирует браузер на лету, без записей и семплов. Музыка самой игры пишется вручную, она будет в звуковом дневнике выше.'},
+uk:{code:'Секвенсор',h:'Напиши мелодію Донецька 2010 року',
+ p:'Міні-секвенсор просто в браузері: ритм, мелодія й бас у дусі того, що звучало в місті близько 2010 року: клубний хаус, попса з радіо в маршрутці, шансон, реп у дворі й поліфонічні рингтони. Натискай клітинки, змінюй темп і слухай, як це звучало б із динаміка маршрутки чи з касети.',
+ pre:'Заготовки',play:'Грати',stop:'Стоп',tempo:'Темп',swing:'Свінг',key:'Тональність',mode:'Лад',lead:'Звук мелодії',bass:'Звук басу',listen:'Де слухаємо',vol:'Гучність',
+ len:'Довжина',bar1:'1 такт',bar2:'2 такти',bar:'Такт',
+ tabs:{d:'Ритм',m:'Мелодія',b:'Бас'},
+ modes:{min:'мінор',hm:'гармонічний мінор',maj:'мажор'},
+ rows:['Бочка','Малий','Плеск','Хет','Відкр. хет','Трамвай','Сигнал'],
+ leads:{saw:'Суперпила (клуб)',sq:'Квадрат (рингтон)',reed:'Баян',keys:'Клавіші',pluck:'Щипок (гітара)'},
+ basses:{saw:'Пила',sub:'Саб',pluck:'Щипок',sq:'Квадрат'},
+ fx:{clean:'У навушниках',bus:'У маршрутці',phone:'З мобілки',tape:'З касети'},
+ presets:{house:'Клуб · хаус',pop:'Попса з маршрутки',shan:'Шансон біля кіоску',rap:'Реп у дворі',ring:'Рингтон на мобілці',city:'Місто',empty:'Чистий аркуш'},
+ rnd:'Випадково',clr:'Очистити доріжку',share:'Скопіювати посилання',copied:'Посилання скопійовано: у ньому вся мелодія, надішли його другові.',copyMan:'Скопіюй посилання вручну:',
+ fromLink:'Мелодію відкрито з посилання.',step:'крок',noAudio:'Цей браузер не вміє синтезувати звук (немає Web Audio).',
+ hint:'Пробіл: грати або зупинити. Натиснута клітинка одразу звучить. Мелодія зберігається в цьому браузері.',
+ note:'Заготовки не пісні 2010 року, а прості ритми й ходи в дусі жанрів; мелодії справжніх пісень тут не відтворюються. Увесь звук синтезує браузер на льоту, без записів і семплів. Музика самої гри пишеться вручну, вона буде у звуковому щоденнику вище.'},
+en:{code:'Sequencer',h:'Write a Donetsk 2010 tune',
+ p:'A mini sequencer right in the browser: rhythm, melody and bass in the spirit of what played in the city around 2010: club house, pop on the minibus radio, chanson, yard rap and polyphonic ringtones. Click the cells, change the tempo and hear how it would sound from a marshrutka speaker or a cassette.',
+ pre:'Presets',play:'Play',stop:'Stop',tempo:'Tempo',swing:'Swing',key:'Key',mode:'Scale',lead:'Melody sound',bass:'Bass sound',listen:'Where we listen',vol:'Volume',
+ len:'Length',bar1:'1 bar',bar2:'2 bars',bar:'Bar',
+ tabs:{d:'Rhythm',m:'Melody',b:'Bass'},
+ modes:{min:'minor',hm:'harmonic minor',maj:'major'},
+ rows:['Kick','Snare','Clap','Hi-hat','Open hat','Tram','Pip'],
+ leads:{saw:'Supersaw (club)',sq:'Square (ringtone)',reed:'Bayan accordion',keys:'Keys',pluck:'Pluck (guitar)'},
+ basses:{saw:'Saw',sub:'Sub',pluck:'Pluck',sq:'Square'},
+ fx:{clean:'On headphones',bus:'In a marshrutka',phone:'From a phone',tape:'From a cassette'},
+ presets:{house:'Club · house',pop:'Minibus radio pop',shan:'Kiosk chanson',rap:'Yard rap',ring:'Phone ringtone',city:'City',empty:'Blank page'},
+ rnd:'Random',clr:'Clear track',share:'Copy link',copied:'Link copied: the whole tune is in it, send it to a friend.',copyMan:'Copy the link by hand:',
+ fromLink:'Tune opened from a link.',step:'step',noAudio:'This browser cannot synthesise sound (no Web Audio).',
+ hint:'Space: play or stop. A cell sounds as soon as you press it. The tune is saved in this browser.',
+ note:'The presets are not songs from 2010 but simple rhythms and moves in the spirit of the genres; no real song’s melody is reproduced here. All sound is synthesised by the browser on the fly, with no recordings or samples. The music of the game itself is written by hand and will appear in the sound diary above.'},
+fi:{code:'Sekvensseri',h:'Sävellä Donetskin 2010 melodia',
+ p:'Pieni sekvensseri suoraan selaimessa: rytmi, melodia ja basso siihen henkeen, mitä kaupungissa soi vuoden 2010 tienoilla: klubihousea, poppia marsrutkan radiosta, šansonia, piharäppiä ja polyfonisia soittoääniä. Napauta ruutuja, muuta tempoa ja kuuntele, miltä se kuulostaisi marsrutkan kaiuttimesta tai kasetilta.',
+ pre:'Pohjat',play:'Soita',stop:'Seis',tempo:'Tempo',swing:'Swing',key:'Sävellaji',mode:'Asteikko',lead:'Melodian ääni',bass:'Basson ääni',listen:'Missä kuunnellaan',vol:'Äänenvoimakkuus',
+ len:'Pituus',bar1:'1 tahti',bar2:'2 tahtia',bar:'Tahti',
+ tabs:{d:'Rytmi',m:'Melodia',b:'Basso'},
+ modes:{min:'molli',hm:'harmoninen molli',maj:'duuri'},
+ rows:['Bassorumpu','Virveli','Taputus','Hi-hat','Avoin hat','Raitiovaunu','Aikamerkki'],
+ leads:{saw:'Supersaha (klubi)',sq:'Kantti (soittoääni)',reed:'Bajaani',keys:'Koskettimet',pluck:'Näppäys (kitara)'},
+ basses:{saw:'Saha',sub:'Sub',pluck:'Näppäys',sq:'Kantti'},
+ fx:{clean:'Kuulokkeista',bus:'Marsrutkassa',phone:'Puhelimesta',tape:'Kasetilta'},
+ presets:{house:'Klubi · house',pop:'Marsrutkan radiopop',shan:'Kioskin šanson',rap:'Piharäppi',ring:'Puhelimen soittoääni',city:'Kaupunki',empty:'Tyhjä'},
+ rnd:'Satunnainen',clr:'Tyhjennä raita',share:'Kopioi linkki',copied:'Linkki kopioitu: koko melodia on siinä, lähetä se ystävälle.',copyMan:'Kopioi linkki käsin:',
+ fromLink:'Melodia avattiin linkistä.',step:'askel',noAudio:'Tämä selain ei osaa syntetisoida ääntä (ei Web Audiota).',
+ hint:'Välilyönti: soita tai pysäytä. Painettu ruutu soi heti. Melodia tallentuu tähän selaimeen.',
+ note:'Pohjat eivät ole vuoden 2010 kappaleita vaan yksinkertaisia rytmejä ja kulkuja tyylilajien hengessä; oikeiden laulujen melodioita ei toisteta. Kaikki ääni syntyy selaimessa lennossa, ilman äänitteitä tai sampleja. Itse pelin musiikki kirjoitetaan käsin, ja se tulee yllä olevaan äänipäiväkirjaan.'}
+};
+const T=()=>TX[L()];
+
+/* ---------- model ---------- */
+const NR=7, ROWS=['kick','snare','clap','hat','oh','tram','pip'], MAXS=32;
+const KEYS={C:0,D:2,E:4,F:5,G:7,A:9}, NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SC={min:[0,2,3,5,7,8,10,12],hm:[0,2,3,5,7,8,11,12],maj:[0,2,4,5,7,9,11,12]};
+const LEADS=['saw','sq','reed','keys','pluck'], BASSES=['saw','sub','pluck','sq'], FXS=['clean','bus','phone','tape'], MODES=['min','hm','maj'];
+const PRE={
+ house:{bpm:124,sw:8,k:'A',md:'min',ld:'saw',bs:'saw',fx:'clean',d:{kick:'x...x...x...x...',clap:'....x.......x...',hat:'xx.xxx.xxx.xxx.x',oh:'..x...x...x...x.'},
+  m:['','','024','','','','024','','','','257','','','','136',''],b:'..0..00...5..66.'},
+ pop:{bpm:132,sw:0,k:'D',md:'min',ld:'saw',bs:'saw',fx:'bus',d:{kick:'x...x...x...x...',snare:'....x.......x...',hat:'.x.x.x.x.x.x.x.x',oh:'..x...x...x...x.'},
+  m:['4','','4','5','4','','2','3','4','','7','6','4','','2','1'],b:'0.0.0.0.5.5.6.6.'},
+ shan:{bpm:104,sw:0,k:'A',md:'hm',ld:'reed',bs:'pluck',fx:'tape',d:{kick:'x.......x.......',snare:'....x.......x...',hat:'..x...x...x...x.'},
+  m:['7','','6','5','024','','4','','3','','4','5','146','','6',''],b:'0.......4.......'},
+ rap:{bpm:88,sw:30,k:'E',md:'min',ld:'keys',bs:'sub',fx:'clean',d:{kick:'x......x..x.....',snare:'....x.......x...',hat:'x.x.x.x.x.x.x...',oh:'..............x.'},
+  m:['024','','','4','','','257','','','','','3','','','136',''],b:'0......0..5...6.'},
+ ring:{bpm:140,sw:0,k:'A',md:'min',ld:'sq',bs:'sq',fx:'phone',d:{kick:'x...x...x...x...',hat:'..x...x...x...x.'},
+  m:['0','2','4','7','4','2','0','2','1','3','5','3','1','3','4',''],b:'0.......5...6...'},
+ city:{bpm:92,sw:12,k:'G',md:'maj',ld:'keys',bs:'sub',fx:'tape',d:{kick:'x.......x.......',hat:'....x.......x...',tram:'x...............',pip:'..........x.x.x.'},
+  m:['024','','','4','','','2','','357','','','5','','','4',''],b:'0.......3.......'},
+ empty:null
+};
+const PIDS=Object.keys(PRE);
+const blank=()=>({d:ROWS.map(()=>Array(MAXS).fill(0)),m:Array(MAXS).fill(0),b:Array(MAXS).fill(-1)});
+let S=Object.assign({pr:'house',bpm:124,sw:8,k:'A',md:'min',ld:'saw',bs:'saw',fx:'clean',bars:1,vol:.8},blank());
+function applyPreset(id){
+  const p=PRE[id];S.pr=id;
+  if(!p){const b=blank();S.d=b.d;S.m=b.m;S.b=b.b;return}
+  Object.assign(S,{bpm:p.bpm,sw:p.sw,k:p.k,md:p.md,ld:p.ld,bs:p.bs,fx:p.fx,bars:1});
+  const b=blank();
+  ROWS.forEach((r,i)=>{const s=p.d[r]||'';for(let j=0;j<MAXS;j++)b.d[i][j]=s[j%16]==='x'?1:0});
+  for(let j=0;j<MAXS;j++){const c=p.m[j%16]||'';let mk=0;for(const ch of c)mk|=1<<(+ch);b.m[j]=mk;const bc=p.b[j%16];b.b[j]=bc>='0'&&bc<='7'?+bc:-1}
+  S.d=b.d;S.m=b.m;S.b=b.b;
+}
+applyPreset('house');
+
+/* ---------- link / storage encoding ---------- */
+const hex=(n,w)=>n.toString(16).padStart(w,'0');
+function enc(){
+  const d=S.d.map(r=>{let v=0;for(let j=0;j<MAXS;j++)if(r[j])v+=2**j;return hex(v,8)}).join('');
+  const m=S.m.map(v=>hex(v,2)).join(''), b=S.b.map(v=>v<0?'x':String(v)).join('');
+  return ['1',S.bpm,S.sw,S.k,S.md,S.ld,S.bs,S.fx,S.bars,d,m,b].join('_');
+}
+function dec(s){
+  try{const a=String(s).split('_');if(a.length!==12||a[0]!=='1')return null;
+    const n=Object.assign({},S,blank());
+    n.bpm=Math.min(180,Math.max(60,parseInt(a[1],10)||120));n.sw=Math.min(50,Math.max(0,parseInt(a[2],10)||0));
+    n.k=KEYS[a[3]]!==undefined?a[3]:'A';n.md=MODES.includes(a[4])?a[4]:'min';n.ld=LEADS.includes(a[5])?a[5]:'saw';
+    n.bs=BASSES.includes(a[6])?a[6]:'saw';n.fx=FXS.includes(a[7])?a[7]:'clean';n.bars=a[8]==='2'?2:1;
+    if(!/^[0-9a-f]{56}$/.test(a[9])||!/^[0-9a-f]{64}$/.test(a[10])||!/^[0-7x]{32}$/.test(a[11]))return null;
+    for(let i=0;i<NR;i++){const v=parseInt(a[9].substr(i*8,8),16);for(let j=0;j<MAXS;j++)n.d[i][j]=Math.floor(v/2**j)%2}
+    for(let j=0;j<MAXS;j++){n.m[j]=parseInt(a[10].substr(j*2,2),16);const c=a[11][j];n.b[j]=c==='x'?-1:+c}
+    n.pr='';return n}catch(e){return null}
+}
+let msg='';
+(function load(){
+  const h=location.hash.match(/^#seq=([0-9a-zA-Z_]+)$/);
+  if(h){const n=dec(h[1]);if(n){S=n;msg='fromLink';return}}
+  try{const v=localStorage.getItem('d11-seq');if(v){const j=JSON.parse(v);const n=dec(j.s);if(n){S=n;S.pr=PIDS.includes(j.pr)?j.pr:'';if(typeof j.vol==='number')S.vol=Math.min(1,Math.max(0,j.vol))}}}catch(e){}
+})();
+let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('d11-seq',JSON.stringify({s:enc(),pr:S.pr,vol:S.vol}))}catch(e){}},300)};
+
+/* ---------- audio ---------- */
+let ac=null,master,outG,comp,nbuf,FX={},hissG;
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+const base=()=>60+KEYS[S.k];
+const midiOf=(deg,bass)=>base()+SC[S.md][deg]-(bass?24:0);
+function curve(fn){const n=1024,c=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=fn(x)}return c}
+const soft=k=>curve(x=>Math.tanh(k*x)/Math.tanh(k));
+function filt(type,f,q,g){const b=ac.createBiquadFilter();b.type=type;b.frequency.value=f;if(q!==undefined)b.Q.value=q;if(g!==undefined)b.gain.value=g;return b}
+function chain(...n){for(let i=0;i<n.length-1;i++)n[i].connect(n[i+1]);return n}
+function initAudio(){
+  if(ac)return ac;const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+  try{ac=new C({latencyHint:'interactive'})}catch(e){ac=new C()}
+  nbuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=nbuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  master=ac.createGain();master.gain.value=.75;
+  comp=ac.createDynamicsCompressor();comp.threshold.value=-16;comp.knee.value=8;comp.ratio.value=4;comp.attack.value=.004;comp.release.value=.18;
+  outG=ac.createGain();outG.gain.value=S.vol;outG.connect(ac.destination);master.connect(comp);
+  // where we listen
+  const clean=ac.createGain();FX.clean={i:clean,o:clean};
+  { const a=filt('highpass',260,.7),b=filt('lowpass',3300,.9),c=filt('peaking',1400,1,5),s=ac.createWaveShaper(),g=ac.createGain();s.curve=soft(3);g.gain.value=.62;chain(a,b,c,s,g);FX.bus={i:a,o:g} }
+  { const a=filt('highpass',700,.8),b=filt('lowpass',4300,.8),s=ac.createWaveShaper(),g=ac.createGain();s.curve=curve(x=>Math.round(x*7)/7);g.gain.value=.8;chain(a,b,s,g);FX.phone={i:a,o:g} }
+  { const a=filt('lowpass',7200,.6),dl=ac.createDelay(.05),s=ac.createWaveShaper(),g=ac.createGain();dl.delayTime.value=.012;s.curve=soft(1.6);g.gain.value=.9;chain(a,dl,s,g);
+    const w=ac.createOscillator(),wg=ac.createGain();w.frequency.value=.55;wg.gain.value=.0018;w.connect(wg).connect(dl.delayTime);w.start();
+    const f=ac.createOscillator(),fg=ac.createGain();f.frequency.value=6.3;fg.gain.value=.00018;f.connect(fg).connect(dl.delayTime);f.start();
+    const h=ac.createBufferSource();h.buffer=nbuf;h.loop=true;hissG=ac.createGain();hissG.gain.value=0;chain(h,filt('highpass',3200,.5),hissG,outG);h.start();
+    FX.tape={i:a,o:g} }
+  for(const k in FX)FX[k].o.connect(outG);
+  setFx();return ac;
+}
+function setFx(){if(!ac)return;try{comp.disconnect()}catch(e){}comp.connect((FX[S.fx]||FX.clean).i);hissG.gain.value=S.fx==='tape'?.011:0}
+function env(g,t,a,pk,hold,rel){const p=g.gain;p.setValueAtTime(.0001,t);p.linearRampToValueAtTime(pk,t+a);if(hold>0)p.setValueAtTime(pk,t+a+hold);p.setTargetAtTime(.0001,t+a+Math.max(0,hold),rel/4)}
+function perc(g,t,pk,dec){const p=g.gain;p.setValueAtTime(.0001,t);p.linearRampToValueAtTime(pk,t+.002);p.exponentialRampToValueAtTime(.0001,t+.002+dec)}
+function noise(t,dur,...nodes){const s=ac.createBufferSource();s.buffer=nbuf;chain(s,...nodes,master);s.start(t,Math.random()*1.5);s.stop(t+dur+.05)}
+function osc(type,f,t,dur,...nodes){const o=ac.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);chain(o,...nodes,master);o.start(t);o.stop(t+dur+.05);return o}
+const DR={
+ kick(t,v){const g=ac.createGain(),o=osc('sine',150,t,.5,g);o.frequency.exponentialRampToValueAtTime(46,t+.12);perc(g,t,.95*v,.42);
+   const c=ac.createGain();noise(t,.02,filt('highpass',2500),c);perc(c,t,.12*v,.012)},
+ snare(t,v){const g=ac.createGain();noise(t,.22,filt('highpass',1300),g);perc(g,t,.42*v,.17);const h=ac.createGain();osc('triangle',188,t,.12,h);perc(h,t,.32*v,.09)},
+ clap(t,v){const g=ac.createGain();noise(t,.3,filt('bandpass',1150,.9),g);const p=g.gain;p.setValueAtTime(.0001,t);
+   [0,.011,.022].forEach(o=>{p.setValueAtTime(.6*v,t+o);p.exponentialRampToValueAtTime(.08*v,t+o+.009)});p.setValueAtTime(.5*v,t+.03);p.exponentialRampToValueAtTime(.0001,t+.22)},
+ hat(t,v){const g=ac.createGain();noise(t,.06,filt('highpass',7600),g);perc(g,t,.2*v,.045)},
+ oh(t,v){const g=ac.createGain();noise(t,.36,filt('highpass',7000),filt('peaking',10000,1,4),g);perc(g,t,.16*v,.3)},
+ tram(t,v){[0,.12].forEach((o,k)=>{const a=k?.7:1;[[1240,1],[2985,.45],[3870,.28],[5260,.12]].forEach(([f,m])=>{const g=ac.createGain();osc('sine',f,t+o,1.7,g);perc(g,t+o,.13*v*m*a,1.5)});
+   const n=ac.createGain();noise(t+o,.03,filt('bandpass',3000,2),n);perc(n,t+o,.12*v*a,.02)})},
+ pip(t,v){const g=ac.createGain(),p=g.gain;osc('sine',1000,t,.12,g);p.setValueAtTime(.0001,t);p.linearRampToValueAtTime(.26*v,t+.004);p.setValueAtTime(.26*v,t+.096);p.linearRampToValueAtTime(.0001,t+.1)}
+};
+function lead(kind,m,t,dur,v){
+  const f=mtof(m),g=ac.createGain();
+  if(kind==='saw'){const lp=filt('lowpass',800,2);lp.frequency.setValueAtTime(800,t);lp.frequency.linearRampToValueAtTime(4200,t+.012);lp.frequency.setTargetAtTime(1500,t+.02,.12);
+    lp.connect(g);[-14,0,14].forEach(c=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=c;o.connect(lp);o.start(t);o.stop(t+dur+.4)});chain(g,master);env(g,t,.004,.085*v,dur*.75,.16)}
+  else if(kind==='sq'){osc('square',f,t,dur+.2,filt('lowpass',5200,.5),g);env(g,t,.002,.075*v,dur*.7,.03)}
+  else if(kind==='reed'){const lp=filt('lowpass',2600,1.5),pk=filt('peaking',1150,1.2,6);chain(lp,pk,g,master);
+    const lf=ac.createOscillator(),lg=ac.createGain();lf.frequency.value=5.3;lg.gain.value=7;lf.connect(lg);lf.start(t);lf.stop(t+dur+.3);
+    [-7,7].forEach(c=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=c;lg.connect(o.detune);o.connect(lp);o.start(t);o.stop(t+dur+.3)});
+    const s=ac.createOscillator(),sg=ac.createGain();s.type='square';s.frequency.value=f/2;sg.gain.value=.35;s.connect(sg).connect(lp);s.start(t);s.stop(t+dur+.3);
+    env(g,t,.035,.07*v,dur*.85,.09)}
+  else if(kind==='keys'){osc('sine',f,t,1.3,g);const g2=ac.createGain();osc('sine',f*2,t,1,g2);perc(g2,t,.06*v,.7);const g3=ac.createGain();osc('sine',f*4.02,t,.2,g3);perc(g3,t,.05*v,.12);perc(g,t,.24*v,Math.max(.5,dur*2.5))}
+  else {const lp=filt('lowpass',4200,3);lp.frequency.setValueAtTime(4200,t);lp.frequency.exponentialRampToValueAtTime(320,t+.32);osc('sawtooth',f,t,.7,lp,g);perc(g,t,.16*v,.6)}
+}
+function bass(kind,m,t,dur,v){
+  const f=mtof(m),g=ac.createGain();
+  if(kind==='saw'){const lp=filt('lowpass',1500,7);lp.frequency.setValueAtTime(1500,t);lp.frequency.exponentialRampToValueAtTime(230,t+.18);osc('sawtooth',f,t,dur+.2,lp,g);env(g,t,.004,.24*v,dur*.7,.06)}
+  else if(kind==='sub'){osc('sine',f,t,dur+.25,g);const g2=ac.createGain();osc('triangle',f*2,t,dur+.2,g2);env(g2,t,.004,.05*v,dur*.6,.06);env(g,t,.005,.5*v,dur*.8,.08)}
+  else if(kind==='pluck'){const lp=filt('lowpass',2200,2);lp.frequency.setValueAtTime(2200,t);lp.frequency.exponentialRampToValueAtTime(180,t+.25);osc('sawtooth',f,t,.8,lp,g);perc(g,t,.3*v,.55)}
+  else {osc('square',f,t,dur+.15,filt('lowpass',1300,1),g);env(g,t,.002,.15*v,dur*.7,.04)}
+}
+const sd=()=>60/S.bpm/4;
+function trig(s,t){
+  const acc=s%4===0?1:.82;
+  ROWS.forEach((r,i)=>{if(S.d[i][s])DR[r](t,r==='hat'||r==='oh'?acc:1)});
+  const mk=S.m[s];if(mk){const dur=sd()*.92;for(let k=0;k<8;k++)if(mk&(1<<k))lead(S.ld,midiOf(k,0),t,dur,acc)}
+  if(S.b[s]>=0)bass(S.bs,midiOf(S.b[s],1),t,sd()*.9,1);
+}
+function audition(tab,r){if(!initAudio())return;if(ac.state!=='running')ac.resume();const t=ac.currentTime+.02;
+  if(tab==='d')DR[ROWS[r]](t,1);else if(tab==='m')lead(S.ld,midiOf(r,0),t,sd()*1.5,1);else bass(S.bs,midiOf(r,1),t,sd()*1.5,1)}
+
+/* ---------- transport ---------- */
+let playing=false,step=0,nextT=0,timer=0,vq=[],raf=0,ph=-1;
+function sched(){const len=16*S.bars;while(nextT<ac.currentTime+.12){if(step>=len)step=0;const t=nextT+(step%2?S.sw/100*sd()*.66:0);trig(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
+function vis(){raf=requestAnimationFrame(vis);if(!ac)return;let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
+function mark(){box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+  const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
+  if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
+function start(){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();playing=true;step=0;vq=[];nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
+function stop(){playing=false;clearInterval(timer);cancelAnimationFrame(raf);vq=[];ph=-1;mark();box.querySelectorAll('.sq-bar button.pl').forEach(b=>b.classList.remove('pl'));btn()}
+function btn(){const b=box.querySelector('.sq-play');if(b){b.textContent=(playing?'■ ':'▶ ')+(playing?T().stop:T().play);b.setAttribute('aria-pressed',playing)}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)stop()});
+document.addEventListener('keydown',e=>{if(e.code!=='Space'||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target;
+  if(tg&&tg.closest&&tg.closest('input,select,textarea,button,a,iframe,[contenteditable],dialog'))return;
+  const r=box.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;e.preventDefault();playing?stop():start()});
+
+/* ---------- UI ---------- */
+let tab='m',page=0;
+function nm(m){return NN[m%12]+(Math.floor(m/12)-1)}
+function rowsOf(){const t=T();if(tab==='d')return ROWS.map((r,i)=>({r:i,l:t.rows[i]}));return [7,6,5,4,3,2,1,0].map(k=>({r:k,l:nm(midiOf(k,tab==='b'))}))}
+function on(r,s){return tab==='d'?!!S.d[r][s]:tab==='m'?!!(S.m[s]&(1<<r)):S.b[s]===r}
+function grid(){
+  const t=T(),o=page*16;let h=`<div class="sq-g sq-${tab}" role="grid" aria-label="${esc(t.tabs[tab])}"><span class="sq-l" aria-hidden="true"></span>`;
+  for(let s=0;s<16;s++)h+=`<span class="sq-n mono${s%4===0?' q':''}" data-s="${s}" aria-hidden="true">${o+s+1}</span>`;
+  for(const row of rowsOf()){h+=`<span class="sq-l mono">${esc(row.l)}</span>`;
+    for(let s=0;s<16;s++){const v=on(row.r,o+s);h+=`<button type="button" class="sq-c${Math.floor(s/4)%2?' alt':''}${s%4===0?' q':''}" data-r="${row.r}" data-s="${s}" aria-pressed="${v}" aria-label="${esc(row.l)} · ${t.step} ${o+s+1}"></button>`}}
+  return h+'</div>'}
+function opts(list,cur,lab){return list.map(k=>`<option value="${k}"${k===cur?' selected':''}>${esc(lab[k]||k)}</option>`).join('')}
+function draw(){
+  const t=T();
+  box.innerHTML=`<div class="head"><div><div class="code"><b>03</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>
+<div class="sq">
+<div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
+<div class="sq-top">
+<button type="button" class="btn primary sq-play" aria-pressed="${playing}"></button>
+<label class="sq-f"><span>${esc(t.tempo)} <b class="mono" data-o="bpm">${S.bpm}</b></span><input type="range" min="60" max="180" step="1" value="${S.bpm}" data-k="bpm"></label>
+<label class="sq-f"><span>${esc(t.swing)} <b class="mono" data-o="sw">${S.sw}%</b></span><input type="range" min="0" max="50" step="1" value="${S.sw}" data-k="sw"></label>
+<label class="sq-f"><span>${esc(t.vol)}</span><input type="range" min="0" max="100" step="1" value="${Math.round(S.vol*100)}" data-k="vol"></label>
+</div>
+<div class="sq-sets">
+<label class="sq-f"><span>${esc(t.key)}</span><select data-k="k">${Object.keys(KEYS).map(k=>`<option${k===S.k?' selected':''}>${k}</option>`).join('')}</select></label>
+<label class="sq-f"><span>${esc(t.mode)}</span><select data-k="md">${opts(MODES,S.md,t.modes)}</select></label>
+<label class="sq-f"><span>${esc(t.lead)}</span><select data-k="ld">${opts(LEADS,S.ld,t.leads)}</select></label>
+<label class="sq-f"><span>${esc(t.bass)}</span><select data-k="bs">${opts(BASSES,S.bs,t.basses)}</select></label>
+<label class="sq-f"><span>${esc(t.listen)}</span><select data-k="fx">${opts(FXS,S.fx,t.fx)}</select></label>
+</div>
+<div class="sq-bar2">
+<div class="sq-tabs" role="tablist">${['m','b','d'].map(k=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${esc(t.tabs[k])}</button>`).join('')}</div>
+<div class="sq-len" role="group" aria-label="${esc(t.len)}"><button type="button" data-bars="1" aria-pressed="${S.bars===1}">${esc(t.bar1)}</button><button type="button" data-bars="2" aria-pressed="${S.bars===2}">${esc(t.bar2)}</button></div>
+<div class="sq-bar" role="group" aria-label="${esc(t.bar)}"${S.bars===1?' hidden':''}><button type="button" data-p="0" aria-pressed="${page===0}">${esc(t.bar)} 1</button><button type="button" data-p="1" aria-pressed="${page===1}">${esc(t.bar)} 2</button></div>
+</div>
+<div class="sq-gw">${grid()}</div>
+<div class="sq-act"><button type="button" class="btn ghost" data-a="rnd">${esc(t.rnd)}</button><button type="button" class="btn ghost" data-a="clr">${esc(t.clr)}</button><button type="button" class="btn ghost" data-a="share">${esc(t.share)}</button></div>
+<p class="sq-msg" role="status" aria-live="polite"></p>
+<p class="sq-hint mono">${esc(t.hint)}</p>
+</div>
+<p class="sq-note">${esc(t.note)}</p>`;
+  btn();if(msg)say(T()[msg]||msg);msg='';mark();
+}
+function regrid(){const w=box.querySelector('.sq-gw');if(w){const sl=w.scrollLeft;w.innerHTML=grid();w.scrollLeft=sl}mark()}
+function say(s,link){const p=box.querySelector('.sq-msg');if(!p)return;p.textContent=s;if(link){const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=link;i.className='sq-link';p.appendChild(i);i.focus();i.select()}}
+function edited(){S.pr='';box.querySelectorAll('.sq-pre button').forEach(b=>b.setAttribute('aria-pressed','false'));save()}
+function setCell(r,s,v){
+  const j=page*16+s;
+  if(tab==='d')S.d[r][j]=v?1:0;else if(tab==='m'){S.m[j]=v?(S.m[j]|(1<<r)):(S.m[j]&~(1<<r))}else{S.b[j]=v?r:-1}
+  if(tab==='b')box.querySelectorAll(`.sq-c[data-s="${s}"]`).forEach(c=>c.setAttribute('aria-pressed',+c.dataset.r===S.b[j]));
+  else{const c=box.querySelector(`.sq-c[data-r="${r}"][data-s="${s}"]`);if(c)c.setAttribute('aria-pressed',v)}
+  if(v&&!playing)audition(tab,r);edited()}
+let paint=null;
+box.addEventListener('pointerdown',e=>{const c=e.target.closest('.sq-c');if(!c||e.button>0||e.pointerType!=='mouse')return; // mouse: act on press and paint by dragging; touch and keys: act on click
+  const r=+c.dataset.r,s=+c.dataset.s,v=!on(r,page*16+s);paint={v,last:c};e.preventDefault();setCell(r,s,v);c.dataset.done='1'});
+box.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elementFromPoint(e.clientX,e.clientY),c=el&&el.closest&&el.closest('.sq-c');
+  if(!c||c===paint.last||!box.contains(c))return;paint.last=c;const r=+c.dataset.r,s=+c.dataset.s;if(on(r,page*16+s)!==paint.v)setCell(r,s,paint.v)});
+addEventListener('pointerup',()=>{paint=null});
+box.addEventListener('click',e=>{
+  const c=e.target.closest('.sq-c');
+  if(c){if(c.dataset.done){delete c.dataset.done;return}const r=+c.dataset.r,s=+c.dataset.s;setCell(r,s,!on(r,page*16+s));return} // keyboard activation
+  const b=e.target.closest('button');if(!b)return;
+  if(b.classList.contains('sq-play')){playing?stop():start();return}
+  if(b.dataset.pr){applyPreset(b.dataset.pr);page=0;if(playing){step=0}draw();setFx();if(outG)outG.gain.value=S.vol;save();return}
+  if(b.dataset.tab){tab=b.dataset.tab;box.querySelectorAll('.sq-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));regrid();return}
+  if(b.dataset.bars){const n=+b.dataset.bars;if(n!==S.bars){if(n===2){for(let j=16;j<32;j++){ROWS.forEach((r,i)=>S.d[i][j]=S.d[i][j-16]);S.m[j]=S.m[j-16];S.b[j]=S.b[j-16]}}S.bars=n;if(n===1)page=0;draw();save()}return}
+  if(b.dataset.p){page=+b.dataset.p;box.querySelectorAll('.sq-bar button').forEach(x=>x.setAttribute('aria-pressed',x===b));regrid();return}
+  if(b.dataset.a==='clr'){for(let j=page*16;j<page*16+16;j++){if(tab==='d')S.d.forEach(r=>r[j]=0);else if(tab==='m')S.m[j]=0;else S.b[j]=-1}regrid();edited();return}
+  if(b.dataset.a==='rnd'){rnd();regrid();edited();return}
+  if(b.dataset.a==='share'){const u=location.origin+location.pathname+'#seq='+enc();
+    const ok=()=>say(T().copied),bad=()=>say(T().copyMan,u);
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad();return}
+});
+function rnd(){const o=page*16,R=Math.random;
+  if(tab==='d'){for(let s=0;s<16;s++){const j=o+s;S.d[0][j]=s%8===0||R()<(s%4===0?.3:.08)?1:0;S.d[1][j]=s%8===4?1:(R()<.05?1:0);S.d[2][j]=0;S.d[3][j]=s%2===0&&R()<.85?1:0;S.d[4][j]=s%4===2&&R()<.35?1:0;S.d[5][j]=0;S.d[6][j]=0}}
+  else if(tab==='m'){let d=[0,2,4][Math.floor(R()*3)];for(let s=0;s<16;s++){const j=o+s;if(R()<(s%2?.32:.62)){d=Math.max(0,Math.min(7,d+[-2,-1,-1,0,1,1,2][Math.floor(R()*7)]));S.m[j]=1<<d}else S.m[j]=0}}
+  else{const ch=[0,5,3,4,0,6];for(let s=0;s<16;s++){const j=o+s,root=ch[Math.floor(s/4)%ch.length];S.b[j]=s%4===0||R()<(s%2?.15:.45)?(R()<.8?root:(root+4)%8):-1}}
+}
+box.addEventListener('input',e=>{const el=e.target,k=el.dataset.k;if(!k)return;
+  if(k==='bpm'||k==='sw'){S[k]=+el.value;const o=box.querySelector(`[data-o="${k}"]`);if(o)o.textContent=S[k]+(k==='sw'?'%':'');edited();return}
+  if(k==='vol'){S.vol=+el.value/100;if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save();return}});
+box.addEventListener('change',e=>{const el=e.target,k=el.dataset.k;if(!k||el.tagName!=='SELECT')return;S[k]=el.value;if(k==='fx')setFx();if(k==='k'||k==='md')regrid();edited()});
+
+draw();
+addEventListener('d11lang',()=>setTimeout(draw,0));
+})();
