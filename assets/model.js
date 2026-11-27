@@ -1105,6 +1105,35 @@ function buildX(){const X=XD;if(!X)return;XS=false;
           quad(W(x-.13,y,z),W(x+.13,y,z),W(x+.1,y,cz),W(x-.1,y,cz),gk,0);
           const ring=[W(x+cs,y+sn,cz),W(x-sn,y+cs,cz),W(x-cs,y-sn,cz),W(x+sn,y-cs,cz)],top=W(x,y,cz+rc*1.05),bot=W(x,y,cz-rc*.75);
           for(let m=0;m<4;m++){const p0=ring[m],p1=ring[(m+1)%4];tri3(p0,p1,top,gc,0);tri3(p1,p0,bot,mix(gc,[0,0,0],.22),0)}}})}
+    /* v7.37 living city, private sector (illustrative): a dog by its kennel at about 40 % of the houses, a cat at about a quarter
+       (on the doorstep side or in the yard), a washing line with laundry behind about 40 % of them */
+    {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
+        quad(P(s1,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s1,t0,z1),c,0);quad(P(s0,t1,z0),P(s0,t0,z0),P(s0,t0,z1),P(s0,t1,z1),cs,0);quad(P(s0,t0,z0),P(s1,t0,z0),P(s1,t0,z1),P(s0,t0,z1),cs,0);quad(P(s1,t1,z0),P(s0,t1,z0),P(s0,t1,z1),P(s1,t1,z1),c,0);quad(P(s0,t0,z1),P(s1,t0,z1),P(s1,t1,z1),P(s0,t1,z1),ct,0)};
+      const two=(A,B,C,D,c)=>{quad(A,B,C,D,c,0);quad(D,C,B,A,c,0)};
+      const DOG=[[.45,.3,.18],[.16,.14,.13],[.66,.45,.24],[.72,.7,.64],[.36,.3,.26]].map(tn),CAT=[[.78,.48,.2],[.42,.42,.43],[.12,.12,.13],[.85,.83,.78],[.5,.4,.3]].map(tn),KEN=[[.42,.3,.2],[.5,.38,.26],[.35,.36,.34]].map(tn),
+        LAU=[[.92,.92,.9],[.85,.86,.92],[.75,.2,.2],[.25,.4,.7],[.9,.75,.3],[.4,.6,.4],[.95,.7,.75],[.6,.6,.62]].map(tn),POL=tn([.45,.43,.4]);
+      const dog=(x,y,ux,uy,c,lie)=>{const z=gz(x,y)-.02;if(lie){bx3(x,y,ux,uy,z,-.38,.3,-.16,.16,0,.26,c);bx3(x,y,ux,uy,z,.3,.55,-.11,.11,.06,.3,c);return}
+        bx3(x,y,ux,uy,z,-.36,.3,-.13,.13,.3,.56,c);bx3(x,y,ux,uy,z,.3,.55,-.1,.1,.46,.7,c);bx3(x,y,ux,uy,z,.55,.64,-.05,.05,.5,.6,mix(c,[0,0,0],.3));
+        for(const [s0,t0] of [[-.33,-.12],[-.33,.06],[.2,-.12],[.2,.06]])bx3(x,y,ux,uy,z,s0,s0+.08,t0,t0+.06,0,.31,c);bx3(x,y,ux,uy,z,-.5,-.36,-.03,.03,.45,.58,c)};
+      const cat=(x,y,ux,uy,c,sit)=>{const z=gz(x,y)-.02;if(sit){bx3(x,y,ux,uy,z,-.1,.1,-.08,.08,0,.24,c);bx3(x,y,ux,uy,z,-.02,.12,-.06,.06,.24,.36,c);bx3(x,y,ux,uy,z,-.24,-.1,-.02,.02,0,.04,c);return}
+        bx3(x,y,ux,uy,z,-.2,.16,-.06,.06,.12,.26,c);bx3(x,y,ux,uy,z,.16,.28,-.06,.06,.18,.31,c);for(const s0 of [-.18,.1])bx3(x,y,ux,uy,z,s0,s0+.05,-.05,.05,0,.13,c);bx3(x,y,ux,uy,z,-.24,-.2,-.02,.02,.2,.42,c)};
+      for(const [cx,cy,u,v,la,lb,fx,fy,fd,id] of privHouses()){const h=hash('l'+id),sd=Math.abs(fx*v[0]+fy*v[1])>.7,e=sd?lb:la,ex=sd?la:lb,sx=-fy,sy=fx;
+        /* kennel near a front corner, the dog beside it (often lying) */
+        if(h%100<40){const k=(h>>>3)&1?1:-1,d=e+1.6,x=cx+fx*d+sx*k*(ex-.6),y=cy+fy*d+sy*k*(ex-.6);if(xclr(x,y,.7)){const z=gz(x,y)-.02,kc=KEN[(h>>>5)%3],P=(s,t,q)=>W(x+fx*s-fy*t,y+fy*s+fx*t,z+q);
+          bx3(x,y,fx,fy,z,-.45,.45,-.35,.35,0,.55,kc);const R=mix(kc,[0,0,0],.25);quad(P(-.5,-.42,.55),P(.5,-.42,.55),P(.5,0,.85),P(-.5,0,.85),R,0);quad(P(.5,.42,.55),P(-.5,.42,.55),P(-.5,0,.85),P(.5,0,.85),R,0);
+          tri3(P(.46,-.35,.55),P(.46,.35,.55),P(.46,0,.85),kc,0);quad(P(.46,-.14,.02),P(.46,.14,.02),P(.46,.14,.38),P(.46,-.14,.38),[.08,.07,.06],0);
+          const a=(h>>>8)%628/100,dx=Math.cos(a),dy=Math.sin(a),px=x+fx*1.1+sx*.2,py=y+fy*1.1+sy*.2;if(xclr(px,py,.3))dog(px,py,dx,dy,DOG[(h>>>12)%DOG.length],(h>>>15)%3!==0)}}
+        /* a cat on the street side by the wall, or out in the yard */
+        if((h>>>18)%100<26){const back=(h>>>25)&1,d=e+(back?2.5+(h>>>26)%3:.7),o=((h>>>20)%9-4)/4*ex,x=cx+fx*d*(back?-1:1)+sx*o,y=cy+fy*d*(back?-1:1)+sy*o,a=(h>>>9)%628/100;
+          if(xclr(x,y,.2))cat(x,y,Math.cos(a),Math.sin(a),CAT[(h>>>22)%CAT.length],(h>>>27)&1)}
+        /* washing line in the back yard: two T posts 4-6 m apart at 1.9 m, laundry pegged along it */
+        if((h>>>4)%100<40){const d=e+3+(h>>>6)%3,L=4+(h>>>10)%3,o=((h>>>13)%5-2)/4*ex,ax=cx-fx*d+sx*(o-L/2),ay=cy-fy*d+sy*(o-L/2),bx_=ax+sx*L,by_=ay+sy*L;
+          if(xclr(ax,ay,.4)&&xclr(bx_,by_,.4)&&xclr((ax+bx_)/2,(ay+by_)/2,.4)){const za=gz(ax,ay),zb=gz(bx_,by_),R=1.9;
+            for(const [x,y,z] of [[ax,ay,za],[bx_,by_,zb]]){bx3(x,y,sx,sy,z,-.04,.04,-.04,.04,0,R+.05,POL);bx3(x,y,sx,sy,z,-.03,.03,-.45,.45,R-.05,R+.03,POL)}
+            const rope=(t)=>{for(let i=0;i<8;i++){const s0=i/8,s1=(i+1)/8,sg=q=>-.12*Math.sin(q*Math.PI),x0=ax+(bx_-ax)*s0-sy*t,y0=ay+(by_-ay)*s0+sx*t,x1=ax+(bx_-ax)*s1-sy*t,y1=ay+(by_-ay)*s1+sx*t,z0=za+(zb-za)*s0+R+sg(s0),z1=za+(zb-za)*s1+R+sg(s1);two(W(x0,y0,z0),W(x1,y1,z1),W(x1,y1,z1-.02),W(x0,y0,z0-.02),[.85,.84,.8],0)}};rope(-.3);rope(.3);
+            let s=.4;for(let k=0;s<L-.6&&k<9;k++){const hh=hash(id+'w'+k),w=.4+(hh%50)/100,ht=.35+((hh>>>6)%45)/100,t=(hh>>>12)&1?.3:-.3;if((hh>>>14)%4===0){s+=w*.6;continue}
+              const q0=s/L,q1=Math.min(1,(s+w)/L),zt=q=>za+(zb-za)*q+R-.12*Math.sin(q*Math.PI)-.02,P=(q,z)=>W(ax+(bx_-ax)*q-sy*t,ay+(by_-ay)*q+sx*t,z);
+              two(P(q0,zt(q0)),P(q1,zt(q1)),P(q1,zt(q1)-ht),P(q0,zt(q0)-ht),LAU[(hh>>>16)%LAU.length]);s+=w+.12}}}}}
     /* v6.0: cars parked along the drives in the yards of the apartment blocks (illustrative): a Lada, a Moskvich, a foreign car */
     const PKC=[[.78,.77,.73],[.2,.22,.25],[.55,.13,.12],[.18,.3,.5],[.85,.84,.8],[.36,.38,.4],[.4,.5,.36],[.7,.62,.3],[.25,.25,.28],[.6,.6,.62],[.58,.32,.18],[.9,.9,.88],[.3,.18,.2],[.5,.55,.6],[.16,.16,.18],[.75,.7,.55]],glc=dk?[.08,.09,.1]:[.16,.19,.22],tyc=[.07,.07,.08];
     const bx=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
@@ -1224,13 +1253,21 @@ function hXB(x,y,hx,hy){for(const b of XBR){if(x<b.bb[0]||x>b.bb[2]||y<b.bb[1]||
       const u=((x-p[0])*dx+(y-p[1])*dy)/(l*l);if(u<-.02||u>1.02)continue;if(Math.abs((x-p[0])*dy-(y-p[1])*dx)/l>b.hw+3.6)continue;const t=Math.max(0,Math.min(1,u));return Math.max(hR(x,y),b.Z[i-1]+(b.Z[i]-b.Z[i-1])*t)}}
   return hR(x,y)}
 /* v7.36 living city, sector by sector (grid A1-D3 of the reference map, see the sector plan). LIVE lists the sectors done so far */
-const LIVE=new Set(["A1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
+const LIVE=new Set(["A1", "B1", "C1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
 function secAt(x,y){let c=-1,r=-1;for(let i=0;i<4;i++)if(x>=SXS[i]&&x<SXS[i+1])c=i;for(let i=0;i<3;i++)if(y<=SYS[i]&&y>SYS[i+1])r=i;return c<0||r<0?'':'ABCD'[c]+(r+1)}
 const liveAt=(x,y)=>LIVE.has(secAt(x,y));
 function gridZ(x,y){if(!XGV||!XD)return hX(x,y);const g=XD.g,[t0,t1,t2,t3]=D.tb;if(x>t0&&x<t2&&y>t1&&y<t3)return hX(x,y);const fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,i=Math.max(0,Math.min(g.nx-1,Math.floor(fx))),j=Math.max(0,Math.min(g.ny-1,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j)),gv=XGV;const a=gv[j][i][0][1],b=gv[j][i+1][0][1],c=gv[j+1][i+1][0][1],d=gv[j+1][i][0][1];return u>=v?a+(b-a)*u+(c-b)*v:a+(c-d)*u+(d-a)*v}
 /* outward wall segments of the blocks of flats in the live sectors: [mx,my,nx,ny,ux,uy,L,id] for walls of 12 m and more */
 function flatWalls(){const out=[];if(!XD)return out;for(const b of XD.b){if(Math.floor(b[4]/10)!==1)continue;const f=b[6],r=[];for(let i=0;i<f.length;i+=2)r.push([f[i]/10,f[i+1]/10]);let cx=0,cy=0;for(const q of r){cx+=q[0];cy+=q[1]}cx/=r.length;cy/=r.length;if(!liveAt(cx,cy))continue;
   for(let i=0;i<r.length;i++){const a=r[i],c=r[(i+1)%r.length],dx=c[0]-a[0],dy=c[1]-a[1],L=Math.hypot(dx,dy);if(L<12)continue;const ux=dx/L,uy=dy/L,mx=(a[0]+c[0])/2,my=(a[1]+c[1])/2;let nx=uy,ny=-ux;if(inPoly(r,mx+nx*.8,my+ny*.8)){nx=-nx;ny=-ny}out.push([mx,my,nx,ny,ux,uy,L,b[0]])}}return out}
+/* v7.37 living city, private sector: houses of the live sectors and their street side. [cx,cy,u,v,la,lb,fx,fy,fd,id]: fx,fy the unit
+   direction from the house to the nearest street (within 30 m of the wall), fd the distance from the wall to that street's edge */
+let PRV=null;function privHouses(){if(PRV)return PRV;PRV=[];if(!XD)return PRV;const G=new Map(),ck=(i,j)=>i*4096+j;
+  for(const [k,w,br,f] of XD.r){const hw=w/20;for(let i=2;i<f.length;i+=2){const a=[f[i-2]/10,f[i-1]/10],b=[f[i]/10,f[i+1]/10];for(let x=Math.floor((Math.min(a[0],b[0])-30)/30);x<=Math.floor((Math.max(a[0],b[0])+30)/30);x++)for(let y=Math.floor((Math.min(a[1],b[1])-30)/30);y<=Math.floor((Math.max(a[1],b[1])+30)/30);y++){const q=ck(x,y);let l=G.get(q);if(!l)G.set(q,l=[]);l.push([a,b,hw])}}}
+  const rd=(x,y)=>{let m=1e9;for(const s of G.get(ck(Math.floor(x/30),Math.floor(y/30)))||[])m=Math.min(m,segD(x,y,s[0],s[1])-s[2]);return m};
+  for(const b of XD.b){const ty=Math.floor(b[4]/10);if(ty!==0&&ty!==8)continue;const f=b[6],r=[];for(let i=0;i<f.length;i+=2)r.push([f[i]/10,f[i+1]/10]);let cx=0,cy=0;for(const q of r){cx+=q[0];cy+=q[1]}cx/=r.length;cy/=r.length;if(!liveAt(cx,cy)||cx>D.tb[0]-10&&cx<D.tb[2]+10&&cy>D.tb[1]-10&&cy<D.tb[3]+10)continue;
+    const o=xobb2(r);if(!o||o.a>16)continue;let best=null;for(const [dx,dy,e] of [[o.v[0],o.v[1],o.b],[-o.v[0],-o.v[1],o.b],[o.u[0],o.u[1],o.a],[-o.u[0],-o.u[1],o.a]]){const d=rd(o.c[0]+dx*e,o.c[1]+dy*e);if(d<30&&(!best||d<best[2]))best=[dx,dy,d]}
+    if(best)PRV.push([o.c[0],o.c[1],o.u,o.v,o.a,o.b,best[0],best[1],Math.max(0,best[2]),b[0]])}return PRV}
 function xsim(){const T=XN;if(!T)return null;
   const P=(f,i)=>[f[i*2]/10,f[i*2+1]/10],xy=f=>{const o=[];for(let i=0;i<f.length;i+=2)o.push([f[i]/10,f[i+1]/10]);return o};
   const mkE=(a,b,pts,o)=>{const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return Object.assign({a,b,pts,cum,len:cum[cum.length-1],cars:[]},o)};
@@ -1339,6 +1376,9 @@ function xsim(){const T=XN;if(!T)return null;
     for(const st of BS){const e=RE[st.e];if(e)stand(RE,st,e.w/2+.5)}for(const st of TS)stand(TE,st,2.4)
     /* v7.36 living city: people by the blocks of flats in the live sectors (illustrative): one or two at about every second entrance
        side, a few more out in the yard; standing, facing the wall or each other */
+    for(const [cx,cy,u,v,la,lb,fx,fy,fd,id] of privHouses()){const h=hash('g'+id);if(h%100>=34)continue;const e=Math.abs(fx*v[0]+fy*v[1])>.7?lb:la,d=e+Math.max(1.2,Math.min(fd-1.2,6)),sx=-fy,sy=fx,o=((h>>>7)%5-2)*.9,x=cx+fx*d+sx*o,y=cy+fy*d+sy*o,two=(h>>>11)%3===0;
+      PED.push({m:'ped',ped:true,stat:true,yd:true,x,y,hx:two?sx:fx,hy:two?sy:fy,col:PC2[(h>>>14)%PC2.length],id:5000+PED.length,mv:false});
+      if(two)PED.push({m:'ped',ped:true,stat:true,yd:true,x:x+sx*.9,y:y+sy*.9,hx:-sx,hy:-sy,col:PC2[(h>>>18)%PC2.length],id:5000+PED.length,mv:false})}
     for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const n=Math.floor(L/14);for(let k=0;k<n;k++){const h=hash('p'+id+k);if(h%10<5)continue;const e=(k+.5)/n*L-L/2,m=1+(h>>>4)%2;
       for(let j=0;j<m;j++){const d=1.6+((h>>>(7+j*3))%8)/2,o=e+(j?.8:0),x=mx+ux*o+nx*d,y=my+uy*o+ny*d,f=j&&d>3?-1:1;PED.push({m:'ped',ped:true,stat:true,yd:true,x,y,hx:-nx*f,hy:-ny*f,col:PC2[(h>>>(12+j*3))%PC2.length],id:5000+PED.length,mv:false})}}}}
   /* traffic-light heads: one per approach, on the right before the stop line */
