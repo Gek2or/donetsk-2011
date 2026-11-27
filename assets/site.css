@@ -2254,3 +2254,20 @@ footer{border-top:0}
 .ph-about{font-size:13.5px;color:var(--muted);line-height:1.55;margin:0}
 .ph-msg{margin:12px 0 0;font-size:14px}.ph-msg:empty{display:none}
 @media (max-width:760px){.phw{grid-template-columns:minmax(0,1fr)}.ph{margin:0 auto}}
+/* v7.38: composer extras */
+.pg{position:relative}
+.pline{position:absolute;top:14px;bottom:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 6px #fff,0 0 2px #ffb15a;pointer-events:none;border-radius:1px}
+.pline[hidden]{display:none}
+.pc.mu{opacity:.32}
+.pm li i.pt0{background:#ff6a5a}.pm li i.pt1{background:#4fb2ff}.pm li i.pt2{background:#7be07b}.pm li i.pt3{background:#ffd24f}.pm li i.off{opacity:.25}
+.pm li i[class^="pt"]{border:0;padding:0}
+.pring{display:grid;justify-items:center;gap:6px;padding:26px 8px 8px;text-align:center}
+.pring b{font-size:13px}.pring span{font-size:17px;font-weight:700;color:#ffd08f}
+.pr-ico{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,#3bd16f 0 52%,#3bd16f55 53% 70%,transparent 71%);display:grid;place-items:center;animation:prp 1s ease-in-out infinite}
+.pr-ico i{width:22px;height:22px;background:#0b2a14;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z'/%3E%3C/svg%3E") center/contain no-repeat}
+@keyframes prp{50%{transform:scale(1.08)}}
+.ph.ringing{animation:phv .32s linear infinite}
+.ph.ringing .ph-scr{animation:phl 1s steps(2) infinite}
+@keyframes phv{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,0) rotate(-.6deg)}75%{transform:translate(2px,0) rotate(.6deg)}}
+@keyframes phl{50%{filter:brightness(1.25)}}
+@media (prefers-reduced-motion:reduce){.ph.ringing,.ph.ringing .ph-scr,.pr-ico{animation:none}}

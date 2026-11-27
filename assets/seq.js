@@ -10,8 +10,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 /* ---------- texts ---------- */
 const TX={
-ru:{code:'Секвенсор',h:'Напиши мелодию Донецка 2010 года',
- p:'Мини-секвенсор прямо в браузере: ритм, мелодия и бас в духе того, что звучало в городе около 2010 года: клубный хаус, попса из радио в маршрутке, шансон, рэп во дворе и полифонические рингтоны. Нажимай клетки, меняй темп и слушай, как это звучало бы из динамика маршрутки или с кассеты.',
+ru:{code:'Секвенсор',h:'Собери рингтон Донецка 2010 года',
+ p:'Собери мелодию, как на телефоне середины 2000-х: четыре дорожки, готовые блоки по такту, а потом поставь её на звонок. Во вкладке «Сетка шагов» можно писать по нотам в духе того, что звучало в городе около 2010 года: хаус, попса из маршрутки, шансон, рэп и рингтоны.',
  pre:'Заготовки',play:'Играть',stop:'Стоп',tempo:'Темп',swing:'Свинг',key:'Тональность',mode:'Лад',lead:'Звук мелодии',bass:'Звук баса',listen:'Где слушаем',vol:'Громкость',
  len:'Длина',bar1:'1 такт',bar2:'2 такта',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодия',b:'Бас'},
@@ -25,8 +25,8 @@ ru:{code:'Секвенсор',h:'Напиши мелодию Донецка 2010
  fromLink:'Мелодия открыта из ссылки.',step:'шаг',noAudio:'Этот браузер не умеет синтезировать звук (нет Web Audio).',
  hint:'Пробел: играть или остановить. Нажатая клетка сразу звучит. Мелодия сохраняется в этом браузере.',
  note:'Заготовки не песни 2010 года, а простые ритмы и ходы в духе жанров; мелодии настоящих песен здесь не воспроизводятся. Весь звук синтезирует браузер на лету, без записей и семплов. Музыка самой игры пишется вручную, она будет в звуковом дневнике выше.'},
-uk:{code:'Секвенсор',h:'Напиши мелодію Донецька 2010 року',
- p:'Міні-секвенсор просто в браузері: ритм, мелодія й бас у дусі того, що звучало в місті близько 2010 року: клубний хаус, попса з радіо в маршрутці, шансон, реп у дворі й поліфонічні рингтони. Натискай клітинки, змінюй темп і слухай, як це звучало б із динаміка маршрутки чи з касети.',
+uk:{code:'Секвенсор',h:'Збери рингтон Донецька 2010 року',
+ p:'Збери мелодію, як на телефоні середини 2000-х: чотири доріжки, готові блоки по такту, а потім постав її на дзвінок. У вкладці «Сітка кроків» можна писати по нотах у дусі того, що звучало в місті близько 2010 року: хаус, попса з маршрутки, шансон, реп і рингтони.',
  pre:'Заготовки',play:'Грати',stop:'Стоп',tempo:'Темп',swing:'Свінг',key:'Тональність',mode:'Лад',lead:'Звук мелодії',bass:'Звук басу',listen:'Де слухаємо',vol:'Гучність',
  len:'Довжина',bar1:'1 такт',bar2:'2 такти',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодія',b:'Бас'},
@@ -40,8 +40,8 @@ uk:{code:'Секвенсор',h:'Напиши мелодію Донецька 20
  fromLink:'Мелодію відкрито з посилання.',step:'крок',noAudio:'Цей браузер не вміє синтезувати звук (немає Web Audio).',
  hint:'Пробіл: грати або зупинити. Натиснута клітинка одразу звучить. Мелодія зберігається в цьому браузері.',
  note:'Заготовки не пісні 2010 року, а прості ритми й ходи в дусі жанрів; мелодії справжніх пісень тут не відтворюються. Увесь звук синтезує браузер на льоту, без записів і семплів. Музика самої гри пишеться вручну, вона буде у звуковому щоденнику вище.'},
-en:{code:'Sequencer',h:'Write a Donetsk 2010 tune',
- p:'A mini sequencer right in the browser: rhythm, melody and bass in the spirit of what played in the city around 2010: club house, pop on the minibus radio, chanson, yard rap and polyphonic ringtones. Click the cells, change the tempo and hear how it would sound from a marshrutka speaker or a cassette.',
+en:{code:'Sequencer',h:'Build a Donetsk 2010 ringtone',
+ p:'Build a tune like on a mid-2000s phone: four tracks, ready-made one-bar blocks, then set it as your ringtone. Under Step grid you can write note by note in the spirit of what played in the city around 2010: house, minibus pop, chanson, rap and ringtones.',
  pre:'Presets',play:'Play',stop:'Stop',tempo:'Tempo',swing:'Swing',key:'Key',mode:'Scale',lead:'Melody sound',bass:'Bass sound',listen:'Where we listen',vol:'Volume',
  len:'Length',bar1:'1 bar',bar2:'2 bars',bar:'Bar',
  tabs:{d:'Rhythm',m:'Melody',b:'Bass'},
@@ -55,8 +55,8 @@ en:{code:'Sequencer',h:'Write a Donetsk 2010 tune',
  fromLink:'Tune opened from a link.',step:'step',noAudio:'This browser cannot synthesise sound (no Web Audio).',
  hint:'Space: play or stop. A cell sounds as soon as you press it. The tune is saved in this browser.',
  note:'The presets are not songs from 2010 but simple rhythms and moves in the spirit of the genres; no real song’s melody is reproduced here. All sound is synthesised by the browser on the fly, with no recordings or samples. The music of the game itself is written by hand and will appear in the sound diary above.'},
-fi:{code:'Sekvensseri',h:'Sävellä Donetskin 2010 melodia',
- p:'Pieni sekvensseri suoraan selaimessa: rytmi, melodia ja basso siihen henkeen, mitä kaupungissa soi vuoden 2010 tienoilla: klubihousea, poppia marsrutkan radiosta, šansonia, piharäppiä ja polyfonisia soittoääniä. Napauta ruutuja, muuta tempoa ja kuuntele, miltä se kuulostaisi marsrutkan kaiuttimesta tai kasetilta.',
+fi:{code:'Sekvensseri',h:'Sävellä Donetskin 2010 soittoääni',
+ p:'Kokoa melodia kuin 2000-luvun puolivälin puhelimessa: neljä raitaa, valmiita yhden tahdin lohkoja, ja aseta se sitten soittoääneksi. Askelruudukko-välilehdellä voi kirjoittaa nuotti kerrallaan siihen henkeen, mitä kaupungissa soi vuoden 2010 tienoilla: housea, marsrutkan poppia, šansonia, räppiä ja soittoääniä.',
  pre:'Pohjat',play:'Soita',stop:'Seis',tempo:'Tempo',swing:'Swing',key:'Sävellaji',mode:'Asteikko',lead:'Melodian ääni',bass:'Basson ääni',listen:'Missä kuunnellaan',vol:'Äänenvoimakkuus',
  len:'Pituus',bar1:'1 tahti',bar2:'2 tahtia',bar:'Tahti',
  tabs:{d:'Rytmi',m:'Melodia',b:'Basso'},
@@ -139,6 +139,7 @@ let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localS
    Four tracks (drums, bass, chords, accents); each cell holds a one-bar block from one of four groups (intro, verse, chorus,
    break), eight blocks per group. All blocks are our own patterns; same-numbered blocks share a chord root (natural minor on A). */
 let MODE='phone';try{const m=localStorage.getItem('d11-seq-mode');if(m==='grid')MODE='grid'}catch(e){}
+const PHX={"ru": {"m_ring": "Поставить на звонок", "ringing": "Входящий вызов", "caller": "Мама", "answer": "Ответить", "reject": "Отклонить", "ringNote": "♪ твоя мелодия", "m_mine": "Мои мелодии", "slot": "Мелодия", "slotEmpty": "пусто", "s_open": "Открыть", "s_save": "Сохранить сюда", "saved": "Сохранено", "opened": "Открыто", "m_tracks": "Дорожки", "on": "вкл", "off": "выкл", "m_keys": "Звук клавиш", "len": "длина", "help2": "В меню «Ещё»: «Поставить на звонок» — входящий вызов с твоей мелодией, «Мои мелодии» — пять ячеек памяти, «Дорожки» — выключить любую из четырёх."}, "uk": {"m_ring": "Поставити на дзвінок", "ringing": "Вхідний виклик", "caller": "Мама", "answer": "Відповісти", "reject": "Відхилити", "ringNote": "♪ твоя мелодія", "m_mine": "Мої мелодії", "slot": "Мелодія", "slotEmpty": "порожньо", "s_open": "Відкрити", "s_save": "Зберегти сюди", "saved": "Збережено", "opened": "Відкрито", "m_tracks": "Доріжки", "on": "увімк", "off": "вимк", "m_keys": "Звук клавіш", "len": "довжина", "help2": "У меню «Ще»: «Поставити на дзвінок» — вхідний виклик із твоєю мелодією, «Мої мелодії» — п’ять комірок пам’яті, «Доріжки» — вимкнути будь-яку з чотирьох."}, "en": {"m_ring": "Set as ringtone", "ringing": "Incoming call", "caller": "Mum", "answer": "Answer", "reject": "Decline", "ringNote": "♪ your tune", "m_mine": "My tunes", "slot": "Tune", "slotEmpty": "empty", "s_open": "Open", "s_save": "Save here", "saved": "Saved", "opened": "Opened", "m_tracks": "Tracks", "on": "on", "off": "off", "m_keys": "Key sounds", "len": "length", "help2": "In the More menu: Set as ringtone plays an incoming call with your tune, My tunes has five memory slots, Tracks turns any of the four off."}, "fi": {"m_ring": "Aseta soittoääneksi", "ringing": "Saapuva puhelu", "caller": "Äiti", "answer": "Vastaa", "reject": "Hylkää", "ringNote": "♪ sinun melodiasi", "m_mine": "Omat melodiat", "slot": "Melodia", "slotEmpty": "tyhjä", "s_open": "Avaa", "s_save": "Tallenna tähän", "saved": "Tallennettu", "opened": "Avattu", "m_tracks": "Raidat", "on": "päällä", "off": "pois", "m_keys": "Näppäinäänet", "len": "kesto", "help2": "Lisää-valikossa: Aseta soittoääneksi soittaa saapuvan puhelun melodiallasi, Omat melodiat -kohdassa on viisi muistipaikkaa ja Raidat-kohdasta voi hiljentää minkä tahansa neljästä."}};for(const l in PHX)Object.assign(PHT[l],PHX[l]);
 const PH=()=>PHT[L()];
 const PNC=32,PROOT=[0,5,3,6,0,4,5,6],AM=[0,2,3,5,7,8,10];
 const pdeg=(d,o)=>{const k=((d%7)+7)%7;return 57+AM[k]+12*Math.floor(d/7)+12*o};
@@ -168,7 +169,9 @@ const PDEMO=[[[0,0],[0,1],[1,0],[1,0],[1,0],[1,6],[2,0],[2,0],[2,0],[2,2],[3,0],
  [[0,0],[0,1],[1,0],[1,1],[1,2],[1,3],[2,0],[2,1],[2,2],[2,3],[3,0],[2,0]],
  [null,[0,0],null,[1,1],null,[1,3],[2,0],[2,1],[2,2],[2,3],[3,3],[2,0]]];
 const pblank=()=>[0,1,2,3].map(()=>Array(PNC).fill(0));
-let P={bpm:118,spk:1,tr:pblank()};
+let P={bpm:118,spk:1,tr:pblank()},MUTE=[0,0,0,0],KS=1;try{KS=localStorage.getItem('d11-dj-ks')==='0'?0:1}catch(e){}
+function slots(){try{const a=JSON.parse(localStorage.getItem('d11-dj-slots')||'[]');return Array.isArray(a)?a.slice(0,5):[]}catch(e){return []}}
+function putSlot(i,v){const a=slots();while(a.length<5)a.push(null);a[i]=v;try{localStorage.setItem('d11-dj-slots',JSON.stringify(a))}catch(e){}}
 function pDemo(){P.tr=pblank();PDEMO.forEach((row,r)=>row.forEach((v,c)=>{P.tr[r][c]=v?pcode(v[0],v[1]):0}));P.bpm=118}
 pDemo();
 function songLen(){let n=0;for(let r=0;r<4;r++)for(let c=0;c<PNC;c++)if(P.tr[r][c])n=Math.max(n,c+1);return Math.max(1,n)}
@@ -305,7 +308,8 @@ function pev(e,t){if(e.d){DR[e.d](t,e.v,e.s);return}if(e.fx){pfx(e.fx,t,e.L*sd()
 let PV=null; // block preview while browsing the list: {r,cd}
 function phTrig(s,t){
   if(PV){blk(PV.r,PV.cd)[s%16].forEach(e=>pev(e,t));return}
-  const b=Math.floor(s/16),st=s%16;for(let r=0;r<4;r++){const cd=P.tr[r][b];if(cd)blk(r,cd)[st].forEach(e=>pev(e,t))}}
+  const b=Math.floor(s/16),st=s%16;for(let r=0;r<4;r++){const cd=P.tr[r][b];if(cd&&!MUTE[r])blk(r,cd)[st].forEach(e=>pev(e,t))}}
+function kclick(){if(!KS||!ac)return;const t=ac.currentTime+.005,g=ac.createGain();osc('sine',1400,t,.05,g);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.05,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+.04)}
 
 /* ---------- transport ---------- */
 let playing=false,step=0,nextT=0,timer=0,vq=[],raf=0,ph=-1;
@@ -313,7 +317,7 @@ const curLen=()=>MODE==='grid'?16*S.bars:(PV?16:16*songLen());
 function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:0,t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
 function vis(){raf=requestAnimationFrame(vis);if(!ac)return;let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
 let lastB=-9;
-function mark(){if(MODE==='phone'){const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+function mark(){if(MODE==='phone'){const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
   const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
   if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
 function start(from){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();setFx();playing=true;step=from||0;vq=[];lastB=-9;nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
@@ -339,7 +343,7 @@ function opts(list,cur,lab){return list.map(k=>`<option value="${k}"${k===cur?' 
 function draw(){
   const t=T();
   const pt=PH(),mt=`<div class="sq-mode" role="tablist">${['phone','grid'].map(k=>`<button type="button" role="tab" data-mode="${k}" aria-selected="${MODE===k}">${esc(pt.mode[k])}</button>`).join('')}</div>`;
-  const hd=`<div class="head"><div><div class="code"><b>03</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
+  const hd=`<div class="head"><div><div class="code"><b>01</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
   if(MODE==='phone'){box.innerHTML=hd+phHTML();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
   box.innerHTML=hd+`<div class="sq">
 <div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
@@ -386,7 +390,7 @@ box.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elemen
 addEventListener('pointerup',()=>{paint=null});
 box.addEventListener('click',e=>{
   const md=e.target.closest('.sq-mode [data-mode]');if(md){const m=md.dataset.mode;if(m!==MODE){if(playing)stop();PV=null;menu=null;MODE=m;try{localStorage.setItem('d11-seq-mode',m)}catch(x){}draw();setFx()}return}
-  const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
+  const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();kclick();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
   const pc=e.target.closest('.pc');if(pc){const r=+pc.dataset.r,c=+pc.dataset.c;if(r===cur.r&&c===cur.c)phKey('ok');else{cur={r,c};phR()}return}
   const mi=e.target.closest('[data-mi]');if(mi&&menu){const i=+mi.dataset.mi;if(i===menu.i)phKey('ok');else{menu.i=i;if(menu.t==='blocks')preview();phR()}return}
   const c=e.target.closest('.sq-c');
@@ -417,22 +421,27 @@ box.addEventListener('change',e=>{const el=e.target,k=el.dataset.k;if(!k||el.tag
 let cur={r:0,c:0},v0=0,menu=null,clip=0,toastT=0,toast='';
 const GC=['dg0','dg1','dg2','dg3'];
 function phTime(){const b=document.querySelector('.dn-chip b');const s=b&&b.textContent||'';return /\d/.test(s)?s:''}
-function softL(){const t=PH();if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
+function softL(){const t=PH();if(menu&&menu.t==='ring')return softRing();if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
   return [playing&&!PV?t.stop:t.play,P.tr[cur.r][cur.c]?t.edit:t.ins,t.more]}
-function moreItems(){const t=PH();return [['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
+function softRing(){const t=PH();return [t.answer,'',t.reject]}
+function moreItems(){const t=PH();return [['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['ring',t.m_ring],['mine',t.m_mine],['tracks',t.m_tracks],['keys',t.m_keys+' · '+(KS?t.on:t.off)],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
 function mItems(){const t=PH();if(!menu)return [];if(menu.t==='more')return moreItems();
-  if(menu.t==='groups')return t.groups.map((g,i)=>[i,g,GC[i]]);if(menu.t==='blocks')return Array.from({length:8},(_,i)=>[i,t.groups[menu.g]+' '+(i+1),GC[menu.g]]);return []}
+  if(menu.t==='groups')return t.groups.map((g,i)=>[i,g,GC[i]]);if(menu.t==='blocks')return Array.from({length:8},(_,i)=>[i,t.groups[menu.g]+' '+(i+1),GC[menu.g]]);
+  if(menu.t==='tracks')return t.tracks.map((x,i)=>[i,x+' · '+(MUTE[i]?t.off:t.on),'pt'+i+(MUTE[i]?' off':'')]);
+  if(menu.t==='mine'){const a=slots();return [0,1,2,3,4].map(i=>[i,t.slot+' '+(i+1)+' · '+(a[i]?a[i].d:t.slotEmpty)])}
+  if(menu.t==='slot'){const a=slots();return (a[menu.n]?[['open',t.s_open]]:[]).concat([['save',t.s_save]])}return []}
 function mTitle(){const t=PH();if(menu.t==='more')return t.more;if(menu.t==='groups')return t.tracks[cur.r];if(menu.t==='blocks')return t.tracks[cur.r]+' · '+t.groups[menu.g];
-  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;return t.title}
-function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):'';
+  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;if(menu.t==='tracks')return t.m_tracks;if(menu.t==='mine')return t.m_mine;if(menu.t==='slot')return t.slot+' '+(menu.n+1);if(menu.t==='ring')return t.ringing;return t.title}
+function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):menu.t==='ring'?t.len+' '+fmtDur():'';
   const cd=P.tr[cur.r][cur.c];return t.tracks[cur.r]+' · '+(cd?t.groups[pg(cd)]+' '+(pn(cd)+1):t.empty)+' · '+t.bar+' '+(cur.c+1)+'/'+songLen()}
 function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>=0?pc:cur.c;
   if(fc<v0)v0=fc;if(fc>v0+7)v0=fc-7;v0=Math.max(0,Math.min(PNC-8,v0));
   let h='<div class="pg"><span></span>';for(let c=v0;c<v0+8;c++)h+=`<span class="pn${c===pc?' on':''}">${c+1}</span>`;
   for(let r=0;r<4;r++){h+=`<span class="pt pt${r}${r===cur.r?' on':''}">${esc(t.trs[r])}</span>`;
-    for(let c=v0;c<v0+8;c++){const cd=P.tr[r][c];h+=`<span class="pc${cd?' '+GC[pg(cd)]:''}${r===cur.r&&c===cur.c?' cur':''}${c===pc?' play':''}" data-r="${r}" data-c="${c}">${cd?pn(cd)+1:''}</span>`}}
-  return h+'</div>'}
+    for(let c=v0;c<v0+8;c++){const cd=P.tr[r][c];h+=`<span class="pc${MUTE[r]?' mu':''}${cd?' '+GC[pg(cd)]:''}${r===cur.r&&c===cur.c?' cur':''}${c===pc?' play':''}" data-r="${r}" data-c="${c}">${cd?pn(cd)+1:''}</span>`}}
+  return h+'<i class="pline" hidden></i></div>'}
 function menuH(){const t=PH();
+  if(menu.t==='ring')return `<div class="pring"><div class="pr-ico" aria-hidden="true"><i></i></div><span>${esc(t.caller)}</span><b>${esc(t.ringNote)}</b></div>`;
   if(menu.t==='tempo'||menu.t==='vol'){const isT=menu.t==='tempo',v=isT?P.bpm:Math.round(S.vol*10),mn=isT?60:0,mx=isT?200:10;
     return `<div class="pv"><b>${v}</b><span>${isT?esc(t.bpm):'/ 10'}</span><i><s style="width:${Math.round((v-mn)/(mx-mn)*100)}%"></s></i></div>`}
   if(menu.t==='confirm')return `<div class="pv pq"><span>${esc(t.confirm)}</span></div>`;
@@ -441,7 +450,7 @@ function menuH(){const t=PH();
     (it.length>6?`<div class="psb"><s style="top:${Math.round(menu.i/(it.length-1)*80)}%"></s></div>`:'')}
 function scrH(){const t=PH(),[a,b,c]=softL();
   return `<div class="ps-stat"><i class="psig" aria-hidden="true"><b></b><b></b><b></b><b></b></i><span>${esc(phTime())}</span><i class="pbat" aria-hidden="true"><b></b></i></div>
-<div class="ps-title"><span>${esc(menu?mTitle():t.title)}</span><b>${playing?'♪ ':''}${P.bpm}</b></div>
+<div class="ps-title"><span>${esc(menu?mTitle():t.title)}</span><b>${playing?'♪ ':''}${fmtDur()} · ${P.bpm}</b></div>
 <div class="ps-body">${menu?menuH():gridH()}</div>
 <div class="ps-info">${esc(info())}</div>
 <div class="ps-soft"><span>${esc(a)}</span><span>${esc(b)}</span><span>${esc(c)}</span></div>`}
@@ -456,9 +465,11 @@ function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#
 <button type="button" class="ph-sk" data-pk="sr"><i></i></button></div>
 <div class="ph-num">${K.map(k=>`<button type="button" data-pk="${k}"><b>${k}</b><small>${esc(t.keys[k]||'')}</small></button>`).join('')}</div>
 </div>
-<div class="ph-side" id="phHelp"><h3>${esc(t.helpH)}</h3><ol>${t.help.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p><p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
+<div class="ph-side" id="phHelp"><h3>${esc(t.helpH)}</h3><ol>${t.help.concat([t.help2]).map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p><p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
 function flash(s){toast=s;clearTimeout(toastT);phR();toastT=setTimeout(()=>{toast='';phR()},1600)}
-function closeMenu(){if(PV){PV=null;stop()}menu=null}
+function closeMenu(){if(PV){PV=null;stop()}if(menu&&menu.t==='ring'){stop();ringOff()}menu=null}
+function ringOff(){const f=box.querySelector('.ph');if(f)f.classList.remove('ringing')}
+let ringT=0;function ring(){if(playing)stop();menu={t:'ring'};start(0);const f=box.querySelector('.ph');if(f)f.classList.add('ringing');clearTimeout(ringT);ringT=setTimeout(()=>{if(menu&&menu.t==='ring'){closeMenu();phR()}},30000)}
 function preview(){if(!initAudio())return;PV={r:cur.r,cd:pcode(menu.g,menu.i)};if(playing){step=0;vq=[];nextT=ac.currentTime+.04}else start(0)}
 function openBlocks(g,i){if(playing&&!PV)stop();menu={t:'blocks',g,i};preview()}
 function phPlay(){if(menu)closeMenu();if(playing){stop();return}const L=songLen();start(cur.c<L?cur.c*16:0)}
@@ -473,6 +484,10 @@ function act(a){const t=PH();
   else if(a==='spk'){P.spk=P.spk?0:1;setFx();phSave();flash(P.spk?t.m_spk:t.m_hp)}
   else if(a==='demo'){if(playing)stop();pDemo();cur={r:0,c:0};v0=0;phSave();flash(t.demo)}
   else if(a==='clear')menu={t:'confirm'};
+  else if(a==='ring')ring();
+  else if(a==='mine')menu={t:'mine',i:0};
+  else if(a==='tracks')menu={t:'tracks',i:0};
+  else if(a==='keys'){KS=KS?0:1;try{localStorage.setItem('d11-dj-ks',KS?'1':'0')}catch(e){}menu={t:'more',i:moreItems().findIndex(x=>x[0]==='keys')}}
   else if(a==='share'){const u=location.origin+location.pathname+'#dj='+phEnc(),m=box.querySelector('.ph-msg');
     const ok=()=>{flash(t.linkOk);if(m)m.textContent=''},bad=()=>{if(!m)return;m.textContent=t.linkMan;const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.focus();i.select()};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad()}}
@@ -486,6 +501,7 @@ function phKey(k){const t=PH();
     else if(k==='8')cur.r=(cur.r+1)%4;else if(k==='6')cur.c=Math.min(PNC-1,cur.c+1);
   }else if(menu.t==='tempo'||menu.t==='vol'){
     if(k==='left'||k==='down'||k==='7')adj(-1);else if(k==='right'||k==='up'||k==='9')adj(1);else if(k==='ok'||k==='sl'||k==='sr')menu=null;
+  }else if(menu.t==='ring'){closeMenu();
   }else if(menu.t==='confirm'){
     if(k==='ok'||k==='sl'){if(playing)stop();P.tr=pblank();cur={r:0,c:0};v0=0;phSave();menu=null;flash(t.cleared)}else if(k==='sr')menu=null;
   }else{const n=mItems().length;
@@ -494,17 +510,25 @@ function phKey(k){const t=PH();
     else if(k==='ok'||k==='sl'||k==='right'){
       if(menu.t==='more')act(mItems()[menu.i][0]);
       else if(menu.t==='groups')openBlocks(menu.i,0);
-      else if(menu.t==='blocks'){const cd=pcode(menu.g,menu.i);closeMenu();setBlk(cd)}}
-    else if(k==='sr'||k==='left'){if(menu.t==='blocks'){const g=menu.g;closeMenu();if(k==='left')menu={t:'groups',i:g}}else menu=null}}
+      else if(menu.t==='blocks'){const cd=pcode(menu.g,menu.i);closeMenu();setBlk(cd)}
+      else if(menu.t==='tracks'){MUTE[menu.i]=MUTE[menu.i]?0:1}
+      else if(menu.t==='mine'){menu={t:'slot',n:menu.i,i:0}}
+      else if(menu.t==='slot'){const it=mItems()[menu.i][0],n=menu.n;
+        if(it==='save'){const d=new Date();putSlot(n,{s:phEnc(),d:String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')});menu={t:'mine',i:n};flash(t.saved)}
+        else{const v=slots()[n],m=v&&phDec(v.s);if(m){if(playing)stop();P=m;cur={r:0,c:0};v0=0;phSave();menu=null;flash(t.opened)}}}}
+    else if(k==='sr'||k==='left'){if(menu.t==='blocks'){const g=menu.g;closeMenu();if(k==='left')menu={t:'groups',i:g}}else if(menu.t==='slot')menu={t:'mine',i:menu.n};else if(menu.t==='tracks'||menu.t==='mine')menu={t:'more',i:moreItems().findIndex(x=>x[0]===menu.t)};else menu=null}}
   phR()}
-function phMark(){if(!menu)phR()}
+function phMark(){if(!menu||menu.t==='ring')phR()}
+function pline(){const l=box.querySelector('.pline');if(!l)return;if(!playing||PV||ph<0){l.hidden=true;return}
+  const c=box.querySelector(`.pc[data-r="0"][data-c="${Math.floor(ph/16)}"]`);if(!c){l.hidden=true;return}l.hidden=false;l.style.left=(c.offsetLeft+c.offsetWidth*(ph%16)/16)+'px'}
+function fmtDur(){const sec=Math.round(songLen()*16*60/P.bpm/4);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
 
 const PKM={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'sr',Backspace:'0',Delete:'0',' ':'sl'};
 box.addEventListener('keydown',e=>{if(MODE!=='phone'||!e.target.closest||!e.target.closest('.ph')||e.ctrlKey||e.metaKey||e.altKey)return;
   let k=PKM[e.key]||(/^[0-9*#]$/.test(e.key)?e.key:'');if(!k)return;
   if(e.target.tagName==='BUTTON'&&(e.key==='Enter'||e.key===' '))return; // the focused key handles itself
   if(k==='0'&&menu&&e.key==='Backspace')k='sr';
-  e.preventDefault();e.stopPropagation();if(initAudio()&&ac.state!=='running')ac.resume();phKey(k)});
+  e.preventDefault();e.stopPropagation();if(initAudio()&&ac.state!=='running')ac.resume();kclick();phKey(k)});
 draw();
 addEventListener('d11lang',()=>setTimeout(draw,0));
 })();
