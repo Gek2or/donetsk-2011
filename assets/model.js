@@ -1050,10 +1050,17 @@ function buildX(){const X=XD;if(!X)return;XS=false;
           for(const [ux,uy] of [[.2,0],[0,.2]])quad(W(x-ux,y-uy,z),W(x+ux,y+uy,z),W(x+ux*.7,y+uy*.7,z+s*.55),W(x-ux*.7,y-uy*.7,z+s*.55),trk,0);
           const r=s*.4,cz=z+s*.62,top=W(x,y,cz+r*1.1),bot=W(x,y,cz-r*.4),ring=[];for(let q=0;q<5;q++){const a=q*1.2566+(h%7);ring.push(W(x+Math.cos(a)*r,y+Math.sin(a)*r,cz))}
           for(let q=0;q<5;q++){const a=ring[q],b=ring[(q+1)%5];tri3(a,b,top,gc,0);tri3(b,a,bot,mix(gc,[0,0,0],.22),0)}}}}}
-  /* v5.9: fences and walls mapped in OSM, sports pitches and playgrounds, storage tanks */
+      /* v7.40: no double fences. Every drawn fence segment goes into FRG (10 m cells); frNear tells whether a parallel fence already runs
+       within r m over at least half of a new segment (OSM duplicates, the plot fences of neighbouring houses, plot fences on OSM ones) */
+    const FRG=new Map(),frK=(i,j)=>i*8192+j;
+    const frNear=(a,b,r)=>{const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<.05)return false;const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,cr=Math.ceil((L/2+r)/10);
+      for(let i=-cr;i<=cr;i++)for(let j=-cr;j<=cr;j++)for(const q of FRG.get(frK(Math.floor(mx/10)+i,Math.floor(my/10)+j))||[]){const vx=q[2]-q[0],vy=q[3]-q[1],l2=Math.hypot(vx,vy);if(l2<.05)continue;const wx=vx/l2,wy=vy/l2;
+        if(Math.abs(ux*wx+uy*wy)<.9)continue;if(Math.abs((mx-q[0])*wy-(my-q[1])*wx)>r)continue;const t0=(a[0]-q[0])*wx+(a[1]-q[1])*wy,t1=(b[0]-q[0])*wx+(b[1]-q[1])*wy,ov=Math.min(l2,Math.max(t0,t1))-Math.max(0,Math.min(t0,t1));if(ov>=L*.5)return true}return false};
+    const frAdd=(a,b)=>{const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,k=frK(Math.floor(mx/10),Math.floor(my/10));let l=FRG.get(k);if(!l)FRG.set(k,l=[]);l.push([a[0],a[1],b[0],b[1]])};
+    /* v5.9: fences and walls mapped in OSM, sports pitches and playgrounds, storage tanks */
   if(ill){const fcol=[dk?[.3,.32,.3]:[.66,.68,.63],dk?[.36,.35,.33]:[.78,.76,.71],dk?[.33,.32,.3]:[.7,.67,.6]],fh=[1.7,2.3,1.2];
     /* v7.14 audit: a gate is left open where a fence crosses a road or a path (54 places) */
-    for(const [k,f] of (X.fe||[])){const p=xy(f);for(let i=1;i<p.length;i++){const a0=p[i-1],c0=p[i];if(Math.hypot(c0[0]-a0[0],c0[1]-a0[1])<.3)continue;let u0=0;const run=[];for(const [g0,g1] of [...s4.gates(a0,c0),[1,2]]){if(g0>u0)run.push([u0,Math.min(1,g0)]);u0=Math.max(u0,g1);if(u0>=1)break}
+    for(const [k,f] of (X.fe||[])){const p=xy(f);for(let i=1;i<p.length;i++){const a0=p[i-1],c0=p[i];if(Math.hypot(c0[0]-a0[0],c0[1]-a0[1])<.3)continue;if(frNear(a0,c0,1.2))continue;frAdd(a0,c0);let u0=0;const run=[];for(const [g0,g1] of [...s4.gates(a0,c0),[1,2]]){if(g0>u0)run.push([u0,Math.min(1,g0)]);u0=Math.max(u0,g1);if(u0>=1)break}
       for(const [r0,r1] of run){const a=[a0[0]+(c0[0]-a0[0])*r0,a0[1]+(c0[1]-a0[1])*r0],c=[a0[0]+(c0[0]-a0[0])*r1,a0[1]+(c0[1]-a0[1])*r1];if(Math.hypot(c[0]-a[0],c[1]-a[1])<.2)continue;const za=hX(a[0],a[1]),zc=hX(c[0],c[1]);const fx=-(c[1]-a[1]),fy=c[0]-a[0];if(fx*-.7+fy*-.7<0)quad(W(a[0],a[1],za-.1),W(c[0],c[1],zc-.1),W(c[0],c[1],zc+fh[k]),W(a[0],a[1],za+fh[k]),fcol[k],0);else quad(W(c[0],c[1],zc-.1),W(a[0],a[1],za-.1),W(a[0],a[1],za+fh[k]),W(c[0],c[1],zc+fh[k]),fcol[k],0)}}}
     const PC=[dk?[.2,.33,.2]:[.4,.6,.37],dk?[.36,.22,.18]:[.66,.4,.31],dk?[.3,.3,.28]:[.62,.6,.55],dk?[.36,.33,.26]:[.8,.72,.56]],lc=dk?[.6,.6,.58,.7]:[.97,.97,.95,.8];
     /* v7.14 audit: the pitches and playgrounds lie on the ground, their triangles split down to 8 m: laid flat at the lowest corner, the
@@ -1142,8 +1149,8 @@ function buildX(){const X=XD;if(!X)return;XS=false;
       const FEN=[[.38,.5,.36],[.48,.36,.26],[.55,.56,.55],[.3,.42,.58],[.6,.5,.32],[.62,.34,.28]].map(tn),GAT=[[.25,.45,.3],[.55,.2,.18],[.2,.32,.55],[.5,.5,.5],[.42,.3,.2]].map(tn),
         POST=tn([.4,.39,.37]),PATH=tn([.68,.67,.64]),SOIL=tn([.36,.27,.19]),SOIL2=tn([.42,.32,.22]),VEG=[[.33,.55,.25],[.42,.6,.28],[.5,.62,.3]].map(tn);
       /* a fence run from A to B (plan), panels between posts every 2.4 m, only where both ends are clear of buildings and roads */
-      const fence=(ax,ay,bx_,by_,col,hgt,gap)=>{const L=Math.hypot(bx_-ax,by_-ay);if(L<1)return;const n=Math.max(1,Math.round(L/2.4)),ux=(bx_-ax)/L,uy=(by_-ay)/L;
-        for(let i=0;i<n;i++){const s0=i/n*L,s1=(i+1)/n*L;if(gap&&s1>gap[0]&&s0<gap[1])continue;const x0=ax+ux*s0,y0=ay+uy*s0,x1=ax+ux*s1,y1=ay+uy*s1;if(!xclr(x0,y0,.25)||!xclr(x1,y1,.25))continue;
+      const fence=(ax,ay,bx_,by_,col,hgt,gap,rr)=>{rr=rr||1.5;const L=Math.hypot(bx_-ax,by_-ay);if(L<1)return;const n=Math.max(1,Math.round(L/2.4)),ux=(bx_-ax)/L,uy=(by_-ay)/L;
+        for(let i=0;i<n;i++){const s0=i/n*L,s1=(i+1)/n*L;if(gap&&s1>gap[0]&&s0<gap[1])continue;const x0=ax+ux*s0,y0=ay+uy*s0,x1=ax+ux*s1,y1=ay+uy*s1;if(!xclr(x0,y0,.25)||!xclr(x1,y1,.25)||frNear([x0,y0],[x1,y1],rr))continue;frAdd([x0,y0],[x1,y1]);
           const z0=gz(x0,y0),z1=gz(x1,y1);two(W(x0,y0,z0),W(x1,y1,z1),W(x1,y1,z1+hgt),W(x0,y0,z0+hgt),col);bx3(x0,y0,ux,uy,z0,-.05,.05,-.05,.05,0,hgt+.08,POST)}};
       const flat=(cx,cy,ux,uy,s0,s1,t0,t1,col,lift)=>{const P=(s,t)=>{const x=cx+ux*s-uy*t,y=cy+uy*s+ux*t;return W(x,y,gz(x,y)+lift)};quad(P(s0,t0),P(s1,t0),P(s1,t1),P(s0,t1),col,0)};
       for(const [cx,cy,u,v,la,lb,fx,fy,fd,id] of privHouses()){const h=hash('f'+id),sd=Math.abs(fx*v[0]+fy*v[1])>.7,e=sd?lb:la,ex=sd?la:lb,sx=-fy,sy=fx;
@@ -1151,14 +1158,14 @@ function buildX(){const X=XD;if(!X)return;XS=false;
         /* street fence with the gate (3.2 m double gate + 1 m wicket) off centre */
         const go=((h>>>13)%5-2)*.8,fax=cx+fx*ff-sx*hw,fay=cy+fy*ff-sy*hw,fbx=cx+fx*ff+sx*hw,fby=cy+fy*ff+sy*hw;
         if(fd>2.2){fence(fax,fay,fbx,fby,col,hg,[hw+go-1.6,hw+go+2.6]);
-          const gx=cx+fx*ff+sx*go,gy=cy+fy*ff+sy*go;if(xclr(gx,gy,.3)){const z=gz(gx,gy),P=(s,hh)=>W(gx+sx*s,gy+sy*s,z+hh);
+          const gx=cx+fx*ff+sx*go,gy=cy+fy*ff+sy*go,ga=[gx-sx*1.6,gy-sy*1.6],gb=[gx+sx*2.6,gy+sy*2.6];if(xclr(gx,gy,.3)&&!frNear(ga,gb,1.5)){frAdd(ga,gb);const z=gz(gx,gy),P=(s,hh)=>W(gx+sx*s,gy+sy*s,z+hh);
             two(P(-1.6,0),P(0,0),P(0,hg+.1),P(-1.6,hg+.1),gc);two(P(0,0),P(1.6,0),P(1.6,hg+.1),P(0,hg+.1),mix(gc,[0,0,0],.1));two(P(1.7,0),P(2.6,0),P(2.6,hg),P(1.7,hg),gc);
             for(const q of [-1.65,1.65,2.65])bx3(gx+sx*q,gy+sy*q,sx,sy,z,-.08,.08,-.08,.08,0,hg+.25,POST);
             /* concrete path from the wicket to the house and a porch step */
             flat(gx,gy,fx,fy,-(ff-e),0,1.95,2.45,PATH,.04);flat(cx,cy,fx,fy,e,e+.9,go+1.5,go+2.9,PATH,.18)}}
         /* side fences back along the plot, a cheaper board fence */
         const bk=e+12+(h>>>16)%6,FB=mix(tn([.45,.38,.3]),col,.3);
-        fence(fax,fay,cx-fx*bk-sx*hw,cy-fy*bk-sy*hw,FB,1.4,null);fence(fbx,fby,cx-fx*bk+sx*hw,cy-fy*bk+sy*hw,FB,1.4,null);
+        fence(fax,fay,cx-fx*bk-sx*hw,cy-fy*bk-sy*hw,FB,1.4,null,3.5);fence(fbx,fby,cx-fx*bk+sx*hw,cy-fy*bk+sy*hw,FB,1.4,null,3.5);
         /* vegetable beds: rows of soil and greens behind the house, past the washing line */
         if((h>>>19)%100<75){const r0=e+6.5,nr=6+(h>>>21)%5,w=Math.min(ex+1.5,hw-.8,6);for(let k=0;k<nr;k++){const d=r0+k*.9,x=cx-fx*(d+.35),y=cy-fy*(d+.35);if(!xclr(x+sx*w,y+sy*w,.3)||!xclr(x-sx*w,y-sy*w,.3)||!xclr(x,y,.3))continue;
           flat(cx,cy,-fx,-fy,d,d+.75,-w,w,k%2?SOIL2:SOIL,.05);if((h>>>(k%13))%3)flat(cx,cy,-fx,-fy,d+.2,d+.5,-w+.2,w-.2,VEG[(k+h)%VEG.length],.13)}}}}
