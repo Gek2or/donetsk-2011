@@ -124,7 +124,48 @@ const VM=(()=>{const BODY=[-1,-1,-1],GL=[.16,.19,.23],TY=[.09,.09,.1],HUB=[.55,.
   /* v6.1: the same walker mid-stride, alternated with the standing pose while walking */
   const ped2=()=>{const m=mk(),TR=[.17,.17,.2],SK=[.78,.62,.52],HR=[.2,.15,.12];m.bx(.06,.26,-.19,-.03,0,.82,TR);m.bx(-.26,-.06,.03,.19,0,.82,TR);m.bx(-.13,.13,-.23,.23,.8,1.45,BODY);
     m.bx(-.2,-.06,-.31,-.23,.88,1.42,BODY);m.bx(.06,.2,.23,.31,.88,1.42,BODY);m.bx(-.05,.05,-.05,.05,1.45,1.5,SK);m.bx(-.11,.11,-.1,.1,1.5,1.72,SK);m.bx(-.12,.1,-.11,.11,1.66,1.76,HR);return m};
-  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram()),van:pack(van()),trolley:pack(trolley()),ped:pack(ped()),ped2:pack(ped2())}})();
+  /* v7.45 people of several kinds (0 man, 1 woman in a dress, 2 with shopping bags, 3 a child with a school bag); ph 1 = mid-stride */
+  const pedV=(vr,ph)=>{const m=mk(),TR=vr===1?[.24,.2,.24]:[.17,.17,.2],SK=[.78,.62,.52],HR=vr===1?[.32,.2,.1]:vr===3?[.3,.2,.1]:[.2,.15,.12];
+    const lg=ph?[[.06,.26],[-.26,-.06]]:[[-.1,.1],[-.1,.1]];m.bx(lg[0][0],lg[0][1],-.19,-.03,0,.82,TR);m.bx(lg[1][0],lg[1][1],.03,.19,0,.82,TR);
+    if(vr===1)m.bx(-.16,.16,-.25,.25,.5,.92,BODY);m.bx(-.13,.13,-.23,.23,.8,1.45,BODY);
+    const ar=ph?[[-.2,-.06],[.06,.2]]:[[-.07,.07],[-.07,.07]];m.bx(ar[0][0],ar[0][1],-.31,-.23,.85,1.42,BODY);m.bx(ar[1][0],ar[1][1],.23,.31,.85,1.42,BODY);
+    m.bx(-.05,.05,-.05,.05,1.45,1.5,SK);m.bx(-.11,.11,-.1,.1,1.5,1.72,SK);m.bx(-.12,.1,-.11,.11,1.66,1.76,HR);
+    if(vr===1)m.bx(-.15,-.05,-.12,.12,1.4,1.72,HR);
+    if(vr===2){m.bx(-.06,.06,.33,.43,.42,.78,[.3,.3,.32]);m.bx(-.06,.06,-.43,-.33,.4,.72,[.84,.84,.8])}
+    if(vr===3)m.bx(-.27,-.13,-.17,.17,.85,1.4,[.85,.25,.2]);
+    return m};
+  /* stray dog (0.9 m): diagonal gait in the alternate pose; the coat colour is the instance colour */
+  const dogM=ph=>{const m=mk(),DK=[.1,.09,.09],o=ph?.1:0;m.bx(-.42,.3,-.11,.11,.28,.54,BODY);m.bx(.27,.5,-.09,.09,.42,.66,BODY);m.bx(.48,.64,-.055,.055,.42,.52,DK);
+    m.bx(.3,.37,-.12,-.07,.64,.76,DK);m.bx(.3,.37,.07,.12,.64,.76,DK);m.bx(-.56,-.4,-.025,.025,.4,.62,BODY);
+    m.bx(.18+o-.04,.18+o+.04,-.13,-.06,0,.3,BODY);m.bx(.18-o-.04,.18-o+.04,.06,.13,0,.3,BODY);m.bx(-.3-o-.04,-.3-o+.04,.06,.13,0,.3,BODY);m.bx(-.3+o-.04,-.3+o+.04,-.13,-.06,0,.3,BODY);return m};
+  const catM=ph=>{const m=mk(),DK=[.1,.09,.09],o=ph?.07:0;m.bx(-.26,.18,-.07,.07,.17,.34,BODY);m.bx(.17,.31,-.065,.065,.25,.4,BODY);m.bx(.2,.25,-.07,-.03,.4,.48,BODY);m.bx(.2,.25,.03,.07,.4,.48,BODY);
+    m.bx(-.34,-.26,-.02,.02,.2,.56,BODY);m.bx(.1+o-.025,.1+o+.025,-.07,-.03,0,.2,BODY);m.bx(.1-o-.025,.1-o+.025,.03,.07,0,.2,BODY);m.bx(-.2-o-.025,-.2-o+.025,.03,.07,0,.2,BODY);m.bx(-.2+o-.025,-.2+o+.025,-.07,-.03,0,.2,BODY);m.bx(.3,.32,-.03,.03,.3,.34,DK);return m};
+  const pigM=ph=>{const m=mk(),DK=[.75,.45,.45],o=ph?.03:0;m.bx(-.15,.12,-.055,.055,.12,.24,BODY);m.bx(-.22,-.13,-.04,.04,.14,.2,BODY);m.bx(.09,.17,-.03,.03,.22,.3,BODY);m.bx(.17,.2,-.012,.012,.25,.27,[.8,.7,.3]);
+    m.bx(.02+o-.01,.02+o+.01,-.03,-.02,0,.12,DK);m.bx(.02-o-.01,.02-o+.01,.02,.03,0,.12,DK);return m};
+  const birdM=ph=>{const m=mk(),dz=ph?-.12:.2;m.bx(-.18,.18,-.045,.045,0,.08,BODY);m.bx(.16,.24,-.03,.03,.02,.07,BODY);
+    for(const sg of [-1,1]){m.q4([.12,sg*.04,.06],[-.1,sg*.04,.06],[-.18,sg*.5,.06+dz],[.08,sg*.5,.06+dz],BODY)}return m};
+  /* a bicycle with a rider, and a motorcycle with a rider (jacket = instance colour) */
+  const bikeM=()=>{const m=mk(),FR=[.25,.25,.28];m.wheel(.55,.001,.33,.05);m.wheel(-.55,.001,.33,.05);m.bx(-.55,.55,-.015,.015,.38,.42,FR);m.bx(-.12,-.08,-.015,.015,.4,.82,FR);m.bx(.5,.54,-.015,.015,.38,.95,FR);m.bx(.48,.56,-.25,.25,.95,.99,FR);
+    m.bx(-.22,-.02,-.05,.05,.82,.88,[.1,.1,.1]);m.bx(-.3,-.1,-.2,-.05,.35,.8,[.17,.17,.2]);m.bx(.0,.2,.05,.2,.3,.76,[.17,.17,.2]);
+    m.bx(-.25,.05,-.2,.2,.85,1.5,BODY);m.bx(.0,.5,-.26,-.2,1.0,1.2,BODY);m.bx(.0,.5,.2,.26,1.0,1.2,BODY);m.bx(.0,.1,-.09,.09,1.5,1.7,[.78,.62,.52]);m.bx(-.02,.12,-.1,.1,1.62,1.74,[.2,.15,.12]);return m};
+  const motoM=()=>{const m=mk(),G=[.5,.5,.52],DK=[.1,.1,.1];m.wheel(.65,.001,.3,.1);m.wheel(-.65,.001,.3,.1);m.bx(-.5,.5,-.12,.12,.36,.62,BODY);m.bx(-.85,-.1,-.1,.1,.55,.68,DK);m.bx(-.25,.35,-.17,.17,.2,.42,G);m.bx(.55,.62,-.02,.02,.3,1.0,G);m.bx(.5,.64,-.3,.3,.98,1.03,DK);
+    m.bx(-.3,.2,-.19,.19,.7,1.4,BODY);m.bx(-.1,.4,-.34,-.19,.6,.95,[.17,.17,.2]);m.bx(-.1,.4,.19,.34,.6,.95,[.17,.17,.2]);m.bx(.18,.45,-.3,-.2,.95,1.25,BODY);m.bx(.18,.45,.2,.3,.95,1.25,BODY);m.bx(-.08,.14,-.12,.12,1.4,1.66,[.12,.12,.14]);return m};
+  /* emergency vehicles: the family sedan in white with a blue band (militsiya), the GAZelle in white with a red band; a roof light bar is drawn separately, half at a time */
+  const milM=()=>{const m=sedan(false),BL=[.14,.3,.62];for(const y of [-.806,.806])m.q4([-1.95,y,.42],[1.95,y,.42],[1.95,y,.62],[-1.95,y,.62],BL);return m};
+  const ambM=()=>{const m=van(),RD=[.78,.14,.12];for(const y of [-.993,.993])m.q4([-2.7,y,.72],[2.65,y,.72],[2.65,y,1.05],[-2.7,y,1.05],RD);return m};
+  const barM=()=>{const m=mk();m.bx(-.14,.14,-.5,0,0,.12,BODY);m.bx(-.16,.16,-.55,.55,-.04,0,[.1,.1,.12]);return m};
+  /* a generic twin-jet airliner (no airline, 34 m): white, a blue band, dark windows */
+  const planeM=()=>{const m=mk(),WH=[.93,.93,.95],BL=[.16,.32,.62],GLs=[.14,.18,.24],GY=[.72,.74,.78];
+    m.ext([[17,1.5],[14,3.2],[8,3.8],[-10,3.8],[-17,3.5],[-17,2.7],[-9,.8],[10,.6],[16,1]],-1.9,1.9,WH,i=>WH);
+    for(const y of [-1.905,1.905]){m.q4([-12,y,2.1],[13,y,2.1],[13,y,2.5],[-12,y,2.5],BL);m.q4([-11,y,2.7],[12,y,2.7],[12,y,3.05],[-11,y,3.05],GLs)}
+    const slab=(q,z0,z1,col)=>{m.q4([q[0][0],q[0][1],z1],[q[1][0],q[1][1],z1],[q[2][0],q[2][1],z1],[q[3][0],q[3][1],z1],col);m.q4([q[0][0],q[0][1],z0],[q[1][0],q[1][1],z0],[q[2][0],q[2][1],z0],[q[3][0],q[3][1],z0],col);
+      for(let i=0;i<4;i++){const a=q[i],b=q[(i+1)%4];m.q4([a[0],a[1],z0],[b[0],b[1],z0],[b[0],b[1],z1],[a[0],a[1],z1],col)}};
+    for(const sg of [-1,1]){slab([[5,sg*1.8],[-3,sg*1.8],[-9,sg*17],[-5.5,sg*17]],1.2,1.45,GY);slab([[-13,sg*1.2],[-18,sg*1.2],[-20.5,sg*6.5],[-18,sg*6.5]],3.55,3.7,GY);
+      m.bx(-1,3.2,sg*5.6-.8,sg*5.6+.8,.2,1.8,GY);m.bx(-8,-5.6,sg*17-.1,sg*17+.1,1.2,1.5,sg<0?TL:HL)}
+    m.ext([[-12,3.7],[-18,3.7],[-20,8.6],[-16.5,8.6]],-.14,.14,BL,i=>BL);return m};
+  return {sedan:pack(sedan(false)),hatch:pack(sedan(true)),bus:pack(bus()),tram:pack(tram()),van:pack(van()),trolley:pack(trolley()),ped:pack(pedV(0,0)),ped2:pack(pedV(0,1)),
+    pw:pack(pedV(1,0)),pw2:pack(pedV(1,1)),pb:pack(pedV(2,0)),pb2:pack(pedV(2,1)),pk:pack(pedV(3,0)),pk2:pack(pedV(3,1)),dog:pack(dogM(0)),dog2:pack(dogM(1)),cat:pack(catM(0)),cat2:pack(catM(1)),pig:pack(pigM(0)),pig2:pack(pigM(1)),
+    bird:pack(birdM(0)),bird2:pack(birdM(1)),bike:pack(bikeM()),moto:pack(motoM()),mil:pack(milM()),amb:pack(ambM()),bar:pack(barM()),plane:pack(planeM())}})();
 /* period paint: white, beige, cherry, the bright and dark blues, faded green, sand, red and grey seen on Lada and Moskvich cars of the time */
 const VPAINT=[[.9,.9,.87],[.84,.79,.66],[.45,.1,.12],[.22,.38,.55],[.15,.2,.33],[.36,.45,.33],[.78,.7,.5],[.62,.14,.13],[.55,.57,.58],[.85,.85,.82],[.3,.32,.34]];
 /* v5.2: the tramway on Dzerzhinsky Avenue. OpenStreetMap ways 233652257 and 233652260: a double track, 1524 mm gauge,
@@ -1144,6 +1185,49 @@ function buildX(){const X=XD;if(!X)return;XS=false;
             let s=.4;for(let k=0;s<L-.6&&k<9;k++){const hh=hash(id+'w'+k),w=.4+(hh%50)/100,ht=.35+((hh>>>6)%45)/100,t=(hh>>>12)&1?.3:-.3;if((hh>>>14)%4===0){s+=w*.6;continue}
               const q0=s/L,q1=Math.min(1,(s+w)/L),zt=q=>za+(zb-za)*q+R-.12*Math.sin(q*Math.PI)-.02,P=(q,z)=>W(ax+(bx_-ax)*q-sy*t,ay+(by_-ay)*q+sx*t,z);
               two(P(q0,zt(q0)),P(q1,zt(q1)),P(q1,zt(q1)-ht),P(q0,zt(q0)-ht),LAU[(hh>>>16)%LAU.length]);s+=w+.12}}}}}
+    /* v7.44 living city, courtyards of the flats (typical, class E, positions illustrative): benches by the entrances, a bin pad,
+       a sandpit with a mushroom roof, a swing frame, a carpet-beating rack and washing poles; each only where the ground is clear */
+    YARD={ben:[],bin:[],sand:[],ent:[]};XCLR=xclr;
+    {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
+        quad(P(s1,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s1,t0,z1),c,0);quad(P(s0,t1,z0),P(s0,t0,z0),P(s0,t0,z1),P(s0,t1,z1),cs,0);quad(P(s0,t0,z0),P(s1,t0,z0),P(s1,t0,z1),P(s0,t0,z1),cs,0);quad(P(s1,t1,z0),P(s0,t1,z0),P(s0,t1,z1),P(s1,t1,z1),c,0);quad(P(s0,t0,z1),P(s1,t0,z1),P(s1,t1,z1),P(s0,t1,z1),ct,0)};
+      const WOOD=[[.5,.36,.22],[.36,.5,.34],[.3,.42,.58]].map(tn),MET=tn([.34,.35,.37]),BIN=[[.22,.45,.3],[.4,.42,.45],[.2,.34,.55]].map(tn),SAND=tn([.74,.66,.46]),RED=tn([.72,.28,.22]),YEL=tn([.82,.68,.24]),RUST=tn([.45,.3,.22]);
+      const YC=new Set(),yk=(x,y)=>Math.floor(x/4)+','+Math.floor(y/4),yn=(x,y)=>{const i=Math.floor(x/4),j=Math.floor(y/4);for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++)if(YC.has((i+a)+','+(j+c)))return true;return false};
+      const ok=(x,y,m)=>xclr(x,y,m)&&!yn(x,y);
+      const bench=(x,y,ux,uy,c)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-.8,.8,-.2,.2,.38,.45,c);bx3(x,y,ux,uy,z,-.8,.8,-.24,-.18,.45,.85,c);for(const s0 of [-.65,.55])bx3(x,y,ux,uy,z,s0,s0+.1,-.2,.2,0,.38,MET)};
+      const bins=(x,y,ux,uy,h)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-1.5,1.5,-.9,-.84,0,1.2,RUST);bx3(x,y,ux,uy,z,-1.5,-1.44,-.9,.9,0,1.2,RUST);bx3(x,y,ux,uy,z,1.44,1.5,-.9,.9,0,1.2,RUST);
+        for(let k=0;k<3;k++)bx3(x,y,ux,uy,z,-1.2+k*.85,-.5+k*.85,-.35,.35,0,.95+((h>>>k)%2)*.1,BIN[(h>>>(k*2))%BIN.length])};
+      const sandpit=(x,y,ux,uy)=>{const z=gz(x,y);bx3(x,y,ux,uy,z,-1.4,1.4,-1.4,-1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.4,1.4,1.3,1.4,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.4,-1.3,-1.3,1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,1.3,1.4,-1.3,1.3,0,.25,WOOD[0]);bx3(x,y,ux,uy,z,-1.3,1.3,-1.3,1.3,0,.12,SAND);
+        bx3(x,y,ux,uy,z,-.05,.05,-.05,.05,0,1.5,YEL);bx3(x,y,ux,uy,z,-.7,.7,-.7,.7,1.5,1.6,RED)};
+      const swing=(x,y,ux,uy,c)=>{const z=gz(x,y);for(const t of [-1.2,1.2]){bx3(x,y,ux,uy,z,-.5,-.4,t-.05,t+.05,0,2.2,MET);bx3(x,y,ux,uy,z,.4,.5,t-.05,t+.05,0,2.2,MET)}bx3(x,y,ux,uy,z,-.5,.5,-1.25,1.25,2.2,2.3,MET);
+        for(const t of [-.5,.5]){bx3(x,y,ux,uy,z,-.01,.01,t-.2,t-.19,.5,2.2,MET);bx3(x,y,ux,uy,z,-.01,.01,t+.19,t+.2,.5,2.2,MET);bx3(x,y,ux,uy,z,-.12,.12,t-.2,t+.2,.45,.5,c)}};
+      const rack=(x,y,ux,uy)=>{const z=gz(x,y);for(const t of [-1.4,1.4])bx3(x,y,ux,uy,z,-.06,.06,t-.06,t+.06,0,2.3,MET);bx3(x,y,ux,uy,z,-.04,.04,-1.45,1.45,2.2,2.3,MET)};
+      const poles=(x,y,ux,uy)=>{const z=gz(x,y);for(const t of [-2,2])bx3(x,y,ux,uy,z,-.06,.06,t-.06,t+.06,0,2.2,RUST);for(const s0 of [-.4,0,.4])bx3(x,y,ux,uy,z,s0-.01,s0+.01,-2,2,2.15,2.17,tn([.8,.8,.78]))};
+      for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const ns=Math.max(1,Math.round(L/42)),sl=L/ns;for(let sg=0;sg<ns;sg++){const c0=-L/2+(sg+.5)*sl,h=hash('y'+id+Math.round(mx)+Math.round(my)+':'+sg),px=(e,d)=>[mx+ux*(c0+e)+nx*d,my+uy*(c0+e)+ny*d];
+        /* benches by two entrances (a bench pair is the commonest picture of a Soviet courtyard) */
+        for(const k of [-1,1]){if((h>>>(k+3))%10<3)continue;const e=k*sl*.22+((h>>>5)%30)/10-1.5,[x,y]=px(e,3.4);if(ok(x,y,1.2)){YC.add(yk(x,y));YARD.ben.push([x,y,ux,uy]);bench(x,y,ux,uy,WOOD[(h>>>(8+k))%WOOD.length])}}
+        /* a bin pad at the end of the wall, long side to the wall */
+        if((h>>>11)%100<55){let x=0,y=0,f=0;for(const d of [6.5,5,8.5,10.5]){[x,y]=px(sl*.38,d);if(ok(x,y,2)){f=1;break}}if(f){YC.add(yk(x,y));YARD.bin.push([x,y,ux,uy]);bins(x,y,ux,uy,h)}}
+        /* playground: sandpit and a swing frame further out */
+        if((h>>>14)%100<45){let x=0,y=0,d0=0;for(const d of [11,14,18,22,27]){[x,y]=px(-sl*.15,d+(h>>>17)%30/10);if(ok(x,y,2.4)){d0=d+(h>>>17)%30/10;break}}if(d0){YC.add(yk(x,y));YARD.sand.push([x,y,ux,uy]);sandpit(x,y,ux,uy);const [x2,y2]=px(-sl*.15+5.5,d0+.5);if(ok(x2,y2,2.6)){YC.add(yk(x2,y2));swing(x2,y2,ux,uy,WOOD[(h>>>20)%WOOD.length])}}}
+        if((h>>>22)%100<30){let x=0,y=0,f=0;for(const d of [15,19,23,28]){[x,y]=px(sl*.12,d+(h>>>24)%30/10);if(ok(x,y,2.2)){f=1;break}}if(f){YC.add(yk(x,y));(h>>>27)%2?rack(x,y,ux,uy):poles(x,y,ux,uy)}}}}}
+    /* v7.45 paths of the courtyards (typical, positions illustrative): from every mapped entrance a path runs straight out to the nearest
+       footway or drive (concrete or asphalt, 1.6 m) or a trodden earth line that wanders a little; some entrances also get a trodden shortcut
+       branching off; the entrance walls of the flats get a strip of pavement along them. The same polylines are the routes of the people
+       who come out of and go into the doors (YARD.ent). */
+    {const CON=tn([.68,.67,.64]),ASP=tn([.56,.56,.57]),DIRT=tn([.66,.57,.42]);
+      const strip=(pts,w,col,lift)=>{for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L*w/2,ny=dx/L*w/2,P=(x,y)=>W(x,y,gz(x,y)+lift);quad(P(a[0]-nx,a[1]-ny),P(b[0]-nx,b[1]-ny),P(b[0]+nx,b[1]+ny),P(a[0]+nx,a[1]+ny),col,0)}};
+      const ray=(x,y,dx,dy,s0,max,m)=>{let L=0;for(let s=s0;s<=max;s+=1){if(!xclr(x+dx*s,y+dy*s,m))break;L=s}return L};
+      const en=X.en||[];YARD.ent=new Array(en.length/3).fill(null);
+      for(let i=0;i<en.length;i+=3){const x=en[i]/10,y=en[i+1]/10;if(!liveAt(x,y))continue;const a=en[i+2]*Math.PI/180,dx=Math.cos(a),dy=Math.sin(a),h=hash('e'+i),k=i/3;
+        const L=ray(x,y,dx,dy,2,38,.5);if(L<5)continue;
+        const kind=h%100<62?0:1,pts=[[x+dx*1.4,y+dy*1.4]];
+        for(let s=3;s<=L;s+=2){const o=kind?Math.sin(s*.32+h%7)*.4*Math.min(1,s/9):0,px=x+dx*s-dy*o,py=y+dy*s+dx*o;if(!xclr(px,py,.3))break;pts.push([px,py])}
+        if(pts.length<3)continue;YARD.ent[k]=pts;
+        strip(pts,kind?.85:1.6,kind?DIRT:(h>>>9)%2?ASP:CON,.045);strip([[x+dx*.4,y+dy*.4],[x+dx*1.8,y+dy*1.8]],2.6,CON,.05);
+        if((h>>>13)%100<38){const m0=pts[Math.min(pts.length-1,2)],ang=a+((h>>>20)%2?1:-1)*(.5+((h>>>22)%40)/100),bx=Math.cos(ang),by=Math.sin(ang),L2=ray(m0[0],m0[1],bx,by,1,26,.5);
+          if(L2>6){const q=[[m0[0],m0[1]]];for(let s=2;s<=L2;s+=2){const o=Math.sin(s*.4+h%5)*.4,px=m0[0]+bx*s-by*o,py=m0[1]+by*s+bx*o;if(!xclr(px,py,.3))break;q.push([px,py])}if(q.length>2)strip(q,.7,DIRT,.04)}}}
+      for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const h=hash('s'+id+Math.round(mx)+Math.round(my));if(h%100>=72)continue;let pts=[];
+        for(let e=-L/2+1.5;e<=L/2-1.5;e+=3){const px=mx+ux*e+nx*1.15,py=my+uy*e+ny*1.15;if(!xclr(px,py,.3)){if(pts.length>1)strip(pts,1.5,ASP,.04);pts=[];continue}pts.push([px,py])}if(pts.length>1)strip(pts,1.5,ASP,.04)}}
     /* v7.39 more detail, private sector of the live sectors (typical, class E): a street fence with a double gate and a wicket in
        front of every house, side fences back along the plot, a concrete path and porch step to the door side, vegetable beds behind */
     {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
@@ -1280,7 +1364,7 @@ function xname(l){const lang=document.documentElement.lang||'ru';let s;
    Roads, oneway and lanes from the OSM extract; traffic signals, signalled crossings, bus and tram stops from OpenStreetMap
    as of 13.09.2012, the oldest state the OSM history keeps. The vehicles, their number, routes and the signal timing are
    illustrative: a typical weekday of the period, denser in the rush hours, thin at night. ---------- */
-let XN=null,XSIM=null,XGV=null;
+let XN=null,XSIM=null,XGV=null,YARD=null,XCLR=null;
 /* v7.14 audit: the ground under things that travel along a road, raised to the deck where the road is on a bridge (XBR is filled by
    buildX). Only for a heading along the bridge, so a road or track passing under it keeps to the ground. */
 /* v7.14 audit: the reference-map ground is a mesh of 20 m triangles over hX; on curved ground it stands up to 0.6 m above hX, so roads,
@@ -1295,9 +1379,9 @@ function hXB(x,y,hx,hy){for(const b of XBR){if(x<b.bb[0]||x>b.bb[2]||y<b.bb[1]||
       const u=((x-p[0])*dx+(y-p[1])*dy)/(l*l);if(u<-.02||u>1.02)continue;if(Math.abs((x-p[0])*dy-(y-p[1])*dx)/l>b.hw+3.6)continue;const t=Math.max(0,Math.min(1,u));return Math.max(hR(x,y),b.Z[i-1]+(b.Z[i]-b.Z[i-1])*t)}}
   return hR(x,y)}
 /* v7.36 living city, sector by sector (grid A1-D3 of the reference map, see the sector plan). LIVE lists the sectors done so far */
-const LIVE=new Set(["A1", "B1", "C1"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
+const LIVE=new Set(["A1","B1","C1","D1","A2","B2","C2","D2","A3","B3","C3","D3"]),SXS=[-2008,-917,174,1263,2354],SYS=[1257,314,-629,-1572];
 function secAt(x,y){let c=-1,r=-1;for(let i=0;i<4;i++)if(x>=SXS[i]&&x<SXS[i+1])c=i;for(let i=0;i<3;i++)if(y<=SYS[i]&&y>SYS[i+1])r=i;return c<0||r<0?'':'ABCD'[c]+(r+1)}
-const liveAt=(x,y)=>LIVE.has(secAt(x,y));
+const liveAt=(x,y)=>LIVE.has(secAt(x,y))&&!(D.tb&&x>D.tb[0]-10&&x<D.tb[2]+10&&y>D.tb[1]-10&&y<D.tb[3]+10);
 function gridZ(x,y){if(!XGV||!XD)return hX(x,y);const g=XD.g,[t0,t1,t2,t3]=D.tb;if(x>t0&&x<t2&&y>t1&&y<t3)return hX(x,y);const fx=(x-g.x)/g.s,fy=(y-g.y)/g.s,i=Math.max(0,Math.min(g.nx-1,Math.floor(fx))),j=Math.max(0,Math.min(g.ny-1,Math.floor(fy))),u=Math.max(0,Math.min(1,fx-i)),v=Math.max(0,Math.min(1,fy-j)),gv=XGV;const a=gv[j][i][0][1],b=gv[j][i+1][0][1],c=gv[j+1][i+1][0][1],d=gv[j+1][i][0][1];return u>=v?a+(b-a)*u+(c-b)*v:a+(c-d)*u+(d-a)*v}
 /* outward wall segments of the blocks of flats in the live sectors: [mx,my,nx,ny,ux,uy,L,id] for walls of 12 m and more */
 function flatWalls(){const out=[];if(!XD)return out;for(const b of XD.b){if(Math.floor(b[4]/10)!==1)continue;const f=b[6],r=[];for(let i=0;i<f.length;i+=2)r.push([f[i]/10,f[i+1]/10]);let cx=0,cy=0;for(const q of r){cx+=q[0];cy+=q[1]}cx/=r.length;cy/=r.length;if(!liveAt(cx,cy))continue;
@@ -1337,6 +1421,11 @@ function xsim(){const T=XN;if(!T)return null;
     const van=m==='van',c={m,van,bus:false,tram:false,col:van?(rnd()<.6?[.93,.93,.9]:[.95,.8,.2]):VPAINT[(rnd()*VPAINT.length)|0],half:van?2.8:2.1,x:0,y:0,hx:1,hy:0,dwell:0,id:k};spawn(c);V.push(c)}
   /* buses on the main roads, stopping at the bus stops mapped in 2012 */
   for(let k=0;k<10;k++){const c={m:'bus',bus:true,van:false,tram:false,col:[.93,.77,.18],half:5.4,x:0,y:0,hx:1,hy:0,dwell:0,id:1000+k};for(let j=0;j<40;j++){spawn(c);if(RE[c.e].cls<=1)break}V.push(c)}
+  /* v7.45 the militsiya, ambulances and motorcycles of the period (illustrative): ordinary traffic with a roof light that goes on and off */
+  {const MOTOC=[[.75,.12,.1],[.15,.3,.7],[.1,.1,.1],[.85,.8,.2],[.85,.85,.85],[.2,.5,.3]];
+    for(let k=0;k<5;k++){const c={m:'mil',sp:true,van:false,bus:false,tram:false,col:[.95,.95,.97],half:2.1,x:0,y:0,hx:1,hy:0,dwell:0,id:2600+k,on:rnd()<.4,sc:rnd()*40};spawn(c);V.push(c)}
+    for(let k=0;k<4;k++){const c={m:'amb',sp:true,van:true,bus:false,tram:false,col:[.96,.96,.94],half:2.8,x:0,y:0,hx:1,hy:0,dwell:0,id:2650+k,on:rnd()<.4,sc:rnd()*40};spawn(c);V.push(c)}
+    for(let k=0;k<18;k++){const c={m:'moto',sp:true,van:false,bus:false,tram:false,col:MOTOC[(rnd()*MOTOC.length)|0],half:1.1,x:0,y:0,hx:1,hy:0,dwell:0,id:2700+k};spawn(c);V.push(c)}}
   /* v6.0: trolleybuses on the streets of the trolleybus routes, under the wires, stopping at the bus stops */
   const TBE=[];RE.forEach((e,i)=>{if(e.tb&&!inQ(e.pts[e.pts.length>>1]))TBE.push(i)});
   const tspawn=c=>{const i=TBE[(rnd()*TBE.length)|0],e=RE[i];c.e=i;c.dir=e.ow?1:(rnd()<.5?1:-1);c.s=e.len*rnd();c.lane=Math.max(0,(e.ow?e.lanes:Math.max(1,e.lanes/2))-1|0);c.v=0;c.nx=null};
@@ -1370,11 +1459,11 @@ function xsim(){const T=XN;if(!T)return null;
   const step=(dt,hour)=>{dt=Math.min(dt,.12);clock+=dt;
     const dens=hour<5?.18:hour<6.5?.35:hour<9.5?1:hour<16.5?.72:hour<19.5?1:hour<22?.5:.25;active=Math.round(NCAR*dens);
     for(const e of RE)e.cars.length=0;for(const e of TE)e.cars.length=0;
-    for(const c of all){if(!c.tram&&!c.bus&&c.id>=active){c.off=true;continue}c.off=false;E_(c).cars.push(c)}
+    for(const c of all){if(!c.tram&&!c.bus&&!c.sp&&c.id>=active){c.off=true;continue}c.off=false;E_(c).cars.push(c)}
     for(const c of all){if(c.off)continue;const e=E_(c);
       /* v6.3: a vehicle holds an unsignalled junction from 12 m before it until 10 m past it; the others wait at the give-way line */
       if(c.hold!=null){const H=NODE[c.hold],en=c.dir>0?e.b:e.a,sn=c.dir>0?e.a:e.b,near=(en===c.hold&&e.len-c.s<12)||(sn===c.hold&&c.s<10);if(H&&H.id===c.id&&near)H.t=clock+.6;else{if(H&&H.id===c.id)delete NODE[c.hold];c.hold=null}}
-      let lim=c.tram?9.5:e.v*(c.bus?.8:c.van?1.05:1);
+      let lim=c.tram?9.5:e.v*(c.bus?.8:c.van?1.05:1);if(c.sp){if(c.m!=='moto'){c.sc-=dt;if(c.sc<=0){c.on=!c.on;c.sc=c.on?18+rnd()*30:45+rnd()*90}}lim*=c.m==='moto'?1.1:c.on?1.3:1.04}
       /* the vehicle ahead on the same edge, direction and lane */
       let d=1e9;c.why='';for(const o of e.cars){if(o===c||o.dir!==c.dir||(!c.tram&&o.lane!==c.lane&&!(o.bus||c.bus)))continue;const ds=o.s-c.s;if(ds>0&&ds<d+o.half){d=Math.min(d,ds-o.half-c.half);c.why='lead'}}
       const rem=e.len-c.s;
@@ -1393,12 +1482,12 @@ function xsim(){const T=XN;if(!T)return null;
       if(c.s>=e.len){const nx=c.nx||pick(c);if(!nx){relocate(c);continue}const ov=c.s-e.len;c.sw=true;c.e=nx[0];c.dir=nx[1];c.s=ov;c.nx=null;c.lastStop=null;if(c.ri!=null){const r=RT[c.ri];c.k=(c.k+1)%r.seq.length;if(r.seq[c.k][0]!==c.e||r.seq[c.k][1]!==c.dir)c.k=Math.max(0,r.seq.findIndex(q=>q[0]===c.e&&q[1]===c.dir));const ne=E_(c);if(inQ(ne.pts[ne.pts.length>>1])){rput(c,c.k,0);place(c)}}const ne=E_(c);if(inQ(ne.pts[ne.pts.length>>1])){relocate(c);continue}
         if(!c.tram){const ln=ne.ow?ne.lanes:Math.max(1,ne.lanes/2);if(c.lane>=ln||c.trolley)c.lane=Math.max(0,ln-1|0)}}
       place(c)}
-    pstep(dt,dens)};
+    pstep(dt,dens);wstep(dt,hour,dens)};
   /* v6.0: pedestrians on the pavements of the main roads (illustrative). They cross at the zebras of the signalled junctions while the
      cars of that road have red, and turn into the next pavement at the corners */
   const WID=[14,11,8,6],PV=RE.map(e=>!inQ(e.pts[e.pts.length>>1])&&e.cls<=2&&e.len>=16&&e.len>=Math.max(9,e.w*.8)*2+4);
   const PO=Array.from({length:T.rn.length/2},()=>[]);RE.forEach((e,i)=>{if(PV[i]){PO[e.a].push(i);PO[e.b].push(i)}});
-  const PED=[];{const pl=RE.reduce((a,e,i)=>a+(PV[i]?e.len*(e.ow?1:2):0),0),np=Math.max(60,Math.min(420,Math.round(pl/32)));
+  const PED=[];{const pl=RE.reduce((a,e,i)=>a+(PV[i]?e.len*(e.ow?1:2):0),0),np=Math.max(90,Math.min(700,Math.round(pl/17)));
     const PCOL=[[.2,.22,.3],[.45,.12,.12],[.3,.3,.32],[.55,.45,.3],[.62,.62,.6],[.16,.3,.24],[.7,.55,.2],[.4,.2,.35],[.75,.74,.7],[.12,.12,.14]];const pi=[];RE.forEach((e,i)=>{if(PV[i])pi.push(i)});
     for(let k=0;k<np&&pi.length;k++){const i=pi[(rnd()*pi.length)|0],e=RE[i];PED.push({m:'ped',ped:true,e:i,side:e.ow?1:(rnd()<.5?1:-1),d:rnd()<.5?1:-1,s:e.len*(.1+.8*rnd()),v:1.05+rnd()*.5,col:PCOL[(rnd()*PCOL.length)|0],x:0,y:0,hx:1,hy:0,id:3000+k,wait:0,cross:-1,want:rnd()<.5})}}
   const pplace=p=>{const e=RE[p.e],[x,y,dx,dy]=at(e,p.s),o=(e.w/2+1.6)*(p.cross>=0?p.side*(1-2*p.cross):p.side);p.x=x+dy*o;p.y=y-dx*o;if(p.cross>=0){p.hx=-dy*p.side;p.hy=dx*p.side}else{p.hx=dx*p.d;p.hy=dy*p.d}};
@@ -1423,10 +1512,54 @@ function xsim(){const T=XN;if(!T)return null;
       if(two)PED.push({m:'ped',ped:true,stat:true,yd:true,x:x+sx*.9,y:y+sy*.9,hx:-sx,hy:-sy,col:PC2[(h>>>18)%PC2.length],id:5000+PED.length,mv:false})}
     for(const [mx,my,nx,ny,ux,uy,L,id] of flatWalls()){const n=Math.floor(L/14);for(let k=0;k<n;k++){const h=hash('p'+id+k);if(h%10<5)continue;const e=(k+.5)/n*L-L/2,m=1+(h>>>4)%2;
       for(let j=0;j<m;j++){const d=1.6+((h>>>(7+j*3))%8)/2,o=e+(j?.8:0),x=mx+ux*o+nx*d,y=my+uy*o+ny*d,f=j&&d>3?-1:1;PED.push({m:'ped',ped:true,stat:true,yd:true,x,y,hx:-nx*f,hy:-ny*f,col:PC2[(h>>>(12+j*3))%PC2.length],id:5000+PED.length,mv:false})}}}}
+  /* v7.45 the living courtyards. People get a kind (man, woman, bags, child) and a height; some of the pavement walkers ride bicycles; people come
+     out of the mapped entrances and walk the drawn paths, or walk in and vanish; stray dogs and cats wander round the bin pads and doors, pigeons
+     peck round the benches, flocks of birds circle over the city and an airliner crosses now and then. Set up once the geometry exists (YARD). */
+  const OUTF=[[.2,.22,.3],[.45,.12,.12],[.3,.3,.32],[.55,.45,.3],[.62,.62,.6],[.16,.3,.24],[.7,.55,.2],[.4,.2,.35],[.75,.74,.7],[.12,.12,.14],[.2,.35,.55],[.78,.3,.25],[.88,.82,.3],[.3,.55,.4]],KIDC=[[.9,.3,.25],[.25,.5,.85],[.95,.8,.2],[.3,.7,.4],[.9,.5,.7],[.95,.55,.15]];
+  const tag=(p,h,kids)=>{const r=h%100;if(kids&&r<13){p.pv=3;p.sc=.62+((h>>>7)%14)/100;p.col=KIDC[(h>>>11)%KIDC.length]}else{p.pv=r<55?0:r<88?1:2;p.sc=.95+((h>>>7)%12)/100;p.old=(h>>>17)%100<14}};
+  for(let k=0;k<PED.length;k++){const p=PED[k],h=hash('w'+p.id+':'+k);tag(p,h,true);if(k<NP0){if((h>>>3)%100<8){p.cyc=true;p.pv=9;p.sc=1;p.v=3+((h>>>9)%15)/10}else if(p.old)p.v*=.65}}
+  const DA=[],DOORS=[],AN=[],BD=[],PLN=[];let WI=false,pt=0;
+  const dplace=a=>{const c=a.cum;let i=1;while(i<c.length-1&&c[i]<a.s)i++;const q=a.pts[i-1],w=a.pts[i],sl=(c[i]-c[i-1])||1,u=Math.max(0,Math.min(1,(a.s-c[i-1])/sl)),dx=(w[0]-q[0])/sl,dy=(w[1]-q[1])/sl;a.x=q[0]+(w[0]-q[0])*u;a.y=q[1]+(w[1]-q[1])*u;a.hx=dx*a.dir;a.hy=dy*a.dir};
+  const winit=()=>{WI=true;
+    YARD.ent.forEach((pts,i)=>{if(!pts||pts.length<2)return;const cum=[0];for(let j=1;j<pts.length;j++)cum.push(cum[j-1]+Math.hypot(pts[j][0]-pts[j-1][0],pts[j][1]-pts[j-1][1]));DOORS.push({pts,cum,len:cum[cum.length-1],t:rnd()*50,id:i})});
+    for(let k=0;k<Math.min(180,Math.round(DOORS.length*.8));k++)DA.push({m:'ped',ped:true,door:true,yd:true,off:true,mv:true,x:0,y:0,hx:1,hy:0,col:OUTF[0],id:7000+k,s:0,dir:1,v:1.2,pv:0,sc:1,pts:null,cum:null});
+    /* standing people: two women talking by about every other bench, children at the sandpits, a person at some bin pads */
+    const sp=(x,y,fx,fy,h,pv,sc,col,id)=>PED.push({m:'ped',ped:true,stat:true,yd:true,x,y,hx:fx,hy:fy,col,pv,sc,id,mv:false});
+    for(const [x,y,ux,uy] of YARD.ben){const h=hash('B'+Math.round(x)+':'+Math.round(y));if(h%100>=50)continue;const nx=-uy,ny=ux,two=(h>>>8)%2;
+      for(let j=0;j<=two;j++){const px=x+nx*1.15+ux*(j?.7:-.4),py=y+ny*1.15+uy*(j?.7:-.4);if(XCLR(px,py,.3))sp(px,py,-nx+ux*(j?-.4:.4),-ny+uy*(j?-.4:.4),h,(h>>>(10+j))%3?1:2,.96,OUTF[(h>>>(12+j*3))%OUTF.length],9000+PED.length)}}
+    for(const [x,y,ux,uy] of YARD.sand){const h=hash('S'+Math.round(x)+':'+Math.round(y)),n=1+h%3;for(let j=0;j<n;j++){const a=j*2.1+(h>>>4)%6,px=x+Math.cos(a)*1.9,py=y+Math.sin(a)*1.9;if(XCLR(px,py,.2))sp(px,py,-Math.cos(a),-Math.sin(a),h,3,.6+((h>>>(6+j))%12)/100,KIDC[(h>>>(9+j*2))%KIDC.length],9000+PED.length)}
+      if((h>>>14)%100<60){const px=x-uy*3.4,py=y+ux*3.4;if(XCLR(px,py,.3))sp(px,py,uy,-ux,h,(h>>>16)%2?1:2,.98,OUTF[(h>>>18)%OUTF.length],9000+PED.length)}}
+    for(const [x,y,ux,uy] of YARD.bin){const h=hash('N'+Math.round(x)+':'+Math.round(y));if(h%100<40){const px=x-uy*1.9,py=y+ux*1.9;if(XCLR(px,py,.3))sp(px,py,uy,-ux,h,2,1,OUTF[(h>>>9)%OUTF.length],9000+PED.length)}}
+    /* animals */
+    const DOGC=[[.62,.46,.26],[.18,.16,.15],[.82,.78,.7],[.5,.34,.2],[.42,.42,.42],[.72,.56,.3]],CATC=[[.2,.2,.2],[.78,.48,.2],[.86,.86,.82],[.5,.5,.5],[.46,.32,.22]],PIGC=[[.5,.52,.58],[.62,.62,.64],[.35,.36,.4],[.7,.7,.72]];
+    const capN={dog:0,cat:0,pig:0},capM={dog:300,cat:300,pig:420},asp=(m,x,y,rad,col,sc)=>{if(capN[m]>=capM[m])return;capN[m]++;AN.push({m,x,y,ox:x,oy:y,rad,hx:1,hy:0,tx:x,ty:y,st:0,t:rnd()*10,v:1,col,sc:sc||1,id:8000+AN.length,mv:false,off:false,gz:gridZ(x,y)})};
+    for(const [x,y] of YARD.bin){const h=hash('D'+Math.round(x)+':'+Math.round(y));if(h%100<48){const n=1+((h>>>8)%3===0?1:0)+((h>>>10)%5===0?1:0);for(let j=0;j<n;j++)asp('dog',x+(j-1)*1.5,y+1.5,16,DOGC[(h>>>(12+j*3))%DOGC.length],.9+((h>>>(5+j))%25)/100)}
+      if((h>>>14)%100<38)asp('cat',x+2.2,y-1.2,8,CATC[(h>>>16)%CATC.length],1)}
+    for(const d of DOORS){const h=hash('C'+d.id);if(h%100<22){const q=d.pts[Math.min(1,d.pts.length-1)];asp('cat',q[0]+1,q[1]+1,7,CATC[(h>>>8)%CATC.length],1)}}
+    for(const [x,y,ux,uy] of YARD.ben){const h=hash('P'+Math.round(x)+':'+Math.round(y));if(h%100<42){const n=3+h%5;for(let j=0;j<n;j++){const px=x+((h>>>(4+j))%40-20)/10,py=y+((h>>>(8+j))%40-20)/10;if(XCLR(px,py,.2))asp('pig',px,py,5,PIGC[(h>>>(3+j))%PIGC.length],1)}}}
+    /* flocks circling over the town: a dozen groups of five to nine, 40-110 m up */
+    for(let k=0;k<14;k++){const cx=-1800+rnd()*4000,cy=-1400+rnd()*2500,rad=60+rnd()*140,n=5+((rnd()*5)|0),sp2=8+rnd()*3,alt=40+rnd()*70,a0=rnd()*6.28;for(let j=0;j<n;j++)BD.push({cx,cy,rad:rad+(rnd()-.5)*24,a:a0+j*.09+rnd()*.12,w:sp2/rad*(rnd()<.5?1:-1)*(k%2?1:-1),alt:alt+rnd()*14,x:0,y:0,z:0,hx:1,hy:0,col:[.12,.12,.14],id:k*20+j,off:false})}
+    for(let k=0;k<3;k++)PLN.push({on:false,t:5+rnd()*40+k*45,x:0,y:0,z:0,hx:1,hy:0,vx:0,vy:0,col:null,id:k})};
+  const wstep=(dt,hour,dens)=>{if(!WI){if(YARD&&XCLR)winit();else return}
+    pt+=dt;
+    /* the doors */
+    for(const d of DOORS){d.t-=dt;if(d.t>0)continue;d.t=(45+rnd()*130)/Math.max(.2,dens);if(rnd()>dens*1.1)continue;let a=null;for(const q of DA)if(q.off){a=q;break}if(!a)continue;
+      const h=hash('A'+d.id+':'+((clock*10)|0));tag(a,h,true);a.col=a.pv===3?a.col:OUTF[(h>>>13)%OUTF.length];a.pts=d.pts;a.cum=d.cum;a.len=d.len;const out=(h>>>20)%2===0;a.dir=out?1:-1;a.s=out?0:d.len;a.v=(a.pv===3?1.0:a.old?.75:1.15)+((h>>>24)%5)/10;a.off=false;a.gz=null;dplace(a)}
+    for(const a of DA){if(a.off)continue;a.s+=a.v*a.dir*dt;if(a.s>=a.len+3||a.s<=-.6){a.off=true;continue}if(a.s>a.len){a.s=Math.min(a.s,a.len)}dplace(a);a.gz=gridZ(a.x,a.y)}
+    /* animals */
+    for(const a of AN){if(a.m==='pig'&&hour>21)continue;a.t-=dt;
+      if(a.st===0){a.mv=false;if(a.t<=0){let ok=false,tx=0,ty=0;for(let k=0;k<4&&!ok;k++){const an=rnd()*6.283,d=(a.m==='pig'?1:3)+rnd()*a.rad;tx=a.ox+Math.cos(an)*d;ty=a.oy+Math.sin(an)*d;ok=true;for(let f=.25;f<=1;f+=.25)if(!XCLR(a.x+(tx-a.x)*f,a.y+(ty-a.y)*f,.25)){ok=false;break}}
+          if(ok){a.tx=tx;a.ty=ty;a.st=1;a.v=a.m==='dog'?(rnd()<.3?3.2:1.4):a.m==='cat'?(rnd()<.2?2.6:.9):(rnd()<.2?1.2:.5)}else a.t=2+rnd()*5}}
+      else{const dx=a.tx-a.x,dy=a.ty-a.y,d=Math.hypot(dx,dy);if(d<.25){a.st=0;a.mv=false;a.t=(a.m==='pig'?1+rnd()*3:3+rnd()*16)}else{const st=Math.min(d,a.v*dt);a.x+=dx/d*st;a.y+=dy/d*st;a.hx=dx/d;a.hy=dy/d;a.mv=true;a.gz=gridZ(a.x,a.y)}}}
+    /* birds on their circles */
+    const night=hour<5||hour>21;for(const b of BD){b.off=night;if(night)continue;b.a+=b.w*dt;b.x=b.cx+Math.cos(b.a)*b.rad;b.y=b.cy+Math.sin(b.a)*b.rad;const sg=b.w>0?1:-1;b.hx=-Math.sin(b.a)*sg;b.hy=Math.cos(b.a)*sg;b.z=hX(b.x,b.y)+b.alt+.45}
+    /* airliners crossing the sky, slowly enough to be seen */
+    for(const q of PLN){if(!q.on){q.t-=dt;if(q.t>0)continue;const an=rnd()*6.283,cx=170+(rnd()-.5)*1800,cy=-150+(rnd()-.5)*1500,R=3600;q.x=cx+Math.cos(an)*R;q.y=cy+Math.sin(an)*R;const l=Math.hypot(cx-q.x,cy-q.y);q.hx=(cx-q.x)/l;q.hy=(cy-q.y)/l;q.vx=q.hx*62;q.vy=q.hy*62;q.alt=620+rnd()*320;q.on=true;q.col=null}
+      q.x+=q.vx*dt;q.y+=q.vy*dt;q.z=hX(Math.max(-2000,Math.min(2350,q.x)),Math.max(-1560,Math.min(1250,q.y)))+q.alt;if(Math.hypot(q.x-170,q.y+150)>3800&&(q.x-170)*q.vx+(q.y+150)*q.vy>0){q.on=false;q.t=70+rnd()*110}}};
   /* traffic-light heads: one per approach, on the right before the stop line */
   const heads=[];RE.forEach((e,i)=>{for(const [n,dir] of [[e.b,1],[e.a,-1]]){const c=NC[n];if(!c||(dir<0&&e.ow)||e.len<10)continue;const sl=e.len-7;const [x,y,dx,dy]=at(e,dir>0?sl:e.len-sl),hx=dx*dir,hy=dy*dir;
       const half=e.w/2+1.2;heads.push({x:x+hy*half,y:y-hx*half,hx,hy,c,ph:phaseOf(c,e,dir)})}});
-  return {all,PED,step,heads,light,CTL,BS,TS,CR,inQ,RE,TE,clock:()=>clock,n:NCAR}}
+  return {all,PED,DA,AN,BD,PLN,step,heads,light,CTL,BS,TS,CR,inQ,RE,TE,clock:()=>clock,n:NCAR}}
 /* ---------- GL ---------- */
 const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.warn(gl.getShaderInfoLog(o));return o};
 const prog=(v,f)=>{const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);return p};
@@ -1500,13 +1633,15 @@ void main(){vec2 P=u*rs/px;vec2 o=px/rs;float dy=1.-nt;
   vec3 c=C(u);float zc=60.,ob=1.;if(hd>.5){zc=lz(u);ob=step(texture2D(td,u).r,.99999);}float hz=1.-smoothstep(.015,.07,length(c-fg));ob*=1.-hz;
   float far=smoothstep(900.,6000.,zc);
   /* clean, saturated colours */
-  float L=lum(c);c=clamp(mix(vec3(L),c,1.+.45*dy*ob),0.,1.);c=mix(c,1.-(1.-c)*.9,dy*.6);
+  float L=lum(c);c=clamp(mix(vec3(L),c,1.+.7*dy*ob),0.,1.);c=mix(c,1.-(1.-c)*.9,dy*.6);
   /* cel shading: the light in four flat bands with crisp steps, hue kept */
   L=lum(c);float q=L*4.;float qs=(floor(q)+smoothstep(.42,.58,fract(q)))/4.;c*=mix(1.,(qs+.06)/(L+.06),.65*ob);
   /* shade a little cool, light a little warm */
   float sd=smoothstep(.45,.3,lum(c));c=mix(c,c*vec3(.86,.9,1.06),sd*.5*dy*ob);
   /* outlines: depth silhouettes (step large against 16-bit depth) and colour edges, 1.5 px, in a dark tone of the local colour */
-  float ln=0.;vec2 e1=o*1.5;
+  float ao=0.;if(hd>.5&&ob>.5){vec2 r5=o*4.;for(int i=0;i<8;i++){float an=float(i)*.7854;float zi=lz(u+vec2(cos(an),sin(an))*r5);float dz=(zc-zi)/zc;ao+=smoothstep(.012,.035,dz)*(1.-smoothstep(.1,.25,dz));}}
+  c*=1.-.22*clamp(ao/3.,0.,1.)*dy*(1.-smoothstep(500.,2500.,zc));
+  float ln=0.;vec2 e1=o*1.8;
   if(hd>.5){float zl=lz(u-vec2(e1.x,0.)),zr=lz(u+vec2(e1.x,0.)),zd=lz(u-vec2(0.,e1.y)),zu=lz(u+vec2(0.,e1.y));
     float ed=max(max(abs(zl-zc),abs(zr-zc)),max(abs(zd-zc),abs(zu-zc)))/zc;ln=smoothstep(.05,.12,ed)*step(.5,ob+step(.001,1.-hz));}
   vec3 a=C(u-vec2(e1.x,0.)),b=C(u+vec2(e1.x,0.)),d=C(u-vec2(0.,e1.y)),e=C(u+vec2(0.,e1.y));
@@ -1600,24 +1735,35 @@ const TRF=(()=>{const lanes=[];
   return {cars,step}})();
 let PCar=null,trT=0;
 function drawTraffic(fogc,fr){if(!TRF.cars.length)return;
-  if(!PCar){PCar=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 m;uniform vec3 o;uniform vec2 r;uniform vec3 eye;varying vec3 vn,vc;varying float vd;
-void main(){float wx=o.x+r.x*p.x-r.y*p.y,wy=o.y+r.y*p.x+r.x*p.y;vec3 wp=vec3(wx,o.z+p.z,-wy);vn=vec3(r.x*n.x-r.y*n.y,n.z,-(r.y*n.x+r.x*n.y));vc=c;vd=distance(wp,eye);gl_Position=m*vec4(wp,1.);}`,
+  if(!PCar){PCar=prog(`attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 m;uniform vec3 o;uniform vec2 r;uniform vec3 eye;uniform float sc;varying vec3 vn,vc;varying float vd;
+void main(){vec3 q=p*sc;float wx=o.x+r.x*q.x-r.y*q.y,wy=o.y+r.y*q.x+r.x*q.y;vec3 wp=vec3(wx,o.z+q.z,-wy);vn=vec3(r.x*n.x-r.y*n.y,n.z,-(r.y*n.x+r.x*n.y));vc=c;vd=distance(wp,eye);gl_Position=m*vec4(wp,1.);}`,
 HP+`varying vec3 vn,vc;varying float vd;uniform vec3 ld,fog,body;uniform vec2 fr;uniform float nf;
 void main(){vec3 N=normalize(vn);vec3 col=vc.x<0.?body:min(vc,vec3(1.));float df=max(dot(N,ld),0.);vec3 c=col*(.5+.2*(.55+.45*N.y)+.5*df*(1.-nf))*mix(1.,.38,nf);
 if(vc.x>1.2)c=mix(c,min(vc,vec3(1.)),nf);float f=clamp((vd-fr.x)/(fr.y-fr.x),0.,1.);gl_FragColor=vec4(mix(c,fog,f*.85),1.);}`);
-    for(const k of ['sedan','hatch','bus','tram','van','trolley','ped','ped2']){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
+    for(const k in VM){buf('vm'+k+'p',VM[k].p);buf('vm'+k+'n',VM[k].n);buf('vm'+k+'c',VM[k].c)}}
   gl.useProgram(PCar);const u=nm=>gl.getUniformLocation(PCar,nm);gl.uniformMatrix4fv(u('m'),false,MVP);gl.uniform3fv(u('eye'),EYE);gl.uniform3fv(u('ld'),sunDir());gl.uniform3fv(u('fog'),fogc);gl.uniform2f(u('fr'),fr[0],fr[1]);gl.uniform1f(u('nf'),NF);
-  const uo=u('o'),ur=u('r'),ub=u('body');
+  const uo=u('o'),ur=u('r'),ub=u('body'),us=u('sc');gl.uniform1f(us,1);
   for(const k of ['sedan','hatch','bus']){const M=VM[k];let bound=false;
     for(const c of TRF.cars){if(c.m!==M)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
       gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.3);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
     if(bound)off()}
-  if(XON&&XSIM){if(XSIM.PED&&cam.d<900)for(const pk of ['ped','ped2']){let bound=false;const M=VM[pk],tq=XSIM.clock()*2.2;for(const c of XSIM.PED){if(c.off||(pk==='ped2')!==(!!c.mv&&Math.floor(tq+c.id*.37)%2===1))continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>3.6e5)continue;if(!bound){attr(PCar,'p','vm'+pk+'p',3);attr(PCar,'n','vm'+pk+'n',3);attr(PCar,'c','vm'+pk+'c',3);bound=true}
-        if(c.yd&&c.gz==null)c.gz=gridZ(c.x,c.y);gl.uniform3f(uo,c.x,c.y,(c.yd?c.gz-.38:hXB(c.x,c.y,c.hx,c.hy))+.45);gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}if(bound)off()}
-    for(const k of ['sedan','hatch','van','bus','trolley','tram']){let bound=false;const M=VM[k];
+  if(XON&&XSIM){const S=XSIM,tq=S.clock()*2.2;
+    /* v7.45 generic instanced draw: a mesh kind over a list, with a filter, height and scale per item */
+    const DK=(name,list,test,zf,scf,maxd)=>{let bound=false;const M=VM[name];for(const c of list){if(c.off||!test(c))continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>maxd)continue;if(!bound){attr(PCar,'p','vm'+name+'p',3);attr(PCar,'n','vm'+name+'n',3);attr(PCar,'c','vm'+name+'c',3);bound=true}
+        gl.uniform3f(uo,c.x,c.y,zf(c));gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col||[.5,.5,.5]);gl.uniform1f(us,scf(c));gl.drawArrays(gl.TRIANGLES,0,M.cnt)}if(bound){gl.uniform1f(us,1);off()}};
+    const pz=c=>{if(c.yd&&(c.gz==null||c.door))c.gz=gridZ(c.x,c.y);return(c.yd?c.gz-.38:hXB(c.x,c.y,c.hx,c.hy))+.45},psc=c=>c.sc||1;
+    if(S.PED&&cam.d<900){for(const [pk,vi,ph] of [['ped',0,0],['ped2',0,1],['pw',1,0],['pw2',1,1],['pb',2,0],['pb2',2,1],['pk',3,0],['pk2',3,1]]){const t=c=>(c.pv|0)===vi&&c.pv!==9&&(!!c.mv&&Math.floor(tq+c.id*.37)%2===1)===!!ph;DK(pk,S.PED,t,pz,psc,3.6e5);DK(pk,S.DA||[],t,pz,psc,3.6e5)}
+      DK('bike',S.PED,c=>c.cyc,pz,psc,3.6e5)}
+    for(const k of ['sedan','hatch','van','bus','trolley','tram','mil','amb','moto']){let bound=false;const M=VM[k];
       for(const c of XSIM.all){if(c.m!==k||c.off)continue;const dx=c.x-EYE[0],dy=c.y+EYE[2];if(dx*dx+dy*dy>2.6e6)continue;if(!bound){attr(PCar,'p','vm'+k+'p',3);attr(PCar,'n','vm'+k+'n',3);attr(PCar,'c','vm'+k+'c',3);bound=true}
         gl.uniform3f(uo,c.x,c.y,(k==='tram'?hR(c.x,c.y):hXB(c.x,c.y,c.hx,c.hy))+(k==='tram'?.43:.3));gl.uniform2f(ur,c.hx,c.hy);gl.uniform3fv(ub,c.col||[.6,.2,.2]);gl.drawArrays(gl.TRIANGLES,0,M.cnt)}
-      if(bound)off()}}
+      if(bound)off()}
+    /* v7.45 roof lights (red and blue by turns), animals, birds, planes */
+    {const bz=c=>hXB(c.x,c.y,c.hx,c.hy)+.3+(c.m==='amb'?2.28:1.4),fl=Math.floor(S.clock()*4)%2;
+      for(const [off2,colA] of [[0,fl?[.1,.3,1]:[.2,.05,.05]],[1,fl?[.2,.05,.05]:[1,.1,.1]]]){const lst=S.all.filter(c=>!c.off&&c.on&&(c.m==='mil'||c.m==='amb')).map(c=>off2?Object.assign({},c,{hx:-c.hx,hy:-c.hy,col:colA}):Object.assign({},c,{col:colA}));DK('bar',lst,c=>true,bz,c=>1,1.5e6)}}
+    if(cam.d<900){for(const k of ['dog','cat','pig']){const sp=k==='pig'?1.6:k==='cat'?1.3:1;for(const ph of [0,1])DK(ph?k+'2':k,S.AN||[],c=>c.m===k&&(!!c.mv&&Math.floor(tq*sp+c.id*.37)%2===1)===!!ph,c=>(c.gz||0)+.07,c=>c.sc||1,3.6e5)}}
+    DK('bird',S.BD||[],c=>Math.floor(S.clock()*7+c.id)%2===0,c=>c.z,c=>2.4,1.2e6);DK('bird2',S.BD||[],c=>Math.floor(S.clock()*7+c.id)%2===1,c=>c.z,c=>2.4,1.2e6);
+    DK('plane',S.PLN||[],c=>c.on,c=>c.z,c=>1.7,4e7)}
   if(TRAMS){attr(PCar,'p','vmtramp',3);attr(PCar,'n','vmtramn',3);attr(PCar,'c','vmtramc',3);for(const c of TRAMS.cars){if(!c.on)continue;gl.uniform3f(uo,c.x,c.y,H(c.x,c.y)+.43);gl.uniform2f(ur,c.hx,c.hy);gl.drawArrays(gl.TRIANGLES,0,VM.tram.cnt)}off()}}
 
 /* ---------- math ---------- */
