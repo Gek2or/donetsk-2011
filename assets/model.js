@@ -1109,7 +1109,7 @@ function buildX(){const X=XD;if(!X)return;XS=false;
        (on the doorstep side or in the yard), a washing line with laundry behind about 40 % of them */
     {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
         quad(P(s1,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s1,t0,z1),c,0);quad(P(s0,t1,z0),P(s0,t0,z0),P(s0,t0,z1),P(s0,t1,z1),cs,0);quad(P(s0,t0,z0),P(s1,t0,z0),P(s1,t0,z1),P(s0,t0,z1),cs,0);quad(P(s1,t1,z0),P(s0,t1,z0),P(s0,t1,z1),P(s1,t1,z1),c,0);quad(P(s0,t0,z1),P(s1,t0,z1),P(s1,t1,z1),P(s0,t1,z1),ct,0)};
-      const two=(A,B,C,D,c)=>{quad(A,B,C,D,c,0);quad(D,C,B,A,c,0)};
+      const two=(A,B,C,D,c)=>quad(A,B,C,D,c,0);
       const DOG=[[.45,.3,.18],[.16,.14,.13],[.66,.45,.24],[.72,.7,.64],[.36,.3,.26]].map(tn),CAT=[[.78,.48,.2],[.42,.42,.43],[.12,.12,.13],[.85,.83,.78],[.5,.4,.3]].map(tn),KEN=[[.42,.3,.2],[.5,.38,.26],[.35,.36,.34]].map(tn),
         LAU=[[.92,.92,.9],[.85,.86,.92],[.75,.2,.2],[.25,.4,.7],[.9,.75,.3],[.4,.6,.4],[.95,.7,.75],[.6,.6,.62]].map(tn),POL=tn([.45,.43,.4]);
       const dog=(x,y,ux,uy,c,lie)=>{const z=gz(x,y)-.02;if(lie){bx3(x,y,ux,uy,z,-.38,.3,-.16,.16,0,.26,c);bx3(x,y,ux,uy,z,.3,.55,-.11,.11,.06,.3,c);return}
@@ -1134,6 +1134,34 @@ function buildX(){const X=XD;if(!X)return;XS=false;
             let s=.4;for(let k=0;s<L-.6&&k<9;k++){const hh=hash(id+'w'+k),w=.4+(hh%50)/100,ht=.35+((hh>>>6)%45)/100,t=(hh>>>12)&1?.3:-.3;if((hh>>>14)%4===0){s+=w*.6;continue}
               const q0=s/L,q1=Math.min(1,(s+w)/L),zt=q=>za+(zb-za)*q+R-.12*Math.sin(q*Math.PI)-.02,P=(q,z)=>W(ax+(bx_-ax)*q-sy*t,ay+(by_-ay)*q+sx*t,z);
               two(P(q0,zt(q0)),P(q1,zt(q1)),P(q1,zt(q1)-ht),P(q0,zt(q0)-ht),LAU[(hh>>>16)%LAU.length]);s+=w+.12}}}}}
+    /* v7.39 more detail, private sector of the live sectors (typical, class E): a street fence with a double gate and a wicket in
+       front of every house, side fences back along the plot, a concrete path and porch step to the door side, vegetable beds behind */
+    {const bx3=(cx,cy,ux,uy,z,s0,s1,t0,t1,z0,z1,c)=>{const P=(s,t,h)=>W(cx+ux*s-uy*t,cy+uy*s+ux*t,z+h),ct=mix(c,[1,1,1],.08),cs=mix(c,[0,0,0],.15);
+        quad(P(s1,t0,z0),P(s1,t1,z0),P(s1,t1,z1),P(s1,t0,z1),c,0);quad(P(s0,t1,z0),P(s0,t0,z0),P(s0,t0,z1),P(s0,t1,z1),cs,0);quad(P(s0,t0,z0),P(s1,t0,z0),P(s1,t0,z1),P(s0,t0,z1),cs,0);quad(P(s1,t1,z0),P(s0,t1,z0),P(s0,t1,z1),P(s1,t1,z1),c,0);quad(P(s0,t0,z1),P(s1,t0,z1),P(s1,t1,z1),P(s0,t1,z1),ct,0)};
+      const two=(A,B,C,D,c)=>quad(A,B,C,D,c,0);/* no face culling in this scene: one face is seen from both sides (two coplanar faces fought) */
+      const FEN=[[.38,.5,.36],[.48,.36,.26],[.55,.56,.55],[.3,.42,.58],[.6,.5,.32],[.62,.34,.28]].map(tn),GAT=[[.25,.45,.3],[.55,.2,.18],[.2,.32,.55],[.5,.5,.5],[.42,.3,.2]].map(tn),
+        POST=tn([.4,.39,.37]),PATH=tn([.68,.67,.64]),SOIL=tn([.36,.27,.19]),SOIL2=tn([.42,.32,.22]),VEG=[[.33,.55,.25],[.42,.6,.28],[.5,.62,.3]].map(tn);
+      /* a fence run from A to B (plan), panels between posts every 2.4 m, only where both ends are clear of buildings and roads */
+      const fence=(ax,ay,bx_,by_,col,hgt,gap)=>{const L=Math.hypot(bx_-ax,by_-ay);if(L<1)return;const n=Math.max(1,Math.round(L/2.4)),ux=(bx_-ax)/L,uy=(by_-ay)/L;
+        for(let i=0;i<n;i++){const s0=i/n*L,s1=(i+1)/n*L;if(gap&&s1>gap[0]&&s0<gap[1])continue;const x0=ax+ux*s0,y0=ay+uy*s0,x1=ax+ux*s1,y1=ay+uy*s1;if(!xclr(x0,y0,.25)||!xclr(x1,y1,.25))continue;
+          const z0=gz(x0,y0),z1=gz(x1,y1);two(W(x0,y0,z0),W(x1,y1,z1),W(x1,y1,z1+hgt),W(x0,y0,z0+hgt),col);bx3(x0,y0,ux,uy,z0,-.05,.05,-.05,.05,0,hgt+.08,POST)}};
+      const flat=(cx,cy,ux,uy,s0,s1,t0,t1,col,lift)=>{const P=(s,t)=>{const x=cx+ux*s-uy*t,y=cy+uy*s+ux*t;return W(x,y,gz(x,y)+lift)};quad(P(s0,t0),P(s1,t0),P(s1,t1),P(s0,t1),col,0)};
+      for(const [cx,cy,u,v,la,lb,fx,fy,fd,id] of privHouses()){const h=hash('f'+id),sd=Math.abs(fx*v[0]+fy*v[1])>.7,e=sd?lb:la,ex=sd?la:lb,sx=-fy,sy=fx;
+        const ff=e+Math.max(1.5,Math.min(fd-.6,7)),hw=ex+2.5+(h%20)/10,col=FEN[(h>>>5)%FEN.length],hg=1.5+((h>>>8)%4)/10,gc=GAT[(h>>>10)%GAT.length];
+        /* street fence with the gate (3.2 m double gate + 1 m wicket) off centre */
+        const go=((h>>>13)%5-2)*.8,fax=cx+fx*ff-sx*hw,fay=cy+fy*ff-sy*hw,fbx=cx+fx*ff+sx*hw,fby=cy+fy*ff+sy*hw;
+        if(fd>2.2){fence(fax,fay,fbx,fby,col,hg,[hw+go-1.6,hw+go+2.6]);
+          const gx=cx+fx*ff+sx*go,gy=cy+fy*ff+sy*go;if(xclr(gx,gy,.3)){const z=gz(gx,gy),P=(s,hh)=>W(gx+sx*s,gy+sy*s,z+hh);
+            two(P(-1.6,0),P(0,0),P(0,hg+.1),P(-1.6,hg+.1),gc);two(P(0,0),P(1.6,0),P(1.6,hg+.1),P(0,hg+.1),mix(gc,[0,0,0],.1));two(P(1.7,0),P(2.6,0),P(2.6,hg),P(1.7,hg),gc);
+            for(const q of [-1.65,1.65,2.65])bx3(gx+sx*q,gy+sy*q,sx,sy,z,-.08,.08,-.08,.08,0,hg+.25,POST);
+            /* concrete path from the wicket to the house and a porch step */
+            flat(gx,gy,fx,fy,-(ff-e),0,1.95,2.45,PATH,.04);flat(cx,cy,fx,fy,e,e+.9,go+1.5,go+2.9,PATH,.18)}}
+        /* side fences back along the plot, a cheaper board fence */
+        const bk=e+12+(h>>>16)%6,FB=mix(tn([.45,.38,.3]),col,.3);
+        fence(fax,fay,cx-fx*bk-sx*hw,cy-fy*bk-sy*hw,FB,1.4,null);fence(fbx,fby,cx-fx*bk+sx*hw,cy-fy*bk+sy*hw,FB,1.4,null);
+        /* vegetable beds: rows of soil and greens behind the house, past the washing line */
+        if((h>>>19)%100<75){const r0=e+6.5,nr=6+(h>>>21)%5,w=Math.min(ex+1.5,hw-.8,6);for(let k=0;k<nr;k++){const d=r0+k*.9,x=cx-fx*(d+.35),y=cy-fy*(d+.35);if(!xclr(x+sx*w,y+sy*w,.3)||!xclr(x-sx*w,y-sy*w,.3)||!xclr(x,y,.3))continue;
+          flat(cx,cy,-fx,-fy,d,d+.75,-w,w,k%2?SOIL2:SOIL,.05);if((h>>>(k%13))%3)flat(cx,cy,-fx,-fy,d+.2,d+.5,-w+.2,w-.2,VEG[(k+h)%VEG.length],.13)}}}}
     /* v6.0: cars parked along the drives in the yards of the apartment blocks (illustrative): a Lada, a Moskvich, a foreign car */
     const PKC=[[.78,.77,.73],[.2,.22,.25],[.55,.13,.12],[.18,.3,.5],[.85,.84,.8],[.36,.38,.4],[.4,.5,.36],[.7,.62,.3],[.25,.25,.28],[.6,.6,.62],[.58,.32,.18],[.9,.9,.88],[.3,.18,.2],[.5,.55,.6],[.16,.16,.18],[.75,.7,.55]],glc=dk?[.08,.09,.1]:[.16,.19,.22],tyc=[.07,.07,.08];
     const bx=(P3,s0,s1,t0,t1,z0,z1,c,ct)=>{quad(P3(s1,t0,z0),P3(s1,t1,z0),P3(s1,t1,z1),P3(s1,t0,z1),c,0);quad(P3(s0,t1,z0),P3(s0,t0,z0),P3(s0,t0,z1),P3(s0,t1,z1),c,0);quad(P3(s0,t0,z0),P3(s1,t0,z0),P3(s1,t0,z1),P3(s0,t0,z1),c,0);quad(P3(s1,t1,z0),P3(s0,t1,z0),P3(s0,t1,z1),P3(s1,t1,z1),c,0);quad(P3(s0,t0,z1),P3(s1,t0,z1),P3(s1,t1,z1),P3(s0,t1,z1),ct||c,0)};
@@ -1453,43 +1481,26 @@ float lz(vec2 q){float z=texture2D(td,q).r*2.-1.;return 2.*nz.x*nz.y/(nz.y+nz.x-
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
 vec3 C(vec2 q){return texture2D(tc,q).rgb;}
 void main(){vec2 P=u*rs/px;vec2 o=px/rs;float dy=1.-nt;
-  vec2 w=vec2(fb(P/70.),fb(P/70.+vec2(91.,37.)))-.5;vec2 uv=u+w*2.6*o;
-  vec3 c0=C(uv),cb=(C(uv+vec2(2.,0.)*o)+C(uv-vec2(2.,0.)*o)+C(uv+vec2(0.,2.)*o)+C(uv-vec2(0.,2.)*o))*.25;
-  vec3 c=mix(c0,cb,.3);float L=lum(c);
-  float zc=60.,ob=1.;if(hd>.5){zc=lz(u);ob=step(texture2D(td,u).r,.99999);}float hz=1.-smoothstep(.015,.07,length(C(u)-fg));ob*=1.-hz;float far=smoothstep(700.,5200.,zc);
-  /* v7.32 palette after the owner's watercolour: warm brick, ochre and cream walls, juicy yellow-green foliage, light warm asphalt */
-  float wa=clamp((c.r-c.b)*3.,0.,1.),gr=clamp((c.g-max(c.r,c.b))*5.,0.,1.),gy=1.-clamp(length(c-vec3(L))*6.,0.,1.);
-  float sat=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b)),bo=1.-smoothstep(.18,.45,sat);c=mix(vec3(L),c,1.+(.55*wa+.6*gr)*dy*bo);c+=dy*(wa*vec3(.05,.01,-.03)+gr*vec3(.02,.04,-.04)+gy*vec3(.035,.025,-.005));c=clamp(c,0.,1.);
-  /* flat washes: luminance in soft steps, hue kept */
-  L=lum(c);float q=L*5.;float qs=(floor(q)+smoothstep(.3,.7,fract(q)))/5.;c*=mix(1.,(qs+.03)/(L+.03),.25);
-  /* transparent pigment over white paper */
-  c=mix(c,1.-(1.-c)*.84,dy);c=pow(c,vec3(.93));float Lq=lum(c);
-  /* shade is painted cool, light warm (classic watercolour), weaker at night */
-  float sd=smoothstep(.5,.25,Lq);c=mix(c,c*vec3(.8,.87,1.06)+vec3(.0,.01,.04),sd*.7*dy);c=mix(c,c*vec3(1.03,1.01,.95),(1.-sd)*.6*dy);
-  /* darker rims where one wash meets another, pigment pooling */
-  float rim=clamp(length(c0-cb)*2.4,0.,1.);c*=1.-.2*rim*(1.-nt*.5);
-  /* uneven washes: grain, large warm and cool blooms, a few backruns */
-  float bl=N2(P/210.);
-  c*=1.-.08*(fb(P/2.2)-.5)-.1*(bl-.5)*(1.-nt*.6)*ob;c=mix(c,c*vec3(1.04,1.,.93),ob*dy*.5*smoothstep(.45,.75,N(P/330.+9.)));
-  /* fine hatching in the shade (cross-hatched only in the darkest places), thinner far away */
-  float sp=mix(4.,6.,far),h1=abs(fract((P.x+P.y+N(P/9.)*3.)/sp)-.5)*2.,h2=abs(fract((P.x-P.y+N2(P/9.)*3.)/sp)-.5)*2.;
-  float hat=(1.-smoothstep(.08,.3,h1))*smoothstep(.44,.28,Lq)*dy*.22+(1.-smoothstep(.08,.3,h2))*smoothstep(.27,.14,Lq)*dy*.17;hat*=1.-far*.7;
-  /* ink: silhouettes and creases from depth, colour edges; near facades also get the window strokes */
-  vec2 lu=u+(vec2(N(P/23.),N2(P/23.))-.5)*1.6*o;float ln=0.;
-  if(hd>.5){float zm=lz(lu),zl=lz(lu-vec2(o.x,0.)),zr=lz(lu+vec2(o.x,0.)),zd=lz(lu-vec2(0.,o.y)),zu=lz(lu+vec2(0.,o.y));
-    float ed=max(max(abs(zl-zm),abs(zr-zm)),max(abs(zd-zm),abs(zu-zm)))/zm;
-    float ic=1./zm,cr=max(abs(1./zl+1./zr-2.*ic),abs(1./zd+1./zu-2.*ic))/ic;
-    ln=max(smoothstep(.02,.06,ed),smoothstep(.006,.02,cr)*.6);}
-  vec3 a=C(lu-vec2(o.x,0.)),b=C(lu+vec2(o.x,0.)),d=C(lu-vec2(0.,o.y)),e=C(lu+vec2(0.,o.y));
-  float ce=length(a-b)+length(d-e);float near=1.-smoothstep(90.,420.,zc);
-  ln=max(ln,smoothstep(.28,.6,ce)*.5);ln=max(ln,smoothstep(.12,.3,ce)*.32*near);
-  ln*=(.55+.45*N2(P/11.))*.85*(1.-smoothstep(120.,1400.,zc)*.85)*(1.-nt*.55);
-  /* aerial perspective: the far city fades into the paper as in the drawing */
-  c=mix(c,mix(pap,vec3(.78,.84,.9),.25),far*.42*dy);
-  /* paper fibre, warm sepia ink, ragged unpainted edge like a sheet */
-  float fib=fb(vec2(P.x/5.,P.y/1.4))*.6+fb(P/1.5)*.4;vec3 ik=mix(ink,vec3(.25,.19,.16),dy*.6);
-  c=mix(c,mix(pap,c,.25),hz*dy);vec3 col=mix(c,c*.62+ik*.18,clamp(hat,0.,1.));col=mix(col,ik,clamp(ln,0.,1.));col*=.955+.07*fib;
-  vec2 m=min(u,1.-u)*rs/px;float edge=smoothstep(0.,26.,min(m.x,m.y)-14.*fb(P/30.));col=mix(pap,col,mix(1.,edge,1.-nt*.7));
+  /* v7.38 cartoon look (owner: "remove the artefacts, more cartoon-like"). No paper grain, hatching, wobble or ragged frame.
+     The depth crease test is gone: on phones the depth texture is 16-bit and its steps drew horizontal lines across the ground */
+  vec3 c=C(u);float zc=60.,ob=1.;if(hd>.5){zc=lz(u);ob=step(texture2D(td,u).r,.99999);}float hz=1.-smoothstep(.015,.07,length(c-fg));ob*=1.-hz;
+  float far=smoothstep(900.,6000.,zc);
+  /* clean, saturated colours */
+  float L=lum(c);c=clamp(mix(vec3(L),c,1.+.45*dy*ob),0.,1.);c=mix(c,1.-(1.-c)*.9,dy*.6);
+  /* cel shading: the light in four flat bands with crisp steps, hue kept */
+  L=lum(c);float q=L*4.;float qs=(floor(q)+smoothstep(.42,.58,fract(q)))/4.;c*=mix(1.,(qs+.06)/(L+.06),.65*ob);
+  /* shade a little cool, light a little warm */
+  float sd=smoothstep(.45,.3,lum(c));c=mix(c,c*vec3(.86,.9,1.06),sd*.5*dy*ob);
+  /* outlines: depth silhouettes (step large against 16-bit depth) and colour edges, 1.5 px, in a dark tone of the local colour */
+  float ln=0.;vec2 e1=o*1.5;
+  if(hd>.5){float zl=lz(u-vec2(e1.x,0.)),zr=lz(u+vec2(e1.x,0.)),zd=lz(u-vec2(0.,e1.y)),zu=lz(u+vec2(0.,e1.y));
+    float ed=max(max(abs(zl-zc),abs(zr-zc)),max(abs(zd-zc),abs(zu-zc)))/zc;ln=smoothstep(.05,.12,ed)*step(.5,ob+step(.001,1.-hz));}
+  vec3 a=C(u-vec2(e1.x,0.)),b=C(u+vec2(e1.x,0.)),d=C(u-vec2(0.,e1.y)),e=C(u+vec2(0.,e1.y));
+  ln=max(ln,smoothstep(.3,.55,length(a-b)+length(d-e))*.85);
+  ln*=(1.-smoothstep(400.,3000.,zc)*.7)*(1.-nt*.5);
+  /* far city a touch lighter, the haze stays clean */
+  c=mix(c,mix(fg,vec3(1.),.2),far*.3*dy);c=mix(c,fg,hz*.6);
+  vec3 ik=mix(c*.22,ink,.35);vec3 col=mix(c,ik,clamp(ln,0.,1.));
   gl_FragColor=vec4(col,1.);}`);
 let wFB=null,wCT=null,wDT=null,wDR=null,wNT=null,wW=0,wH=0,wQB=null;
 function wcBind(){const w=cv.width,h=cv.height;
