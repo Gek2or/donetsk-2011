@@ -442,9 +442,9 @@ let vizL=[0,0,0,0,0,0,0,0];function vizHit(m){vizL[m%8]=1;vizL[(m+3)%8]=Math.max
 let playing=false,step=0,nextT=0,timer=0,vq=[],raf=0,ph=-1;
 const curLen=()=>MODE==='grid'?16*S.bars:(PLY?PLY.len:PV?16:16*songLen());
 function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:(PLY&&PLY.g==='rap'?26:0),t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
-function vis(){raf=requestAnimationFrame(vis);if(!ac)return;if(MODE==='phone'&&PLY&&menu&&menu.t==='lib')libTick();let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
+function vis(){raf=requestAnimationFrame(vis);if(!ac)return;if(MODE==='phone'&&PLY&&menu&&(menu.t==='lib'||menu.t==='kp'||menu.t==='quiz')){libTick();qTick()}let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
 let lastB=-9;
-function mark(){if(MODE==='phone'){if(PLY&&menu&&menu.t==='lib'){libTick();return}const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+function mark(){if(MODE==='phone'){if(PLY&&menu&&(menu.t==='lib'||menu.t==='kp'||menu.t==='quiz')){libTick();return}const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
   const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
   if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
 function start(from){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();setFx();playing=true;step=from||0;vq=[];lastB=-9;nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
@@ -471,7 +471,7 @@ function draw(){
   const t=T();
   const pt=PH(),mt=`<div class="sq-mode" role="tablist">${['phone','grid'].map(k=>`<button type="button" role="tab" data-mode="${k}" aria-selected="${MODE===k}">${esc(pt.mode[k])}</button>`).join('')}</div>`;
   const hd=`<div class="head"><div><div class="code"><b>01</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
-  if(MODE==='phone'){if(phMsg==='fromLink'&&menu&&menu.t==='lib')menu=null;libCat=TUNES[LIB.i].c;box.innerHTML=hd+phHTML();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
+  if(MODE==='phone'){if(phMsg==='fromLink'&&menu&&menu.t==='lib'){menu=null;SIDE='comp'}if(CALL&&!draw.c){draw.c=1;MODE='phone';menu={t:'callwait'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}if(location.hash==='#quiz'&&!draw.q){draw.q=1;SIDE='quiz';menu={t:'quiz'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}libCat=TUNES[LIB.i].c;box.innerHTML=hd+phHTML();keyLabels();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
   box.innerHTML=hd+`<div class="sq">
 <div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
 <div class="sq-top">
@@ -517,8 +517,19 @@ box.addEventListener('pointermove',e=>{if(!paint)return;const el=document.elemen
 addEventListener('pointerup',()=>{paint=null});
 box.addEventListener('click',e=>{
   const md=e.target.closest('.sq-mode [data-mode]');if(md){const m=md.dataset.mode;if(m!==MODE){if(playing)stop();PV=null;menu=null;MODE=m;try{localStorage.setItem('d11-seq-mode',m)}catch(x){}draw();setFx()}return}
-  const lc=e.target.closest('.plb [data-cat]');if(lc){libCat=lc.dataset.cat;const pl=box.querySelector('.plb');if(pl)pl.innerHTML=libHTML();return}
-  const lt=e.target.closest('.plb [data-tune]');if(lt){if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};libSet(+lt.dataset.tune,undefined,true);return}
+  const sdb=e.target.closest('.plb [data-side]');if(sdb){sideSet(sdb.dataset.side);return}
+  const qa=e.target.closest('[data-qa]');if(qa&&menu&&menu.t==='quiz'){quizAnswer(+qa.dataset.qa);return}
+  if(e.target.closest('.plb [data-qs]')){if(initAudio()&&ac.state!=='running')ac.resume();quizStart();sideR();return}
+  if(e.target.closest('.plb [data-qshare]')){const u=location.origin+location.pathname+'#quiz',txt=TT().q_text.replace('{n}',Q.score)+' '+u,m=box.querySelector('.plb .pcall-msg');
+    const ok=()=>{if(m)m.textContent=TT().q_shared},bad=()=>{if(!m)return;m.textContent='';const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=txt;i.className='sq-link';m.appendChild(i);i.select()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,bad);else bad();return}
+  const kg=e.target.closest('.plb [data-kg]');if(kg){KP.g=kg.dataset.kg;kpSave();menu={t:'kp'};if(initAudio()&&ac.state!=='running')ac.resume();if(playing)stop();kpPlay();phR();sideR();return}
+  const ka=e.target.closest('.plb [data-kpa]');if(ka){menu={t:'kp'};if(initAudio()&&ac.state!=='running')ac.resume();const a=ka.dataset.kpa;if(a==='play')kpPlay();else if(a==='undo'){KP.n.pop();kpSave()}else if(a==='clear'){if(playing)stop();KP.n=[];kpSave()}phR();sideR();return}
+  const cl=e.target.closest('.plb [data-call]');if(cl){const inp=box.querySelector('.pcall input');try{localStorage.setItem('d11-callname',inp?inp.value.trim().slice(0,20):'')}catch(x){}
+    const u=callLink(cl.dataset.call),m=box.querySelector('.pcall-msg');const ok=()=>{if(m)m.textContent=TT().c_ok},bad=()=>{if(!m)return;m.textContent=TT().c_man;const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.select()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad();return}
+  const lc=e.target.closest('.plb [data-cat]');if(lc){libCat=lc.dataset.cat;sideR();return}
+  const lt=e.target.closest('.plb [data-tune]');if(lt){if(initAudio()&&ac.state!=='running')ac.resume();SIDE='lib';menu={t:'lib'};libSet(+lt.dataset.tune,undefined,true);return}
   const lg=e.target.closest('.plb [data-gen]');if(lg){if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};libSet(undefined,lg.dataset.gen,true);return}
   const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();kclick();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
   const pc=e.target.closest('.pc');if(pc){const r=+pc.dataset.r,c=+pc.dataset.c;if(r===cur.r&&c===cur.c)phKey('ok');else{cur={r,c};phR()}return}
@@ -553,7 +564,10 @@ const libSave=()=>{try{localStorage.setItem('d11-lib',JSON.stringify(LIB))}catch
 let cur={r:0,c:0},v0=0,menu={t:'lib'},clip=0,toastT=0,toast='';
 const GC=['dg0','dg1','dg2','dg3'];
 function phTime(){const b=document.querySelector('.dn-chip b');const s=b&&b.textContent||'';return /\d/.test(s)?s:''}
-function softL(){const t=PH();if(menu&&menu.t==='ring')return softRing();if(menu&&menu.t==='lib')return [playing&&PLY?t.stop:t.play,'◀ '+T9().genre+' ▶',t.more];if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
+function softL(){const t=PH();if(menu&&menu.t==='ring')return menu.call?[t.answer,'',t.reject]:softRing();if(menu&&menu.t==='quiz')return Q.st==='ask'||Q.st==='show'?['','',TT().q_exit]:[Q.st==='end'?TT().q_again:TT().q_start,'',TT().q_exit];
+  if(menu&&menu.t==='kp')return [playing?TT().k_stop:TT().k_play,'▲ '+T9().genre+' ▼',PH().back];
+  if(menu&&menu.t==='callwait')return ['OK','',''];if(menu&&menu.t==='talk')return ['','',''];
+  if(menu&&menu.t==='lib')return [playing&&PLY?t.stop:t.play,'◀ '+T9().genre+' ▶',t.more];if(menu){if(menu.t==='confirm')return [t.yes,'',t.no];if(menu.t==='tempo'||menu.t==='vol')return [t.sel,'◀ ▶',t.back];return [t.sel,'',t.back]}
   return [playing&&!PV?t.stop:t.play,P.tr[cur.r][cur.c]?t.edit:t.ins,t.more]}
 function softRing(){const t=PH();return [t.answer,'',t.reject]}
 function moreItems(){const t=PH();if(menu&&menu.lib)return [['cat',T9().m_lib],['ring',T9().m_ringT],['comp',T9().m_comp],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['keys',t.m_keys+' · '+(KS?t.on:t.off)]];return [['lib',T9().m_lib],['ins',t.m_ins],['copy',t.m_copy],['paste',t.m_paste],['del',t.m_del],['tempo',t.m_tempo+' · '+P.bpm],['vol',t.m_vol+' · '+Math.round(S.vol*10)],['spk',P.spk?t.m_spk:t.m_hp],['ring',t.m_ring],['mine',t.m_mine],['tracks',t.m_tracks],['keys',t.m_keys+' · '+(KS?t.on:t.off)],['demo',t.m_demo],['clear',t.m_clear],['share',t.m_share]]}
@@ -565,8 +579,8 @@ function mItems(){const t=PH();if(!menu)return [];if(menu.t==='more')return more
   if(menu.t==='mine'){const a=slots();return [0,1,2,3,4].map(i=>[i,t.slot+' '+(i+1)+' · '+(a[i]?a[i].d:t.slotEmpty)])}
   if(menu.t==='slot'){const a=slots();return (a[menu.n]?[['open',t.s_open]]:[]).concat([['save',t.s_save]])}return []}
 function mTitle(){const t=PH();if(menu.t==='more')return t.more;if(menu.t==='groups')return t.tracks[cur.r];if(menu.t==='blocks')return t.tracks[cur.r]+' · '+t.groups[menu.g];
-  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;if(menu.t==='tracks')return t.m_tracks;if(menu.t==='mine')return t.m_mine;if(menu.t==='slot')return t.slot+' '+(menu.n+1);if(menu.t==='ring')return t.ringing;if(menu.t==='lib')return T9().lib;if(menu.t==='cats')return T9().pick;if(menu.t==='tunes')return T9().cats[menu.c];return t.title}
-function info(){const t=PH();if(toast)return toast;if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):menu.t==='ring'?(PLY?PLY.tu.n[L()]||PLY.tu.n.ru:t.len+' '+fmtDur()):menu.t==='lib'?(playing&&PLY?T9().now+' · ':'')+T9().cats[TUNES[LIB.i].c]+' · '+(LIB.i+1)+'/'+TUNES.length:'';
+  if(menu.t==='tempo')return t.m_tempo;if(menu.t==='vol')return t.m_vol;if(menu.t==='tracks')return t.m_tracks;if(menu.t==='mine')return t.m_mine;if(menu.t==='slot')return t.slot+' '+(menu.n+1);if(menu.t==='ring')return t.ringing;if(menu.t==='lib')return T9().lib;if(menu.t==='quiz')return TT().q_title;if(menu.t==='kp')return TT().k_title;if(menu.t==='talk'||menu.t==='callwait')return TT().c_from;if(menu.t==='cats')return T9().pick;if(menu.t==='tunes')return T9().cats[menu.c];return t.title}
+function info(){const t=PH();if(toast)return toast;if(menu&&menu.t==='quiz')return quizInfo();if(menu&&menu.t==='kp')return KP.n.length?'♪ '+(playing?TT().k_stop:TT().k_play)+' · '+T9().gens[KP.g]:'';if(menu&&(menu.t==='talk'||menu.t==='callwait'))return '';if(menu)return menu.t==='blocks'?'♪ '+t.groups[menu.g]+' '+(menu.i+1):menu.t==='ring'?(PLY?PLY.tu.n[L()]||PLY.tu.n.ru:t.len+' '+fmtDur()):menu.t==='lib'?(playing&&PLY?T9().now+' · ':'')+T9().cats[TUNES[LIB.i].c]+' · '+(LIB.i+1)+'/'+TUNES.length:'';
   const cd=P.tr[cur.r][cur.c];return t.tracks[cur.r]+' · '+(cd?t.groups[pg(cd)]+' '+(pn(cd)+1):t.empty)+' · '+t.bar+' '+(cur.c+1)+'/'+songLen()}
 function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>=0?pc:cur.c;
   if(fc<v0)v0=fc;if(fc>v0+7)v0=fc-7;v0=Math.max(0,Math.min(PNC-8,v0));
@@ -575,8 +589,9 @@ function gridH(){const t=PH(),pc=playing&&!PV&&ph>=0?Math.floor(ph/16):-1,fc=pc>
     for(let c=v0;c<v0+8;c++){const cd=P.tr[r][c];h+=`<span class="pc${MUTE[r]?' mu':''}${cd?' '+GC[pg(cd)]:''}${r===cur.r&&c===cur.c?' cur':''}${c===pc?' play':''}" data-r="${r}" data-c="${c}">${cd?pn(cd)+1:''}</span>`}}
   return h+'<i class="pline" hidden></i></div>'}
 function menuH(){const t=PH();
+  if(menu.t==='quiz')return quizScr();if(menu.t==='kp')return kpScr();if(menu.t==='talk')return talkScr();if(menu.t==='callwait')return callWaitScr();
   if(menu.t==='lib'){const tu=TUNES[LIB.i],x=T9();return `<div class="plib"><b>${esc(tu.n[L()]||tu.n.ru)}</b><span>${esc(byOf(tu))}</span><div class="pgen" data-pk2="g"><i>◀</i><em>${esc(x.gens[LIB.g])}</em><i>▶</i></div><div class="pviz" aria-hidden="true">${vizL.map(()=>'<s></s>').join('')}</div><div class="pprog"><s></s></div></div>`}
-  if(menu.t==='ring')return `<div class="pring"><div class="pr-ico" aria-hidden="true"><i></i></div><span>${esc(t.caller)}</span><b>${esc(t.ringNote)}</b></div>`;
+  if(menu.t==='ring')return `<div class="pring"><div class="pr-ico" aria-hidden="true"><i></i></div><span>${esc(RINGNAME||t.caller)}</span><b>${esc(t.ringNote)}</b></div>`;
   if(menu.t==='tempo'||menu.t==='vol'){const isT=menu.t==='tempo',v=isT?P.bpm:Math.round(S.vol*10),mn=isT?60:0,mx=isT?200:10;
     return `<div class="pv"><b>${v}</b><span>${isT?esc(t.bpm):'/ 10'}</span><i><s style="width:${Math.round((v-mn)/(mx-mn)*100)}%"></s></i></div>`}
   if(menu.t==='confirm')return `<div class="pv pq"><span>${esc(t.confirm)}</span></div>`;
@@ -585,11 +600,11 @@ function menuH(){const t=PH();
     (it.length>6?`<div class="psb"><s style="top:${Math.round(menu.i/(it.length-1)*80)}%"></s></div>`:'')}
 function scrH(){const t=PH(),[a,b,c]=softL();
   return `<div class="ps-stat"><i class="psig" aria-hidden="true"><b></b><b></b><b></b><b></b></i><span>${esc(phTime())}</span><i class="pbat" aria-hidden="true"><b></b></i></div>
-<div class="ps-title"><span>${esc(menu?mTitle():t.title)}</span><b>${playing?'♪ ':''}${fmtDur()} · ${P.bpm}</b></div>
+<div class="ps-title"><span>${esc(menu?mTitle():t.title)}</span><b>${menu&&['quiz','kp','callwait','talk','ring','cats','tunes'].includes(menu.t)?'':menu&&menu.t==='lib'?(PLY?fmtDur():''):(playing?'♪ ':'')+fmtDur()+' · '+P.bpm}</b></div>
 <div class="ps-body">${menu?menuH():gridH()}</div>
 <div class="ps-info">${esc(info())}</div>
 <div class="ps-soft"><span>${esc(a)}</span><span>${esc(b)}</span><span>${esc(c)}</span></div>`}
-function phR(){const s=box.querySelector('.ph-scr');if(!s)return;s.innerHTML=scrH();const [a,,c]=softL();
+function phR(){const s=box.querySelector('.ph-scr');if(!s)return;s.innerHTML=scrH();keyLabels();const [a,,c]=softL();
   const l=box.querySelector('[data-pk="sl"]'),r=box.querySelector('[data-pk="sr"]');if(l)l.setAttribute('aria-label',a);if(r)r.setAttribute('aria-label',c)}
 function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#'];
   return `<div class="phw"><div class="ph" tabindex="0" role="application" aria-label="${esc(t.aria)}" aria-describedby="phHelp">
@@ -600,7 +615,7 @@ function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#
 <button type="button" class="ph-sk" data-pk="sr"><i></i></button></div>
 <div class="ph-num">${K.map(k=>`<button type="button" data-pk="${k}"><b>${k}</b><small>${esc(t.keys[k]||'')}</small></button>`).join('')}</div>
 </div>
-<div class="ph-side" id="phHelp"><div class="plb">${libHTML()}</div>
+<div class="ph-side" id="phHelp"><div class="plb">${sideTabs()}${sideHTML()}</div>
 <details class="ph-help"><summary>${esc(t.helpH)}</summary><ol>${[T9().helpL].concat(t.help,[t.help2]).map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p></details>
 <p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
 function libHTML(){const x=T9(),l=L();
@@ -610,16 +625,16 @@ function libHTML(){const x=T9(),l=L();
 <p class="plb-hint">${esc(x.hint)}</p><p class="plb-note">${esc(x.libNote)}</p>`}
 function flash(s){toast=s;clearTimeout(toastT);phR();toastT=setTimeout(()=>{toast='';phR()},1600)}
 function closeMenu(){if(PV){PV=null;stop()}if(menu&&menu.t==='ring'){stop();ringOff();if(PLY){menu={t:'lib'};return}}menu=null}
-function ringOff(){const f=box.querySelector('.ph');if(f)f.classList.remove('ringing')}
+function ringOff(){const f=box.querySelector('.ph');if(f)f.classList.remove('ringing');if(!(menu&&menu.call))RINGNAME=''}
 let ringT=0;function ring(){if(playing)stop();if(!(menu&&menu.lib))PLY=null;menu={t:'ring'};start(0);const f=box.querySelector('.ph');if(f)f.classList.add('ringing');clearTimeout(ringT);ringT=setTimeout(()=>{if(menu&&menu.t==='ring'){closeMenu();phR()}},30000)}
 function preview(){if(!initAudio())return;PV={r:cur.r,cd:pcode(menu.g,menu.i)};if(playing){step=0;vq=[];nextT=ac.currentTime+.04}else start(0)}
 function openBlocks(g,i){if(playing&&!PV)stop();PLY=null;menu={t:'blocks',g,i};preview()}
 function phPlay(){if(menu&&menu.t==='lib'){phKey('ok');return}if(menu)closeMenu();PLY=null;if(playing){stop();return}const L=songLen();start(cur.c<L?cur.c*16:0)}
 function setBlk(v){P.tr[cur.r][cur.c]=v;phSave()}
 function act(a){const t=PH();
-  if(a==='lib'){if(playing)stop();menu={t:'lib'};return}
+  if(a==='lib'){if(playing)stop();menu={t:'lib'};SIDE='lib';sideR();return}
   if(a==='cat'){menu={t:'cats',i:TCAT.indexOf(TUNES[LIB.i].c),lib:1};return}
-  if(a==='comp'){if(playing)stop();PLY=null;menu=null;return}
+  if(a==='comp'){if(playing)stop();PLY=null;menu=null;SIDE='comp';sideR();return}
   if(a==='ring'&&menu&&menu.lib){PLY=arrange(TUNES[LIB.i],LIB.g);ring();return}
   if(a==='ins'){const cd=P.tr[cur.r][cur.c];if(cd){menu=null;openBlocks(pg(cd),pn(cd))}else menu={t:'groups',i:0};return}
   const fromLib=menu&&menu.lib;menu=fromLib?{t:'lib'}:null;
@@ -639,6 +654,8 @@ function act(a){const t=PH();
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad()}}
 function adj(d){if(menu.t==='tempo'){P.bpm=Math.max(60,Math.min(200,P.bpm+d*2));phSave()}else{S.vol=Math.max(0,Math.min(1,Math.round(S.vol*10+d)/10));if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save()}}
 function phKey(k){const t=PH();
+  if(menu&&menu.t==='quiz'){quizKey(k);return}if(menu&&menu.t==='kp'){kpKey(k);return}if(menu&&menu.t==='talk')return;if(menu&&menu.t==='callwait'){callKey(k);return}
+  if(menu&&menu.t==='ring'&&menu.call){if(k==='sl'||k==='ok')talkStart();else{closeMenu();RINGNAME='';phR()}return}
   if(menu&&menu.t==='lib'){
     if(k==='up'||k==='2')libSet(LIB.i-1);else if(k==='down'||k==='8')libSet(LIB.i+1);
     else if(k==='left'||k==='4')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+TGEN.length-1)%TGEN.length]);else if(k==='right'||k==='6')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+1)%TGEN.length]);
@@ -680,11 +697,152 @@ function libTick(){const vs=box.querySelectorAll('.pviz s');if(!vs.length)return
 function libPlay(restart){const was=playing;if(was)stop();if(!restart&&was)return;PV=null;PLY=arrange(TUNES[LIB.i],LIB.g);libSave();start(0)}
 function libSet(i,g,play){if(i!==undefined)LIB.i=(i+TUNES.length)%TUNES.length;if(g!==undefined)LIB.g=g;if(!menu||menu.t!=='lib')menu={t:'lib'};
   if(play||playing){PLY=null;libPlay(true)}else{PLY=arrange(TUNES[LIB.i],LIB.g);libSave()}phR();libSide()}
-function libSide(){const el=box.querySelector('.plb');if(!el)return;libCat=TUNES[LIB.i].c;const sc=el.querySelector('.plb-list');const st=sc?sc.scrollTop:0;el.innerHTML=libHTML();const n=el.querySelector('.plb-list');if(n)n.scrollTop=st}
+function libSide(){libCat=TUNES[LIB.i].c;if(SIDE==='lib'){sideR();return}const el=null;if(!el)return;const sc=el.querySelector('.plb-list');const st=sc?sc.scrollTop:0;el.innerHTML=libHTML();const n=el.querySelector('.plb-list');if(n)n.scrollTop=st}
 let libCat='cl';
 function pline(){const l=box.querySelector('.pline');if(!l)return;if(!playing||PV||ph<0){l.hidden=true;return}
   const c=box.querySelector(`.pc[data-r="0"][data-c="${Math.floor(ph/16)}"]`);if(!c){l.hidden=true;return}l.hidden=false;l.style.left=(c.offsetLeft+c.offsetWidth*(ph%16)/16)+'px'}
 function fmtDur(){const sec=Math.round((PLY&&menu&&(menu.t==='lib'||menu.t==='ring')?PLY.len*60/PLY.bpm/4:songLen()*16*60/P.bpm/4));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
+
+/* ---------- v7.40: quiz «Угадай мелодию», keypad composer (Nokia-style), «Тебе звонит…» links ---------- */
+const TX10={
+ ru:{tabs:{lib:'Мелодии',quiz:'Угадай мелодию',kp:'Набор кнопками',comp:'Композитор'},
+  q_title:'Угадай мелодию',q_round:'Раунд',q_score:'Счёт',q_best:'Рекорд',q_start:'Начать',q_again:'Ещё раз',q_exit:'Выход',q_right:'Верно!',q_wrong:'Это была',q_timeout:'Время вышло',q_end:'Игра окончена',q_pts:'очков',
+  q_desc:'Десять раундов. Телефон играет мелодию в случайном жанре, а ты выбираешь из четырёх вариантов. Чем быстрее, тем больше очков: до 100 за раунд.',
+  q_share:'Скопировать результат',q_shared:'Результат скопирован — кинь друзьям',q_text:'Я набрал {n} очков в «Угадай мелодию» на Donetsk 2011. Сможешь больше?',
+  k_title:'Набор кнопками',k_empty:'Нажимай 1–7, чтобы набрать ноты',k_notes:'нот',k_clear:'Очистить',k_undo:'Стереть ноту',k_play:'Играть',k_stop:'Стоп',
+  k_desc:'Как в композиторе мелодий на старых кнопочных телефонах: набираешь ноты цифрами, а телефон играет их в выбранном жанре.',
+  k_keys:[['1–7','ноты до, ре, ми, фа, соль, ля, си'],['0','пауза'],['*','октава ниже/выше'],['#','диез для следующей ноты'],['8 / 9','короче / длиннее'],['◀','стереть ноту'],['▲ ▼','жанр']],
+  kl:{'1':'до','2':'ре','3':'ми','4':'фа','5':'соль','6':'ля','7':'си','8':'короч','9':'длин','*':'окт','0':'пауза','#':'♯'},
+  ql:{'1':'ответ','2':'ответ','3':'ответ','4':'ответ'},ll:{'2':'▲','8':'▼','4':'◀ жанр','6':'жанр ▶','5':'▶','1':'катал'},
+  c_h:'Позвонить другу',c_name:'Твоё имя',c_btn:'Скопировать ссылку-звонок',c_ok:'Ссылка скопирована: друг увидит входящий вызов от тебя под эту мелодию',c_man:'Скопируй ссылку вручную:',
+  c_from:'Входящий вызов',c_tap:'Нажми любую кнопку телефона, чтобы услышать звонок',c_talk:'Разговор',c_after:'Собери свой рингтон и позвони в ответ',c_noname:'Друг',my:'Моя мелодия',comp_hint:'Композитор из блоков открыт на телефоне. Как им пользоваться — ниже.'},
+ uk:{tabs:{lib:'Мелодії',quiz:'Вгадай мелодію',kp:'Набір кнопками',comp:'Композитор'},
+  q_title:'Вгадай мелодію',q_round:'Раунд',q_score:'Рахунок',q_best:'Рекорд',q_start:'Почати',q_again:'Ще раз',q_exit:'Вихід',q_right:'Правильно!',q_wrong:'Це була',q_timeout:'Час вийшов',q_end:'Гру завершено',q_pts:'очок',
+  q_desc:'Десять раундів. Телефон грає мелодію у випадковому жанрі, а ти обираєш з чотирьох варіантів. Що швидше, то більше очок: до 100 за раунд.',
+  q_share:'Скопіювати результат',q_shared:'Результат скопійовано — кинь друзям',q_text:'Я набрав {n} очок у «Вгадай мелодію» на Donetsk 2011. Зможеш більше?',
+  k_title:'Набір кнопками',k_empty:'Натискай 1–7, щоб набрати ноти',k_notes:'нот',k_clear:'Очистити',k_undo:'Стерти ноту',k_play:'Грати',k_stop:'Стоп',
+  k_desc:'Як у композиторі мелодій на старих кнопкових телефонах: набираєш ноти цифрами, а телефон грає їх в обраному жанрі.',
+  k_keys:[['1–7','ноти до, ре, мі, фа, соль, ля, сі'],['0','пауза'],['*','октава нижче/вище'],['#','дієз для наступної ноти'],['8 / 9','коротше / довше'],['◀','стерти ноту'],['▲ ▼','жанр']],
+  kl:{'1':'до','2':'ре','3':'мі','4':'фа','5':'соль','6':'ля','7':'сі','8':'корот','9':'довш','*':'окт','0':'пауза','#':'♯'},
+  ql:{'1':'відп','2':'відп','3':'відп','4':'відп'},ll:{'2':'▲','8':'▼','4':'◀ жанр','6':'жанр ▶','5':'▶','1':'катал'},
+  c_h:'Подзвонити другові',c_name:'Твоє ім’я',c_btn:'Скопіювати посилання-дзвінок',c_ok:'Посилання скопійовано: друг побачить вхідний виклик від тебе під цю мелодію',c_man:'Скопіюй посилання вручну:',
+  c_from:'Вхідний виклик',c_tap:'Натисни будь-яку кнопку телефона, щоб почути дзвінок',c_talk:'Розмова',c_after:'Збери свій рингтон і подзвони у відповідь',c_noname:'Друг',my:'Моя мелодія',comp_hint:'Композитор із блоків відкрито на телефоні. Як ним користуватися — нижче.'},
+ en:{tabs:{lib:'Tunes',quiz:'Name that tune',kp:'Keypad composer',comp:'Composer'},
+  q_title:'Name that tune',q_round:'Round',q_score:'Score',q_best:'Best',q_start:'Start',q_again:'Again',q_exit:'Exit',q_right:'Correct!',q_wrong:'It was',q_timeout:'Time is up',q_end:'Game over',q_pts:'points',
+  q_desc:'Ten rounds. The phone plays a tune in a random genre and you pick one of four answers. The faster you are, the more points: up to 100 a round.',
+  q_share:'Copy my score',q_shared:'Score copied — send it to your friends',q_text:'I scored {n} points in Name that tune on Donetsk 2011. Can you beat it?',
+  k_title:'Keypad composer',k_empty:'Press 1–7 to enter notes',k_notes:'notes',k_clear:'Clear',k_undo:'Delete note',k_play:'Play',k_stop:'Stop',
+  k_desc:'Like the tune composer on old keypad phones: type notes with the digits and the phone plays them in the genre you choose.',
+  k_keys:[['1–7','notes C D E F G A B'],['0','rest'],['*','octave down/up'],['#','sharp for the next note'],['8 / 9','shorter / longer'],['◀','delete a note'],['▲ ▼','genre']],
+  kl:{'1':'C','2':'D','3':'E','4':'F','5':'G','6':'A','7':'B','8':'short','9':'long','*':'oct','0':'rest','#':'♯'},
+  ql:{'1':'ans','2':'ans','3':'ans','4':'ans'},ll:{'2':'▲','8':'▼','4':'◀ gen','6':'gen ▶','5':'▶','1':'list'},
+  c_h:'Call a friend',c_name:'Your name',c_btn:'Copy call link',c_ok:'Link copied: your friend will see an incoming call from you with this tune',c_man:'Copy the link by hand:',
+  c_from:'Incoming call',c_tap:'Press any key on the phone to hear the call',c_talk:'Call',c_after:'Build your own ringtone and call back',c_noname:'A friend',my:'My tune',comp_hint:'The block composer is open on the phone. How to use it is below.'},
+ fi:{tabs:{lib:'Melodiat',quiz:'Tunnista melodia',kp:'Näppäinsäveltäjä',comp:'Säveltäjä'},
+  q_title:'Tunnista melodia',q_round:'Kierros',q_score:'Pisteet',q_best:'Ennätys',q_start:'Aloita',q_again:'Uudestaan',q_exit:'Lopeta',q_right:'Oikein!',q_wrong:'Se oli',q_timeout:'Aika loppui',q_end:'Peli päättyi',q_pts:'pistettä',
+  q_desc:'Kymmenen kierrosta. Puhelin soittaa melodian satunnaisella tyylillä ja sinä valitset neljästä vaihtoehdosta. Mitä nopeammin, sitä enemmän pisteitä: enintään 100 kierrokselta.',
+  q_share:'Kopioi tulos',q_shared:'Tulos kopioitu — lähetä se kavereille',q_text:'Sain {n} pistettä Tunnista melodia -pelissä Donetsk 2011 -sivulla. Pystytkö parempaan?',
+  k_title:'Näppäinsäveltäjä',k_empty:'Paina 1–7 syöttääksesi nuotteja',k_notes:'nuottia',k_clear:'Tyhjennä',k_undo:'Poista nuotti',k_play:'Soita',k_stop:'Seis',
+  k_desc:'Kuin vanhojen näppäinpuhelinten melodiasäveltäjä: syötä nuotit numeroilla, niin puhelin soittaa ne valitsemallasi tyylillä.',
+  k_keys:[['1–7','nuotit C D E F G A H'],['0','tauko'],['*','oktaavi alas/ylös'],['#','ylennys seuraavalle nuotille'],['8 / 9','lyhyempi / pidempi'],['◀','poista nuotti'],['▲ ▼','tyyli']],
+  kl:{'1':'C','2':'D','3':'E','4':'F','5':'G','6':'A','7':'H','8':'lyh','9':'pitk','*':'okt','0':'tauko','#':'♯'},
+  ql:{'1':'vast','2':'vast','3':'vast','4':'vast'},ll:{'2':'▲','8':'▼','4':'◀ tyyli','6':'tyyli ▶','5':'▶','1':'lista'},
+  c_h:'Soita ystävälle',c_name:'Nimesi',c_btn:'Kopioi soittolinkki',c_ok:'Linkki kopioitu: ystäväsi näkee saapuvan puhelun sinulta tällä melodialla',c_man:'Kopioi linkki käsin:',
+  c_from:'Saapuva puhelu',c_tap:'Paina mitä tahansa puhelimen näppäintä kuullaksesi puhelun',c_talk:'Puhelu',c_after:'Kokoa oma soittoääni ja soita takaisin',c_noname:'Ystävä',my:'Oma melodia',comp_hint:'Lohkosäveltäjä on auki puhelimessa. Käyttöohjeet ovat alla.'}};
+const TT=()=>TX10[L()];
+let SIDE='lib',RINGNAME='';
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+/* quiz */
+let Q={st:'idle',r:0,score:0,order:[],opts:[],ans:0,pick:-1,sel:0,t0:0,last:0},qT=0,QBEST=0;try{QBEST=+localStorage.getItem('d11-quiz-best')||0}catch(e){}
+const QN=10,QMAX=12;
+function quizStart(){Q={st:'ask',r:0,score:0,order:shuffle(TUNES.map((_,i)=>i)).slice(0,QN),opts:[],ans:0,pick:-1,sel:0,t0:0,last:0};menu={t:'quiz'};quizRound()}
+function quizRound(){clearTimeout(qT);const id=Q.order[Q.r],others=shuffle(TUNES.map((_,i)=>i).filter(i=>i!==id)).slice(0,3);
+  Q.opts=shuffle([id].concat(others));Q.ans=Q.opts.indexOf(id);Q.pick=-1;Q.sel=0;Q.st='ask';
+  if(playing)stop();PV=null;PLY=arrange(TUNES[id],TGEN[Math.floor(Math.random()*TGEN.length)]);start(0);Q.t0=performance.now();
+  qT=setTimeout(()=>{if(menu&&menu.t==='quiz'&&Q.st==='ask')quizAnswer(-1)},QMAX*1000);phR();sideR()}
+function quizAnswer(i){if(Q.st!=='ask')return;clearTimeout(qT);const el=(performance.now()-Q.t0)/1000;Q.pick=i;Q.st='show';
+  Q.last=i===Q.ans?Math.max(20,Math.round(100-el*7)):0;Q.score+=Q.last;phR();sideR();
+  qT=setTimeout(()=>{if(!menu||menu.t!=='quiz')return;Q.r++;if(Q.r>=QN){if(playing)stop();Q.st='end';if(Q.score>QBEST){QBEST=Q.score;try{localStorage.setItem('d11-quiz-best',QBEST)}catch(e){}}phR();sideR()}else quizRound()},1600)}
+function quizExit(){clearTimeout(qT);if(playing)stop();Q.st='idle';menu={t:'lib'};SIDE='lib'}
+const tName=i=>TUNES[i].n[L()]||TUNES[i].n.ru;
+function quizScr(){const x=TT();
+  if(Q.st==='idle')return `<div class="pq0"><b>${esc(x.q_title)}</b><span>${esc(x.q_best)}: ${QBEST}</span><small>${esc(x.q_desc)}</small></div>`;
+  if(Q.st==='end')return `<div class="pq0"><b>${esc(x.q_end)}</b><em>${Q.score}</em><span>${esc(x.q_pts)} · ${esc(x.q_best)}: ${QBEST}</span></div>`;
+  return `<div class="pqh"><span>${esc(x.q_round)} ${Q.r+1}/${QN}</span><span>${esc(x.q_score)} ${Q.score}</span></div><div class="pqbar"><s></s></div><ol class="pm pqo">${Q.opts.map((id,k)=>{
+    const c=Q.st==='show'?(k===Q.ans?' ok':k===Q.pick?' bad':''):'';return `<li class="${(Q.st==='ask'&&k===Q.sel)?'on':''}${c}" data-qa="${k}"><i class="pqn">${k+1}</i><span>${esc(tName(id))}</span></li>`}).join('')}</ol>`}
+function quizInfo(){const x=TT();if(Q.st==='show')return Q.pick===Q.ans?x.q_right+' +'+Q.last:(Q.pick<0?x.q_timeout:x.q_wrong)+': '+tName(Q.opts[Q.ans]);if(Q.st==='end')return x.q_score+' '+Q.score;return ''}
+function quizKey(k){if(Q.st==='idle'||Q.st==='end'){if(k==='ok'||k==='sl'||k==='5')quizStart();else if(k==='sr')quizExit();phR();sideR();return}
+  if(/^[1-4]$/.test(k))quizAnswer(+k-1);else if(k==='up'||k==='down'){Q.sel=(Q.sel+(k==='up'?3:1))%4;phR()}else if(k==='ok')quizAnswer(Q.sel);else if(k==='sr')quizExit();else return;phR();sideR()}
+function qTick(){const b=box.querySelector('.pqbar s');if(b&&Q.st==='ask')b.style.width=Math.max(0,100-(performance.now()-Q.t0)/(QMAX*10))+'%'}
+/* keypad composer */
+const KD=[1,2,4,8],KPC=[0,2,4,5,7,9,11];
+let KP={n:[],oct:5,sh:0,di:1,g:'chip'};
+function kpEnc(n){return (n||KP.n).map(x=>(x.m<0?'-':(x.m-60).toString(36))+KD.indexOf(x.L)).join('')}
+function kpDec(s){if(!/^([0-9a-z-][0-3]){0,64}$/.test(s))return null;const n=[];for(let i=0;i<s.length;i+=2){const c=s[i],m=c==='-'?-1:60+parseInt(c,36);if(m>95)return null;n.push({m,L:KD[+s[i+1]]})}return n}
+try{const v=JSON.parse(localStorage.getItem('d11-kp')||'null');if(v){const n=kpDec(v.n||'');if(n)KP.n=n;if(TGEN.includes(v.g))KP.g=v.g}}catch(e){}
+const kpSave=()=>{try{localStorage.setItem('d11-kp',JSON.stringify({n:kpEnc(),g:KP.g}))}catch(e){}};
+function kpTune(notes){const N=notes||KP.n;let m='';N.forEach(x=>{m+=(x.m<0?'r':NN[x.m%12].replace('#','#')+(Math.floor(x.m/12)-1))+':'+x.L+' '});
+  let len=N.reduce((a,x)=>a+x.L,0);const pad=(16-len%16)%16;if(pad)m+='r:'+pad;if(!m.trim())m='r:16';
+  // key: the major key that holds the most of the tune, tonic weighted by the first and last notes
+  const w=Array(12).fill(0);N.forEach(x=>{if(x.m>=0)w[x.m%12]+=x.L});const fl=N.filter(x=>x.m>=0);let bk=0,bs=-1;
+  for(let k=0;k<12;k++){let v=[0,2,4,5,7,9,11].reduce((a,d)=>a+w[(k+d)%12],0);if(fl.length){if(fl[fl.length-1].m%12===k)v+=3;if(fl[0].m%12===k)v+=1.5}if(v>bs){bs=v;bk=k}}
+  return {id:'my',c:'my',k:[bk,'maj'],bar:16,bpm:120,n:{ru:TX10.ru.my,uk:TX10.uk.my,en:TX10.en.my,fi:TX10.fi.my},by:'',m:m.trim()}}
+function kpNoteTxt(x){return (16/x.L)+(x.m<0?'-':NN[x.m%12].replace('#','♯')+(Math.floor(x.m/12)-1))}
+function kpScr(){const x=TT(),n=KP.n,show=n.slice(-18);
+  return `<div class="pkp"><div class="pkh"><span>${esc(T9().gens[KP.g])}</span><span>${n.length} ${esc(x.k_notes)}</span></div><div class="pkn">${n.length?(n.length>18?'… ':'')+show.map(kpNoteTxt).join(' '):`<small>${esc(x.k_empty)}</small>`}<i class="pkc"></i></div>
+<div class="pks"><span>${16/KD[KP.di]}</span><span>${KP.oct}</span><span>${KP.sh?'♯':'·'}</span></div><div class="pviz" aria-hidden="true">${vizL.map(()=>'<s></s>').join('')}</div></div>`}
+function kpPlay(){if(playing){stop();return}if(!KP.n.length)return;PV=null;PLY=arrange(kpTune(),KP.g);start(0)}
+function kpKey(k){const x=TT();
+  if(/^[1-7]$/.test(k)){const m=12*(KP.oct+1)+KPC[+k-1]+KP.sh;if(KP.n.length<64){KP.n.push({m:Math.min(95,m),L:KD[KP.di]});KP.sh=0;if(!playing&&initAudio()){if(ac.state!=='running')ac.resume();lead('sq',m,ac.currentTime+.01,sd()*KD[KP.di]*.9,1)}kpSave()}}
+  else if(k==='0'){if(KP.n.length<64){KP.n.push({m:-1,L:KD[KP.di]});kpSave()}}
+  else if(k==='*')KP.oct=KP.oct>=6?4:KP.oct+1;else if(k==='#')KP.sh=KP.sh?0:1;
+  else if(k==='8')KP.di=Math.max(0,KP.di-1);else if(k==='9')KP.di=Math.min(3,KP.di+1);
+  else if(k==='left'){KP.n.pop();kpSave()}
+  else if(k==='up'||k==='down'){const i=TGEN.indexOf(KP.g);KP.g=TGEN[(i+(k==='up'?TGEN.length-1:1))%TGEN.length];kpSave();if(playing){stop();kpPlay()}}
+  else if(k==='ok'||k==='sl'||k==='right')kpPlay();
+  else if(k==='sr'){if(playing)stop();menu={t:'lib'};SIDE='lib'}
+  phR();sideR()}
+/* «Тебе звонит…» links */
+function callLink(kind){const inp=box.querySelector('.pcall input'),nm=(inp&&inp.value||'').trim().slice(0,20);let p;
+  if(kind==='kp')p=['k',kpEnc(),KP.g];else if(kind==='comp')p=['d',phEnc()];else p=['t',TUNES[LIB.i].id,LIB.g];
+  return location.origin+location.pathname+'#call='+p.join('~')+'~'+encodeURIComponent(nm)}
+function callDec(h){try{const a=h.split('~');let src=null,nm='';
+  if(a[0]==='t'&&a.length===4){const i=TUNES.findIndex(x=>x.id===a[1]);if(i<0||!TGEN.includes(a[2]))return null;src={k:'t',i,g:a[2]};nm=a[3]}
+  else if(a[0]==='k'&&a.length===4){const n=kpDec(a[1]);if(!n||!n.length||!TGEN.includes(a[2]))return null;src={k:'k',n,g:a[2]};nm=a[3]}
+  else if(a[0]==='d'&&a.length===3){const d=phDec(a[1]);if(!d)return null;src={k:'d',d};nm=a[2]}else return null;
+  nm=decodeURIComponent(nm).replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,20);return {src,nm}}catch(e){return null}}
+let CALL=null;{const h=location.hash.match(/^#call=(.+)$/);if(h)CALL=callDec(h[1])}
+if(CALL||location.hash==='#quiz')MODE='phone';
+function callPrep(){const c=CALL;if(c.src.k==='t')PLY=arrange(TUNES[c.src.i],c.src.g);else if(c.src.k==='k')PLY=arrange(kpTune(c.src.n),c.src.g);else{P=c.src.d;PLY=null}}
+function callKey(k){if(initAudio()&&ac.state!=='running')ac.resume();callPrep();RINGNAME=CALL.nm||TT().c_noname;const keep=!!PLY;menu=keep?{t:'more',lib:1}:null;ring();menu.call=1;if(keep)menu.lib=1;phR()}
+function talkStart(){if(playing)stop();ringOff();menu={t:'talk',t0:performance.now()};phR();const T0=menu.t0;
+  const tick=()=>{if(!menu||menu.t!=='talk'||menu.t0!==T0)return;phR();if(performance.now()-T0>4200){menu={t:'lib'};SIDE='lib';RINGNAME='';PLY=null;flash(TT().c_after);sideR();return}setTimeout(tick,500)};setTimeout(tick,500)}
+function talkScr(){const s=Math.floor((performance.now()-menu.t0)/1000);return `<div class="pring"><div class="pr-ico talk" aria-hidden="true"><i></i></div><span>${esc(RINGNAME)}</span><b>${esc(TT().c_talk)} 0:${String(s).padStart(2,'0')}</b></div>`}
+function callWaitScr(){const x=TT();return `<div class="pring"><div class="pr-ico" aria-hidden="true"><i></i></div><b>${esc(x.c_from)}</b><span>${esc(CALL.nm||x.c_noname)}</span><small class="ptap">${esc(x.c_tap)}</small></div>`}
+/* side panel */
+function sideTabs(){const x=TT();return `<div class="psd" role="tablist">${['lib','quiz','kp','comp'].map(k=>`<button type="button" role="tab" data-side="${k}" aria-selected="${SIDE===k}">${esc(x.tabs[k])}</button>`).join('')}</div>`}
+function callBox(kind){const x=TT();let v='';try{v=localStorage.getItem('d11-callname')||''}catch(e){}
+  return `<div class="pcall"><h4>${esc(x.c_h)}</h4><div><input type="text" maxlength="20" placeholder="${esc(x.c_name)}" value="${esc(v)}" aria-label="${esc(x.c_name)}"><button type="button" class="btn ghost" data-call="${kind}">${esc(x.c_btn)}</button></div><p class="pcall-msg" role="status"></p></div>`}
+function sideHTML(){const x=TT(),y=T9();
+  if(SIDE==='quiz'){const ask=Q.st==='ask'||Q.st==='show';
+    return `<h3>${esc(x.q_title)}</h3><p class="plb-hint">${esc(x.q_desc)}</p>
+<div class="pqs">${ask?Q.opts.map((id,k)=>`<button type="button" data-qa="${k}" class="${Q.st==='show'?(k===Q.ans?'ok':k===Q.pick?'bad':''):''}"><i>${k+1}</i>${esc(tName(id))}</button>`).join(''):''}</div>
+<p class="pq-stat"><b>${esc(x.q_score)}: ${Q.score}</b> · ${esc(x.q_best)}: ${QBEST}${ask?' · '+esc(x.q_round)+' '+(Q.r+1)+'/'+QN:''}</p>
+${ask?'':`<button type="button" class="btn primary" data-qs="1">${esc(Q.st==='end'?x.q_again:x.q_start)}</button>`}${Q.st==='end'?` <button type="button" class="btn ghost" data-qshare="1">${esc(x.q_share)}</button>`:''}<p class="pcall-msg" role="status"></p>`}
+  if(SIDE==='kp')return `<h3>${esc(x.k_title)}</h3><p class="plb-hint">${esc(x.k_desc)}</p>
+<table class="pkt">${x.k_keys.map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(r[1])}</td></tr>`).join('')}</table>
+<div class="plb-gen" role="group" aria-label="${esc(y.genre)}"><span>${esc(y.genre)}</span>${TGEN.map(g=>`<button type="button" data-kg="${g}" aria-pressed="${g===KP.g}">${esc(y.gens[g])}</button>`).join('')}</div>
+<div class="pka"><button type="button" class="btn primary" data-kpa="play">${esc(playing&&PLY&&PLY.tu.id==='my'?x.k_stop:x.k_play)}</button><button type="button" class="btn ghost" data-kpa="undo">${esc(x.k_undo)}</button><button type="button" class="btn ghost" data-kpa="clear">${esc(x.k_clear)}</button></div>${callBox('kp')}`;
+  if(SIDE==='comp')return `<h3>${esc(x.tabs.comp)}</h3><p class="plb-hint">${esc(x.comp_hint)}</p>${callBox('comp')}`;
+  return libHTML()+callBox('lib')}
+function sideR(){const el=box.querySelector('.plb');if(!el)return;const inp=el.querySelector('.pcall input'),iv=inp?inp.value:null,sc=el.querySelector('.plb-list'),st=sc?sc.scrollTop:0;
+  el.innerHTML=sideTabs()+sideHTML();const i2=el.querySelector('.pcall input');if(i2&&iv!==null)i2.value=iv;const n=el.querySelector('.plb-list');if(n)n.scrollTop=st;
+  const h=box.querySelector('.ph-help');if(h)h.open=SIDE==='comp'}
+function sideSet(k){if(playing)stop();clearTimeout(qT);SIDE=k;PV=null;
+  if(k==='lib')menu={t:'lib'};else if(k==='quiz'){Q.st='idle';menu={t:'quiz'}}else if(k==='kp'){PLY=null;menu={t:'kp'}}else{PLY=null;menu=null}
+  phR();sideR()}
+function keyLabels(){const x=TT(),t=PH();const mp=menu&&menu.t==='kp'?x.kl:menu&&menu.t==='quiz'?x.ql:menu&&menu.t==='lib'?x.ll:(!menu?t.keys:{});
+  box.querySelectorAll('.ph-num button').forEach(b=>{const s=b.querySelector('small');if(s)s.textContent=mp[b.dataset.pk]||''})}
 
 const PKM={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'sr',Backspace:'0',Delete:'0',' ':'sl'};
 box.addEventListener('keydown',e=>{if(MODE!=='phone'||!e.target.closest||!e.target.closest('.ph')||e.ctrlKey||e.metaKey||e.altKey)return;
