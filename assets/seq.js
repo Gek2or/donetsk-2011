@@ -11,7 +11,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 /* ---------- texts ---------- */
 const TX={
 ru:{code:'Секвенсор',h:'Рингтоны Донецка 2010 года',
- p:'24 мелодии, знакомые каждому, в шести жанрах: «К Элизе» в клубном ремиксе, «Коробейники» на баяне, Моцарт попсой из маршрутки. Выбери справа мелодию и жанр, поставь на звонок, а в композиторе собери свой рингтон из блоков.',
+ p:'33 мелодии, знакомые каждому, в шести жанрах: «К Элизе» в клубном ремиксе, «Коробейники» на баяне, Моцарт попсой из маршрутки. Выбери справа мелодию и жанр, поставь на звонок, а в композиторе собери свой рингтон из блоков.',
  pre:'Заготовки',play:'Играть',stop:'Стоп',tempo:'Темп',swing:'Свинг',key:'Тональность',mode:'Лад',lead:'Звук мелодии',bass:'Звук баса',listen:'Где слушаем',vol:'Громкость',
  len:'Длина',bar1:'1 такт',bar2:'2 такта',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодия',b:'Бас'},
@@ -26,7 +26,7 @@ ru:{code:'Секвенсор',h:'Рингтоны Донецка 2010 года',
  hint:'Пробел: играть или остановить. Нажатая клетка сразу звучит. Мелодия сохраняется в этом браузере.',
  note:'Заготовки не песни 2010 года, а простые ритмы и ходы в духе жанров; мелодии настоящих песен здесь не воспроизводятся. Весь звук синтезирует браузер на лету, без записей и семплов. Музыка самой игры пишется вручную, она будет в звуковом дневнике выше.'},
 uk:{code:'Секвенсор',h:'Рингтони Донецька 2010 року',
- p:'24 мелодії, знайомі кожному, у шести жанрах: «До Елізи» в клубному реміксі, «Коробейники» на баяні, Моцарт попсою з маршрутки. Обери праворуч мелодію й жанр, постав на дзвінок, а в композиторі збери свій рингтон із блоків.',
+ p:'33 мелодії, знайомі кожному, у шести жанрах: «До Елізи» в клубному реміксі, «Коробейники» на баяні, Моцарт попсою з маршрутки. Обери праворуч мелодію й жанр, постав на дзвінок, а в композиторі збери свій рингтон із блоків.',
  pre:'Заготовки',play:'Грати',stop:'Стоп',tempo:'Темп',swing:'Свінг',key:'Тональність',mode:'Лад',lead:'Звук мелодії',bass:'Звук басу',listen:'Де слухаємо',vol:'Гучність',
  len:'Довжина',bar1:'1 такт',bar2:'2 такти',bar:'Такт',
  tabs:{d:'Ритм',m:'Мелодія',b:'Бас'},
@@ -41,7 +41,7 @@ uk:{code:'Секвенсор',h:'Рингтони Донецька 2010 року
  hint:'Пробіл: грати або зупинити. Натиснута клітинка одразу звучить. Мелодія зберігається в цьому браузері.',
  note:'Заготовки не пісні 2010 року, а прості ритми й ходи в дусі жанрів; мелодії справжніх пісень тут не відтворюються. Увесь звук синтезує браузер на льоту, без записів і семплів. Музика самої гри пишеться вручну, вона буде у звуковому щоденнику вище.'},
 en:{code:'Sequencer',h:'Donetsk ringtones, 2010',
- p:'24 tunes everyone knows, in six genres: Für Elise as a club remix, Korobeiniki on a bayan, Mozart as minibus pop. Pick a tune and a genre on the right, set it as your ringtone, and build your own from blocks in the composer.',
+ p:'33 tunes everyone knows, in six genres: Für Elise as a club remix, Korobeiniki on a bayan, Mozart as minibus pop. Pick a tune and a genre on the right, set it as your ringtone, and build your own from blocks in the composer.',
  pre:'Presets',play:'Play',stop:'Stop',tempo:'Tempo',swing:'Swing',key:'Key',mode:'Scale',lead:'Melody sound',bass:'Bass sound',listen:'Where we listen',vol:'Volume',
  len:'Length',bar1:'1 bar',bar2:'2 bars',bar:'Bar',
  tabs:{d:'Rhythm',m:'Melody',b:'Bass'},
@@ -56,7 +56,7 @@ en:{code:'Sequencer',h:'Donetsk ringtones, 2010',
  hint:'Space: play or stop. A cell sounds as soon as you press it. The tune is saved in this browser.',
  note:'The presets are not songs from 2010 but simple rhythms and moves in the spirit of the genres; no real song’s melody is reproduced here. All sound is synthesised by the browser on the fly, with no recordings or samples. The music of the game itself is written by hand and will appear in the sound diary above.'},
 fi:{code:'Sekvensseri',h:'Donetskin soittoäänet 2010',
- p:'24 kaikille tuttua melodiaa kuudessa tyylissä: Für Elise klubiremiksinä, Korobeiniki bajaanilla, Mozart marsrutkan poppina. Valitse oikealta melodia ja tyyli, aseta se soittoääneksi ja kokoa säveltäjässä oma lohkoista.',
+ p:'33 kaikille tuttua melodiaa kuudessa tyylissä: Für Elise klubiremiksinä, Korobeiniki bajaanilla, Mozart marsrutkan poppina. Valitse oikealta melodia ja tyyli, aseta se soittoääneksi ja kokoa säveltäjässä oma lohkoista.',
  pre:'Pohjat',play:'Soita',stop:'Seis',tempo:'Tempo',swing:'Swing',key:'Sävellaji',mode:'Asteikko',lead:'Melodian ääni',bass:'Basson ääni',listen:'Missä kuunnellaan',vol:'Äänenvoimakkuus',
  len:'Pituus',bar1:'1 tahti',bar2:'2 tahtia',bar:'Tahti',
  tabs:{d:'Rytmi',m:'Melodia',b:'Basso'},
@@ -408,7 +408,10 @@ const T9=()=>TX9[L()];
 const FOLKBY={ru:null,uk:{'народная · XIX в.':'народна · XIX ст.','английская · XVI в.':'англійська · XVI ст.','шотландская · XVIII в.':'шотландська · XVIII ст.','мексиканская · XIX в.':'мексиканська · XIX ст.'},
   en:{'народная · XIX в.':'Russian folk · 19th c.','английская · XVI в.':'English · 16th c.','шотландская · XVIII в.':'Scottish · 18th c.','мексиканская · XIX в.':'Mexican · 19th c.'},
   fi:{'народная · XIX в.':'venäläinen kansanlaulu · 1800-l.','английская · XVI в.':'englantilainen · 1500-l.','шотландская · XVIII в.':'skotlantilainen · 1700-l.','мексиканская · XIX в.':'meksikolainen · 1800-l.'}};
-const byOf=tu=>{const m=FOLKBY[L()];return m&&m[tu.by]||tu.by};
+const COMP={ru:{'Beethoven':'Бетховен','Mozart':'Моцарт','Grieg':'Григ','Bach':'Бах','Tchaikovsky':'Чайковский','Pachelbel':'Пахельбель','Petzold':'Петцольд','Rimsky-Korsakov':'Римский-Корсаков','Vivaldi':'Вивальди','Leontovych':'Леонтович','Pierpont':'Пирпонт','Hill':'сёстры Хилл','Brahms':'Брамс','Joplin':'Джоплин','J. Strauss II':'Иоганн Штраус','Chopin':'Шопен','Wagner':'Вагнер','Foster':'Фостер'},
+ uk:{'Beethoven':'Бетховен','Mozart':'Моцарт','Grieg':'Гріг','Bach':'Бах','Tchaikovsky':'Чайковський','Pachelbel':'Пахельбель','Petzold':'Петцольд','Rimsky-Korsakov':'Римський-Корсаков','Vivaldi':'Вівальді','Leontovych':'Леонтович','Pierpont':'Пірпонт','Hill':'сестри Гілл','Brahms':'Брамс','Joplin':'Джоплін','J. Strauss II':'Йоганн Штраус','Chopin':'Шопен','Wagner':'Вагнер','Foster':'Фостер'},
+ en:{'Hill':'Hill sisters'},fi:{'Tchaikovsky':'Tšaikovski','Rimsky-Korsakov':'Rimski-Korsakov','Leontovych':'Leontovytš','Hill':'Hillin sisaret'}};
+const byOf=tu=>{const l=L(),m=FOLKBY[l];if(m&&m[tu.by])return m[tu.by];const k=tu.by.split(' · '),c=COMP[l]||{};return c[k[0]]?c[k[0]]+(k[1]?' · '+k[1]:''):tu.by};
 const NPC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 function pnotes(str){let s=0;const out=[];for(const tk of str.trim().split(/\s+/)){const [a,b]=tk.split(':'),L=+b;if(a!=='r'){const m=a.match(/^([A-G])([#b]?)(\d)$/);out.push({s,m:12*(+m[3]+1)+NPC[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0),L})}s+=L}return {notes:out,len:s}}
 const GDR={ // per genre: 16-step and 12-step drum rows
@@ -464,12 +467,12 @@ const curLen=()=>MODE==='grid'?16*S.bars:(PLY?PLY.len:PV?16:16*songLen());
 function sched(){const len=curLen();while(nextT<ac.currentTime+.12){if(step>=len)step=0;const sw=MODE==='grid'?S.sw:(PLY&&PLY.g==='rap'?26:0),t=nextT+(step%2?sw/100*sd()*.66:0);(MODE==='grid'?trig:phTrig)(step,t);vq.push([step,t]);nextT+=sd();step=(step+1)%len}}
 function vis(){raf=requestAnimationFrame(vis);if(!ac)return;if(MODE==='phone'&&PLY&&menu&&(menu.t==='lib'||menu.t==='kp'||menu.t==='quiz')){libTick();qTick()}let cur=-2;while(vq.length&&vq[0][1]<=ac.currentTime+.005)cur=vq.shift()[0];if(cur!==-2&&cur!==ph){ph=cur;mark()}}
 let lastB=-9;
-function mark(){if(MODE==='phone'){if(PLY&&menu&&(menu.t==='lib'||menu.t==='kp'||menu.t==='quiz')){libTick();return}const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
+function mark(){if(MODE==='phone'){if(PLY&&menu&&(menu.t==='lib'||menu.t==='kp'||menu.t==='quiz')){if(menu.t==='lib'&&ph===0&&lastPh>0){lastPh=-1;setTimeout(autoNext,0)}else lastPh=ph;libTick();return}const b=playing&&ph>=0?Math.floor(ph/16):-1;if(b!==lastB){lastB=b;phMark()}pline();return}box.querySelectorAll('.sq-c.ph,.sq-n.ph').forEach(e=>e.classList.remove('ph'));if(!playing||ph<0)return;
   const pg=Math.floor(ph/16);box.querySelectorAll('.sq-bar button').forEach(b=>b.classList.toggle('pl',+b.dataset.p===pg));
   if(pg!==page)return;box.querySelectorAll(`[data-s="${ph%16}"]`).forEach(e=>e.classList.add('ph'))}
 function start(from){if(!initAudio()){say(T().noAudio);return}ac.resume&&ac.resume();setFx();playing=true;step=from||0;vq=[];lastB=-9;nextT=ac.currentTime+.06;sched();clearInterval(timer);timer=setInterval(sched,25);cancelAnimationFrame(raf);vis();btn()}
 function stop(){playing=false;clearInterval(timer);cancelAnimationFrame(raf);vq=[];ph=-1;mark();box.querySelectorAll('.sq-bar button.pl').forEach(b=>b.classList.remove('pl'));btn()}
-function btn(){if(MODE==='phone'){phR();return}const b=box.querySelector('.sq-play');if(b){b.textContent=(playing?'■ ':'▶ ')+(playing?T().stop:T().play);b.setAttribute('aria-pressed',playing)}}
+function btn(){if(MODE==='phone'){phR();miniR();const c=box.querySelector('.pcard');if(c&&SIDE==='lib')c.outerHTML=cardHTML();return}const b=box.querySelector('.sq-play');if(b){b.textContent=(playing?'■ ':'▶ ')+(playing?T().stop:T().play);b.setAttribute('aria-pressed',playing)}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)stop()});
 document.addEventListener('keydown',e=>{if(e.code!=='Space'||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target;
   if(tg&&tg.closest&&tg.closest('input,select,textarea,button,a,iframe,[contenteditable],dialog'))return;
@@ -491,7 +494,7 @@ function draw(){
   const t=T();
   const pt=PH(),mt=`<div class="sq-mode" role="tablist">${['phone','grid'].map(k=>`<button type="button" role="tab" data-mode="${k}" aria-selected="${MODE===k}">${esc(pt.mode[k])}</button>`).join('')}</div>`;
   const hd=`<div class="head"><div><div class="code"><b>01</b><span>${esc(t.code)}</span></div><h2>${esc(t.h)}</h2></div><p class="lede">${esc(t.p)}</p></div>`+mt;
-  if(MODE==='phone'){if(phMsg==='fromLink'&&menu&&menu.t==='lib'){menu=null;SIDE='comp'}if(CALL&&!draw.c){draw.c=1;MODE='phone';menu={t:'callwait'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}if(location.hash==='#quiz'&&!draw.q){draw.q=1;SIDE='quiz';menu={t:'quiz'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}libCat=TUNES[LIB.i].c;box.innerHTML=hd+phHTML();keyLabels();if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
+  if(MODE==='phone'){if(phMsg==='fromLink'&&menu&&menu.t==='lib'){menu=null;SIDE='comp'}if(CALL&&!draw.c){draw.c=1;MODE='phone';menu={t:'callwait'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}if(location.hash==='#quiz'&&!draw.q){draw.q=1;SIDE='quiz';menu={t:'quiz'};setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'})},300)}if(!libList().includes(LIB.i))libCat=TUNES[LIB.i].c;box.innerHTML=hd+phHTML();keyLabels();setTimeout(miniInit,0);if(draw.tl){draw.tl=0;menu={t:'lib'};SIDE='lib';setTimeout(()=>{const e=document.getElementById('seq');if(e)e.scrollIntoView({block:'start'});flash(T12().tapPlay)},300)}if(phMsg){flash(pt[phMsg]||phMsg);phMsg=''}return}
   box.innerHTML=hd+`<div class="sq">
 <div class="sq-pre" role="group" aria-label="${esc(t.pre)}"><span class="eyebrow">${esc(t.pre)}</span>${PIDS.map(id=>`<button type="button" data-pr="${id}" aria-pressed="${S.pr===id}">${esc(t.presets[id])}</button>`).join('')}</div>
 <div class="sq-top">
@@ -548,7 +551,16 @@ box.addEventListener('click',e=>{
   const cl=e.target.closest('.plb [data-call]');if(cl){const inp=box.querySelector('.pcall input');try{localStorage.setItem('d11-callname',inp?inp.value.trim().slice(0,20):'')}catch(x){}
     const u=callLink(cl.dataset.call),m=box.querySelector('.pcall-msg');const ok=()=>{if(m)m.textContent=TT().c_ok},bad=()=>{if(!m)return;m.textContent=TT().c_man;const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.select()};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad();return}
-  const lc=e.target.closest('.plb [data-cat]');if(lc){libCat=lc.dataset.cat;sideR();return}
+  const lc=e.target.closest('.plb [data-cat]');if(lc){libCat=lc.dataset.cat;QS='';sideR();return}
+  const cp=e.target.closest('.plb [data-cp]');if(cp){const a=cp.dataset.cp,tu=TUNES[LIB.i],x=T12();if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};
+    if(a==='play'){if(playing&&PLY&&PLY.tu===tu)stop();else libPlay(true)}
+    else if(a==='fav'){const k=FAV.indexOf(tu.id);if(k<0)FAV.unshift(tu.id);else FAV.splice(k,1);favSave();sideR();return}
+    else if(a==='next'){libSet(libNext(),undefined,true);return}
+    else if(a==='ring'){PLY=arrange(tu,LIB.g);menu={t:'more',lib:1};ring();menu.lib=1;phR();const f=box.querySelector('.ph');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});return}
+    else if(a==='auto'){LIB.auto=!LIB.auto;try{localStorage.setItem('d11-lib-auto',JSON.stringify(LIB.auto))}catch(x){}}
+    else if(a==='link'){const u=tuneLink(),m=box.querySelector('.pcard-msg');const ok=()=>{if(m)m.textContent=x.linkOk},bad=()=>{if(!m)return;m.textContent='';const i=document.createElement('input');i.type='text';i.readOnly=true;i.value=u;i.className='sq-link';m.appendChild(i);i.select()};
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(ok,bad);else bad();return}
+    const c=box.querySelector('.pcard');if(c)c.outerHTML=cardHTML();phR();return}
   const lt=e.target.closest('.plb [data-tune]');if(lt){if(initAudio()&&ac.state!=='running')ac.resume();SIDE='lib';menu={t:'lib'};libSet(+lt.dataset.tune,undefined,true);return}
   const lg=e.target.closest('.plb [data-gen]');if(lg){if(initAudio()&&ac.state!=='running')ac.resume();menu={t:'lib'};libSet(undefined,lg.dataset.gen,true);return}
   const pk=e.target.closest('[data-pk]');if(pk){if(!initAudio()){}else if(ac.state!=='running')ac.resume();kclick();phKey(pk.dataset.pk);const f=box.querySelector('.ph');if(f&&e.detail)f.focus({preventScroll:true});return}
@@ -573,7 +585,7 @@ function rnd(){const o=page*16,R=Math.random;
   else if(tab==='m'){let d=[0,2,4][Math.floor(R()*3)];for(let s=0;s<16;s++){const j=o+s;if(R()<(s%2?.32:.62)){d=Math.max(0,Math.min(7,d+[-2,-1,-1,0,1,1,2][Math.floor(R()*7)]));S.m[j]=1<<d}else S.m[j]=0}}
   else{const ch=[0,5,3,4,0,6];for(let s=0;s<16;s++){const j=o+s,root=ch[Math.floor(s/4)%ch.length];S.b[j]=s%4===0||R()<(s%2?.15:.45)?(R()<.8?root:(root+4)%8):-1}}
 }
-box.addEventListener('input',e=>{const el=e.target,k=el.dataset.k;if(!k)return;
+box.addEventListener('input',e=>{const el=e.target;if(el.matches&&el.matches('.plb-search input')){QS=el.value;const z=T12(),l=L(),lst=libList(),L2=box.querySelector('.plb-list');if(L2)L2.innerHTML=lst.length?lst.map(i=>{const tu=TUNES[i];return `<button type="button" data-tune="${i}" aria-pressed="${i===LIB.i}"><b>${FAV.includes(tu.id)?'♥ ':''}${esc(tu.n[l]||tu.n.ru)}</b><small>${esc(byOf(tu))}</small></button>`}).join(''):`<p class="plb-none">${esc(z.none)}</p>`;box.querySelectorAll('.plb-cats button').forEach(b=>b.setAttribute('aria-selected',!QS&&b.dataset.cat===libCat));return}const k=el.dataset.k;if(!k)return;
   if(k==='bpm'||k==='sw'){S[k]=+el.value;const o=box.querySelector(`[data-o="${k}"]`);if(o)o.textContent=S[k]+(k==='sw'?'%':'');edited();return}
   if(k==='vol'){S.vol=+el.value/100;if(outG)outG.gain.setTargetAtTime(S.vol,ac.currentTime,.02);save();return}});
 box.addEventListener('change',e=>{const el=e.target,k=el.dataset.k;if(!k||el.tagName!=='SELECT')return;S[k]=el.value;if(k==='fx')setFx();if(k==='k'||k==='md')regrid();edited()});
@@ -638,11 +650,6 @@ function phHTML(){const t=PH(),K=['1','2','3','4','5','6','7','8','9','*','0','#
 <div class="ph-side" id="phHelp"><div class="plb">${sideTabs()}${sideHTML()}</div>
 <details class="ph-help"><summary>${esc(t.helpH)}</summary><ol>${[T9().helpL].concat(t.help,[t.help2]).map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p class="ph-about">${esc(t.about)}</p></details>
 <p class="ph-msg" role="status" aria-live="polite"></p></div></div>`}
-function libHTML(){const x=T9(),l=L();
-  return `<h3>${esc(x.pick)}</h3><div class="plb-cats" role="tablist">${TCAT.map(c=>`<button type="button" role="tab" data-cat="${c}" aria-selected="${c===libCat}">${esc(x.cats[c])}</button>`).join('')}</div>
-<div class="plb-list">${TUNES.map((tu,i)=>tu.c!==libCat?'':`<button type="button" data-tune="${i}" aria-pressed="${i===LIB.i}"><b>${esc(tu.n[l]||tu.n.ru)}</b><small>${esc(byOf(tu))}</small></button>`).join('')}</div>
-<div class="plb-gen" role="group" aria-label="${esc(x.genre)}"><span>${esc(x.genre)}</span>${TGEN.map(g=>`<button type="button" data-gen="${g}" aria-pressed="${g===LIB.g}">${esc(x.gens[g])}</button>`).join('')}</div>
-<p class="plb-hint">${esc(x.hint)}</p><p class="plb-note">${esc(x.libNote)}</p>`}
 function flash(s){toast=s;clearTimeout(toastT);phR();toastT=setTimeout(()=>{toast='';phR()},1600)}
 function closeMenu(){if(PV){PV=null;stop()}if(menu&&menu.t==='ring'){stop();ringOff();if(PLY){menu={t:'lib'};return}}menu=null}
 function ringOff(){const f=box.querySelector('.ph');if(f)f.classList.remove('ringing');if(!(menu&&menu.call))RINGNAME=''}
@@ -677,7 +684,7 @@ function phKey(k){const t=PH();
   if(menu&&menu.t==='quiz'){quizKey(k);return}if(menu&&menu.t==='kp'){kpKey(k);return}if(menu&&menu.t==='talk')return;if(menu&&menu.t==='callwait'){callKey(k);return}
   if(menu&&menu.t==='ring'&&menu.call){if(k==='sl'||k==='ok')talkStart();else{closeMenu();RINGNAME='';phR()}return}
   if(menu&&menu.t==='lib'){
-    if(k==='up'||k==='2')libSet(LIB.i-1);else if(k==='down'||k==='8')libSet(LIB.i+1);
+    if(k==='up'||k==='2'||k==='down'||k==='8'){const l=libList().length?libList():TUNES.map((t,i)=>i),q=l.indexOf(LIB.i),d=(k==='up'||k==='2')?-1:1;libSet(l[((q<0?0:q+d)+l.length)%l.length])}
     else if(k==='left'||k==='4')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+TGEN.length-1)%TGEN.length]);else if(k==='right'||k==='6')libSet(undefined,TGEN[(TGEN.indexOf(LIB.g)+1)%TGEN.length]);
     else if(k==='ok'||k==='sl'||k==='5'){if(playing)stop();else libPlay(true)}
     else if(k==='sr')menu={t:'more',i:0,lib:1};
@@ -717,8 +724,8 @@ function libTick(){const vs=box.querySelectorAll('.pviz s');if(!vs.length)return
 function libPlay(restart){const was=playing;if(was)stop();if(!restart&&was)return;PV=null;PLY=arrange(TUNES[LIB.i],LIB.g);libSave();start(0)}
 function libSet(i,g,play){if(i!==undefined)LIB.i=(i+TUNES.length)%TUNES.length;if(g!==undefined)LIB.g=g;if(!menu||menu.t!=='lib')menu={t:'lib'};
   if(play||playing){PLY=null;libPlay(true)}else{PLY=arrange(TUNES[LIB.i],LIB.g);libSave()}phR();libSide()}
-function libSide(){libCat=TUNES[LIB.i].c;if(SIDE==='lib'){sideR();return}const el=null;if(!el)return;const sc=el.querySelector('.plb-list');const st=sc?sc.scrollTop:0;el.innerHTML=libHTML();const n=el.querySelector('.plb-list');if(n)n.scrollTop=st}
-let libCat='cl';
+function libSide(){if(!QS&&!libList().includes(LIB.i))libCat=TUNES[LIB.i].c;if(SIDE==='lib'){sideR();return}const el=null;if(!el)return;const sc=el.querySelector('.plb-list');const st=sc?sc.scrollTop:0;el.innerHTML=libHTML();const n=el.querySelector('.plb-list');if(n)n.scrollTop=st}
+let libCat='all';
 function pline(){const l=box.querySelector('.pline');if(!l)return;if(!playing||PV||ph<0){l.hidden=true;return}
   const c=box.querySelector(`.pc[data-r="0"][data-c="${Math.floor(ph/16)}"]`);if(!c){l.hidden=true;return}l.hidden=false;l.style.left=(c.offsetLeft+c.offsetWidth*(ph%16)/16)+'px'}
 function fmtDur(){const sec=Math.round((PLY&&menu&&(menu.t==='lib'||menu.t==='ring')?PLY.len*60/PLY.bpm/4:songLen()*16*60/P.bpm/4));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')}
@@ -863,6 +870,102 @@ function sideSet(k){if(playing)stop();clearTimeout(qT);SIDE=k;PV=null;
   phR();sideR()}
 function keyLabels(){const x=TT(),t=PH();const mp=menu&&menu.t==='kp'?x.kl:menu&&menu.t==='quiz'?x.ql:menu&&menu.t==='lib'?x.ll:(!menu?t.keys:{});
   box.querySelectorAll('.ph-num button').forEach(b=>{const s=b.querySelector('small');if(s)s.textContent=mp[b.dataset.pk]||''})}
+
+/* ---------- v7.42: more tunes, a card for every tune, search, favourites, play-in-a-row, links to a tune, mini player ---------- */
+TUNES.push(
+ {id:'danube',c:'cl',k:[2,'maj'],bar:12,bpm:160,n:{ru:'На прекрасном голубом Дунае',uk:'На прекрасному блакитному Дунаї',en:'The Blue Danube',fi:'An der schönen blauen Donau'},by:'J. Strauss II · 1867',
+  m:'r:8 D5:4 D5:4 F#5:4 A5:4 A5:12 A6:4 A6:4 r:4 F#6:4 F#6:4 r:4 r:8 D5:4 D5:4 F#5:4 A5:4 A5:12 A6:4 A6:4 r:4 G6:4 G6:4 r:4 r:8 C#5:4 C#5:4 E5:4 B5:4 B5:12 B6:4 B6:4 r:4 G6:4 G6:4 r:4 r:8 C#5:4 C#5:4 E5:4 B5:4 B5:12 B6:4 B6:4 r:4 F#6:4 F#6:4 r:4 r:8 D5:4 D5:4 F#5:4 A5:4 D6:12 r:12'},
+ {id:'funeral',c:'cl',k:[10,'min'],bar:16,bpm:60,n:{ru:'Похоронный марш',uk:'Похоронний марш',en:'Funeral March',fi:'Surumarssi'},by:'Chopin · 1839',
+  m:'Bb4:4 Bb4:3 Bb4:1 Bb4:4 Db5:3 C5:1 C5:3 Bb4:1 Bb4:3 A4:1 Bb4:8 Bb4:4 Bb4:3 Bb4:1 Bb4:4 Db5:3 C5:1 C5:3 Bb4:1 Bb4:3 A4:1 Bb4:8'},
+ {id:'bride',c:'ho',k:[10,'maj'],bar:16,bpm:76,n:{ru:'Свадебный хор',uk:'Весільний хор',en:'Bridal Chorus',fi:'Häämarssi (Lohengrin)'},by:'Wagner · 1850',
+  m:'F4:4 Bb4:3 Bb4:1 Bb4:8 F4:4 C5:3 A4:1 Bb4:8 F4:4 Bb4:3 Eb5:1 Eb5:4 D5:3 C5:1 Bb4:4 A4:3 Bb4:1 C5:8'},
+ {id:'xmas',c:'ho',k:[0,'maj'],bar:12,bpm:120,n:{ru:'Весёлого Рождества',uk:'Веселого Різдва',en:'We Wish You a Merry Christmas',fi:'We Wish You a Merry Christmas'},by:'английская · XVI в.',
+  m:'r:8 G4:4 C5:4 C5:2 D5:2 C5:2 B4:2 A4:4 A4:4 A4:4 D5:4 D5:2 E5:2 D5:2 C5:2 B4:4 G4:4 G4:4 E5:4 E5:2 F5:2 E5:2 D5:2 C5:4 A4:4 G4:2 G4:2 A4:4 D5:4 B4:4 C5:12'},
+ {id:'twinkle',c:'fo',k:[0,'maj'],bar:16,bpm:100,n:{ru:'Ах, скажу я вам, мама',uk:'Ах, скажу я вам, мамо',en:'Twinkle, Twinkle, Little Star',fi:'Tuiki tuiki tähtönen'},by:'французская · XVIII в.',
+  m:'C5:4 C5:4 G5:4 G5:4 A5:4 A5:4 G5:8 F5:4 F5:4 E5:4 E5:4 D5:4 D5:4 C5:8 G5:4 G5:4 F5:4 F5:4 E5:4 E5:4 D5:8 G5:4 G5:4 F5:4 F5:4 E5:4 E5:4 D5:8 C5:4 C5:4 G5:4 G5:4 A5:4 A5:4 G5:8 F5:4 F5:4 E5:4 E5:4 D5:4 D5:4 C5:8'},
+ {id:'jacques',c:'fo',k:[0,'maj'],bar:16,bpm:112,n:{ru:'Братец Жак',uk:'Братик Жак',en:'Frère Jacques',fi:'Jaakko kulta'},by:'французская · XVIII в.',
+  m:'C5:4 D5:4 E5:4 C5:4 C5:4 D5:4 E5:4 C5:4 E5:4 F5:4 G5:8 E5:4 F5:4 G5:8 G5:2 A5:2 G5:2 F5:2 E5:4 C5:4 G5:2 A5:2 G5:2 F5:2 E5:4 C5:4 C5:4 G4:4 C5:8 C5:4 G4:4 C5:8'},
+ {id:'grace',c:'fo',k:[7,'maj'],bar:12,bpm:84,n:{ru:'О, благодать',uk:'О, благодать',en:'Amazing Grace',fi:'Amazing Grace'},by:'американская · 1835',
+  m:'r:8 D4:4 G4:8 B4:2 G4:2 B4:8 A4:4 G4:8 E4:4 D4:8 D4:4 G4:8 B4:2 G4:2 B4:8 A4:4 D5:12 r:8 B4:4 D5:8 B4:2 G4:2 B4:8 A4:4 G4:8 E4:4 D4:8 D4:4 G4:8 B4:2 G4:2 B4:8 A4:4 G4:12'},
+ {id:'saints',c:'re',k:[0,'maj'],bar:16,bpm:132,n:{ru:'Когда святые маршируют',uk:'Коли святі марширують',en:'When the Saints Go Marching In',fi:'When the Saints Go Marching In'},by:'американская · XIX в.',
+  m:'r:4 C5:4 E5:4 F5:4 G5:16 r:4 C5:4 E5:4 F5:4 G5:16 r:4 C5:4 E5:4 F5:4 G5:8 E5:8 C5:8 E5:8 D5:16 r:4 E5:4 E5:4 D5:4 C5:12 C5:4 E5:8 G5:8 G5:4 F5:12 E5:4 F5:4 G5:4 E5:4 C5:8 D5:8 C5:16'},
+ {id:'susanna',c:'re',k:[0,'maj'],bar:16,bpm:120,n:{ru:'О, Сюзанна',uk:'О, Сюзанно',en:'Oh! Susanna',fi:'Oh! Susanna'},by:'Foster · 1848',
+  m:'r:12 C5:2 D5:2 E5:4 G5:4 G5:6 A5:2 G5:4 E5:4 C5:6 D5:2 E5:4 E5:4 D5:4 C5:4 D5:12 C5:2 D5:2 E5:4 G5:4 G5:6 A5:2 G5:4 E5:4 C5:6 D5:2 E5:4 E5:4 D5:4 D5:4 C5:16'});
+Object.assign(FOLKBY.uk,{'американская · 1835':'американська · 1835','американская · XIX в.':'американська · XIX ст.','французская · XVIII в.':'французька · XVIII ст.'});
+Object.assign(FOLKBY.en,{'американская · 1835':'American · 1835','американская · XIX в.':'American · 19th c.','французская · XVIII в.':'French · 18th c.'});
+Object.assign(FOLKBY.fi,{'американская · 1835':'amerikkalainen · 1835','американская · XIX в.':'amerikkalainen · 1800-l.','французская · XVIII в.':'ranskalainen · 1700-l.'});
+const TD={ // one short card per tune: what the piece is
+ elise:{ru:'Пьеса для фортепиано, которую нашли и издали только после смерти Бетховена, в 1867 году.',uk:'П’єса для фортепіано, яку знайшли й видали лише після смерті Бетховена, 1867 року.',en:'A piano piece found and published only after Beethoven’s death, in 1867.',fi:'Pianokappale, joka löydettiin ja julkaistiin vasta Beethovenin kuoleman jälkeen vuonna 1867.'},
+ ode:{ru:'Финал Девятой симфонии на стихи Шиллера; сегодня эта мелодия — гимн Евросоюза.',uk:'Фінал Дев’ятої симфонії на вірші Шиллера; сьогодні ця мелодія — гімн Євросоюзу.',en:'The finale of the Ninth Symphony, to words by Schiller; today the tune is the anthem of the EU.',fi:'Yhdeksännen sinfonian finaali Schillerin runoon; nykyään melodia on EU:n hymni.'},
+ serenade:{ru:'Серенада для струнных, написанная Моцартом в Вене в 1787 году.',uk:'Серенада для струнних, написана Моцартом у Відні 1787 року.',en:'A serenade for strings Mozart wrote in Vienna in 1787.',fi:'Jousiserenadi, jonka Mozart kirjoitti Wienissä vuonna 1787.'},
+ turca:{ru:'Финал фортепианной сонаты № 11 — подражание турецкой военной музыке.',uk:'Фінал фортепіанної сонати № 11 — наслідування турецької військової музики.',en:'The finale of Piano Sonata No. 11, an imitation of Turkish military bands.',fi:'Pianosonaatti nro 11:n finaali, joka jäljittelee turkkilaista sotilasmusiikkia.'},
+ sym40:{ru:'Одна из двух симфоний Моцарта в миноре; соль минор и та самая тема из трёх нот.',uk:'Одна з двох симфоній Моцарта в мінорі; соль мінор і та сама тема з трьох нот.',en:'One of Mozart’s only two minor-key symphonies: G minor and that three-note sigh.',fi:'Toinen Mozartin kahdesta mollisinfoniasta: g-molli ja tuttu kolmen nuotin huokaus.'},
+ king:{ru:'Музыка к пьесе Ибсена «Пер Гюнт»: тролли гонятся за героем, а темп всё ускоряется.',uk:'Музика до п’єси Ібсена «Пер Гюнт»: тролі женуться за героєм, а темп дедалі швидшає.',en:'From the music for Ibsen’s Peer Gynt: trolls chase the hero as the tempo keeps rising.',fi:'Ibsenin Peer Gyntin näytelmämusiikkia: peikot jahtaavat sankaria ja tempo kiihtyy.'},
+ badinerie:{ru:'Последняя часть Оркестровой сюиты № 2 с солирующей флейтой.',uk:'Остання частина Оркестрової сюїти № 2 із солюючою флейтою.',en:'The last movement of Orchestral Suite No. 2, with a solo flute.',fi:'Orkesterisarja nro 2:n viimeinen osa, jossa soolohuilu.'},
+ morning:{ru:'Тоже из «Пер Гюнта». Это рассвет в пустыне, хотя её давно считают музыкой северного утра.',uk:'Теж із «Пер Гюнта». Це світанок у пустелі, хоча її давно вважають музикою північного ранку.',en:'Also from Peer Gynt. It depicts a desert sunrise, though most people hear a northern morning.',fi:'Myös Peer Gyntistä. Se kuvaa auringonnousua aavikolla, vaikka moni kuulee siinä pohjoisen aamun.'},
+ swan:{ru:'Главная тема «Лебединого озера» — первого балета Чайковского.',uk:'Головна тема «Лебединого озера» — першого балету Чайковського.',en:'The main theme of Swan Lake, Tchaikovsky’s first ballet.',fi:'Joutsenlammen pääteema; se oli Tšaikovskin ensimmäinen baletti.'},
+ canon:{ru:'Канон для трёх скрипок и баса; по его гармонии написаны сотни поп-песен.',uk:'Канон для трьох скрипок і басу; на його гармонії написано сотні поп-пісень.',en:'A canon for three violins and bass; hundreds of pop songs reuse its chords.',fi:'Kaanon kolmelle viululle ja bassolle; sadat poplaulut lainaavat sen sointuja.'},
+ minuet:{ru:'Из нотной тетради Анны Магдалены Бах. Долго считался пьесой Баха, но автор — Кристиан Петцольд.',uk:'Із нотного зошита Анни Магдалени Бах. Довго вважався п’єсою Баха, але автор — Крістіан Петцольд.',en:'From Anna Magdalena Bach’s notebook. Long credited to Bach, it was written by Christian Petzold.',fi:'Anna Magdalena Bachin nuottivihosta. Sitä pidettiin pitkään Bachin teoksena, mutta sen sävelsi Christian Petzold.'},
+ toccata:{ru:'Органная токката, которую приписывают Баху, — одна из самых узнаваемых органных пьес.',uk:'Органна токата, яку приписують Баху, — одна з найвпізнаваніших органних п’єс.',en:'An organ toccata attributed to Bach and one of the best-known organ pieces of all.',fi:'Bachin nimiin luettu urkutokaatta, yksi tunnetuimmista urkukappaleista.'},
+ bee:{ru:'Интерлюдия из оперы «Сказка о царе Салтане»: князь Гвидон превращается в шмеля.',uk:'Інтерлюдія з опери «Казка про царя Салтана»: князь Гвідон перетворюється на джмеля.',en:'An interlude from the opera The Tale of Tsar Saltan, where Prince Gvidon turns into a bumblebee.',fi:'Välisoitto oopperasta Tarina tsaari Saltanista: ruhtinas Gvidon muuttuu kimalaiseksi.'},
+ spring:{ru:'Первый из четырёх скрипичных концертов «Времена года».',uk:'Перший із чотирьох скрипкових концертів «Пори року».',en:'The first of the four violin concertos of The Four Seasons.',fi:'Ensimmäinen Neljän vuodenajan neljästä viulukonsertosta.'},
+ fifth:{ru:'Четыре ноты, с которых начинается Пятая симфония, — пожалуй, самый известный мотив классики.',uk:'Чотири ноти, з яких починається П’ята симфонія, — мабуть, найвідоміший мотив класики.',en:'The four notes that open the Fifth may be the most famous motif in classical music.',fi:'Viidennen sinfonian avaavat neljä nuottia ovat ehkä klassisen musiikin tunnetuin aihe.'},
+ danube:{ru:'Самый знаменитый венский вальс; впервые прозвучал в 1867 году.',uk:'Найвідоміший віденський вальс; уперше прозвучав 1867 року.',en:'The most famous Viennese waltz, first heard in 1867.',fi:'Kuuluisin wieniläisvalssi; se esitettiin ensimmäisen kerran vuonna 1867.'},
+ funeral:{ru:'Третья часть фортепианной сонаты № 2 Шопена.',uk:'Третя частина фортепіанної сонати № 2 Шопена.',en:'The third movement of Chopin’s Piano Sonata No. 2.',fi:'Chopinin pianosonaatti nro 2:n kolmas osa.'},
+ korob:{ru:'Песня на стихи Некрасова; весь мир знает её по игре «Тетрис».',uk:'Пісня на вірші Некрасова; увесь світ знає її з гри «Тетріс».',en:'A song to a poem by Nekrasov; the whole world knows it from Tetris.',fi:'Laulu Nekrasovin runoon; koko maailma tuntee sen Tetriksestä.'},
+ shchedryk:{ru:'Украинская щедровка в обработке Николая Леонтовича; в мире её знают как Carol of the Bells.',uk:'Українська щедрівка в обробці Миколи Леонтовича; у світі її знають як Carol of the Bells.',en:'A Ukrainian New Year song arranged by Mykola Leontovych, known worldwide as Carol of the Bells.',fi:'Ukrainalainen uudenvuodenlaulu Mykola Leontovytšin sovituksena; maailmalla se tunnetaan nimellä Carol of the Bells.'},
+ green:{ru:'Английская баллада XVI века; её приписывали Генриху VIII, но это легенда.',uk:'Англійська балада XVI століття; її приписували Генріху VIII, але це легенда.',en:'An English ballad of the 16th century; the story that Henry VIII wrote it is a legend.',fi:'Englantilainen balladi 1500-luvulta; tarina Henrik VIII:sta sen tekijänä on legenda.'},
+ twinkle:{ru:'Французская песенка XVIII века; Моцарт написал на неё двенадцать вариаций.',uk:'Французька пісенька XVIII століття; Моцарт написав на неї дванадцять варіацій.',en:'An 18th-century French song; Mozart wrote twelve variations on it.',fi:'Ranskalainen laulu 1700-luvulta; Mozart kirjoitti siitä kaksitoista muunnelmaa.'},
+ jacques:{ru:'Французский канон: его поют по кругу, вступая друг за другом.',uk:'Французький канон: його співають по колу, вступаючи один за одним.',en:'A French round, sung by voices entering one after another.',fi:'Ranskalainen kaanon, jota lauletaan äänten liittyessä mukaan vuorotellen.'},
+ grace:{ru:'Английский гимн на стихи Джона Ньютона; мелодия «New Britain» известна с 1830-х.',uk:'Англійський гімн на вірші Джона Ньютона; мелодія «New Britain» відома з 1830-х.',en:'A hymn to words by John Newton, sung to the tune New Britain since the 1830s.',fi:'John Newtonin sanoittama virsi, jota on laulettu New Britain -sävelmään 1830-luvulta asti.'},
+ bells:{ru:'Песня Джеймса Лорда Пирпонта, впервые изданная в 1857 году как «One Horse Open Sleigh».',uk:'Пісня Джеймса Лорда Пірпонта, уперше видана 1857 року як «One Horse Open Sleigh».',en:'A song by James Lord Pierpont, first published in 1857 as One Horse Open Sleigh.',fi:'James Lord Pierpontin laulu, joka julkaistiin vuonna 1857 nimellä One Horse Open Sleigh.'},
+ bday:{ru:'Мелодия сестёр Хилл из детской песни «Good Morning to All» 1893 года.',uk:'Мелодія сестер Гілл із дитячої пісні «Good Morning to All» 1893 року.',en:'The Hill sisters’ tune from the 1893 children’s song Good Morning to All.',fi:'Hillin sisarten sävelmä vuoden 1893 lastenlaulusta Good Morning to All.'},
+ lullaby:{ru:'«Колыбельная» Брамса, опус 49 № 4.',uk:'«Колискова» Брамса, опус 49 № 4.',en:'Brahms’s Lullaby, Op. 49 No. 4.',fi:'Brahmsin Kehtolaulu, op. 49 nro 4.'},
+ auld:{ru:'Шотландская песня на стихи Роберта Бёрнса; её поют в новогоднюю ночь.',uk:'Шотландська пісня на вірші Роберта Бернса; її співають у новорічну ніч.',en:'A Scottish song to words by Robert Burns, sung on New Year’s Eve.',fi:'Skotlantilainen laulu Robert Burnsin sanoihin; sitä lauletaan uudenvuodenaattona.'},
+ bride:{ru:'Свадебный хор из оперы Вагнера «Лоэнгрин».',uk:'Весільний хор з опери Вагнера «Лоенгрін».',en:'The Bridal Chorus from Wagner’s opera Lohengrin.',fi:'Häämarssi Wagnerin oopperasta Lohengrin.'},
+ xmas:{ru:'Английская народная рождественская песня.',uk:'Англійська народна різдвяна пісня.',en:'A traditional English Christmas song.',fi:'Perinteinen englantilainen joululaulu.'},
+ enter:{ru:'Рэгтайм Скотта Джоплина; второй раз прославился в фильме «Афера» 1973 года.',uk:'Регтайм Скотта Джоплина; удруге прославився у фільмі «Афера» 1973 року.',en:'Scott Joplin’s rag, famous a second time through the 1973 film The Sting.',fi:'Scott Joplinin ragtime, joka tuli toistamiseen kuuluisaksi vuoden 1973 elokuvassa Puhallus.'},
+ cuca:{ru:'Мексиканская народная песня, особенно популярная со времён революции 1910-х.',uk:'Мексиканська народна пісня, особливо популярна з часів революції 1910-х.',en:'A Mexican folk song, especially popular since the revolution of the 1910s.',fi:'Meksikolainen kansanlaulu, erityisen suosittu 1910-luvun vallankumouksesta lähtien.'},
+ saints:{ru:'Американский спиричуэл, ставший гимном новоорлеанского джаза.',uk:'Американський спірічуел, що став гімном новоорлеанського джазу.',en:'An American spiritual that became the anthem of New Orleans jazz.',fi:'Amerikkalainen spirituaali, josta tuli New Orleansin jazzin tunnuslaulu.'},
+ susanna:{ru:'Песня Стивена Фостера 1848 года.',uk:'Пісня Стівена Фостера 1848 року.',en:'A song by Stephen Foster from 1848.',fi:'Stephen Fosterin laulu vuodelta 1848.'}};
+const TX12={ru:{search:'Найти мелодию',fav:'Избранное',favAdd:'В избранное',favDel:'В избранном',link:'Ссылка на мелодию',linkOk:'Ссылка скопирована',auto:'Подряд',autoT:'Играть мелодии подряд',ring:'На звонок',none:'Ничего не нашлось',all:'Все',count:'мелодий',tapPlay:'Нажми ▶, чтобы послушать',next:'Следующая',playing:'Играет'},
+ uk:{search:'Знайти мелодію',fav:'Обране',favAdd:'До обраного',favDel:'В обраному',link:'Посилання на мелодію',linkOk:'Посилання скопійовано',auto:'Поспіль',autoT:'Грати мелодії поспіль',ring:'На дзвінок',none:'Нічого не знайшлося',all:'Усі',count:'мелодій',tapPlay:'Натисни ▶, щоб послухати',next:'Наступна',playing:'Грає'},
+ en:{search:'Find a tune',fav:'Favourites',favAdd:'Add to favourites',favDel:'In favourites',link:'Link to this tune',linkOk:'Link copied',auto:'In a row',autoT:'Play tunes in a row',ring:'Set as ringtone',none:'Nothing found',all:'All',count:'tunes',tapPlay:'Press ▶ to listen',next:'Next',playing:'Playing'},
+ fi:{search:'Etsi melodiaa',fav:'Suosikit',favAdd:'Lisää suosikkeihin',favDel:'Suosikeissa',link:'Linkki melodiaan',linkOk:'Linkki kopioitu',auto:'Peräkkäin',autoT:'Soita melodiat peräkkäin',ring:'Soittoääneksi',none:'Mitään ei löytynyt',all:'Kaikki',count:'melodiaa',tapPlay:'Paina ▶ kuunnellaksesi',next:'Seuraava',playing:'Soi'}};
+const T12=()=>TX12[L()];
+const plur=(n,w)=>{const l=L();if(l!=='ru'&&l!=='uk')return w;const f=l==='ru'?['мелодия','мелодии','мелодий']:['мелодія','мелодії','мелодій'],a=n%10,b=n%100;return a===1&&b!==11?f[0]:a>=2&&a<=4&&(b<12||b>14)?f[1]:f[2]};
+let FAV=[],QS='';try{const v=JSON.parse(localStorage.getItem('d11-fav')||'[]');if(Array.isArray(v))FAV=v.filter(id=>TUNES.some(t=>t.id===id))}catch(e){}
+const favSave=()=>{try{localStorage.setItem('d11-fav',JSON.stringify(FAV))}catch(e){}};
+try{const a=JSON.parse(localStorage.getItem('d11-lib-auto')||'false');LIB.auto=!!a}catch(e){LIB.auto=false}
+const norm=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+function libList(){if(QS){const q=norm(QS);return TUNES.map((t,i)=>i).filter(i=>{const t=TUNES[i];const k=t.by.split(' · ')[0];return Object.values(t.n).concat([t.by,byOf(t)],Object.values(COMP).map(c=>c[k]||'')).some(s=>s&&norm(s).includes(q))})}
+  if(libCat==='fav')return FAV.map(id=>TUNES.findIndex(t=>t.id===id)).filter(i=>i>=0);if(libCat==='all')return TUNES.map((t,i)=>i);return TUNES.map((t,i)=>i).filter(i=>TUNES[i].c===libCat)}
+function libNext(){const l=libList(),k=l.indexOf(LIB.i);return l.length?l[(k+1)%l.length]:(LIB.i+1)%TUNES.length}
+function tuneLink(){const tu=TUNES[LIB.i];return location.origin+location.pathname+'#t='+tu.id+'~'+LIB.g}
+function cardHTML(){const tu=TUNES[LIB.i],l=L(),x=T12(),y=T9(),fav=FAV.includes(tu.id),on=playing&&PLY&&PLY.tu===tu;
+  return `<div class="pcard"><div class="pcard-h"><div><b>${esc(tu.n[l]||tu.n.ru)}</b><small>${esc(byOf(tu))} · ${esc(y.cats[tu.c])}</small></div>
+<button type="button" class="pcard-play" data-cp="play" aria-label="${esc(on?PH().stop:PH().play)}">${on?'■':'▶'}</button></div>
+<p>${esc((TD[tu.id]||{})[l]||(TD[tu.id]||{}).ru||'')}</p>
+<div class="pcard-a"><button type="button" data-cp="fav" aria-pressed="${fav}">${fav?'♥':'♡'} ${esc(fav?x.favDel:x.favAdd)}</button><button type="button" data-cp="next">⏭ ${esc(x.next)}</button><button type="button" data-cp="ring">☎ ${esc(x.ring)}</button><button type="button" data-cp="link">🔗 ${esc(x.link)}</button>
+<button type="button" data-cp="auto" aria-pressed="${!!LIB.auto}" title="${esc(x.autoT)}">⟳ ${esc(x.auto)}</button></div><p class="pcard-msg" role="status"></p></div>`}
+function libHTML(){const x=T9(),z=T12(),l=L(),lst=libList(),cats=['all'].concat(TCAT,FAV.length?['fav']:[]);
+  return `<h3>${esc(x.pick)} <small class="plb-n">${TUNES.length} ${esc(plur(TUNES.length,z.count))}</small></h3>
+<div class="plb-search"><input type="search" value="${esc(QS)}" placeholder="${esc(z.search)}" aria-label="${esc(z.search)}"></div>
+<div class="plb-cats" role="tablist">${cats.map(c=>`<button type="button" role="tab" data-cat="${c}" aria-selected="${!QS&&c===libCat}">${esc(c==='all'?z.all:c==='fav'?'♥ '+z.fav:x.cats[c])}</button>`).join('')}</div>
+<div class="plb-list">${lst.length?lst.map(i=>{const tu=TUNES[i];return `<button type="button" data-tune="${i}" aria-pressed="${i===LIB.i}"><b>${FAV.includes(tu.id)?'♥ ':''}${esc(tu.n[l]||tu.n.ru)}</b><small>${esc(byOf(tu))}</small></button>`}).join(''):`<p class="plb-none">${esc(z.none)}</p>`}</div>
+<div class="plb-gen" role="group" aria-label="${esc(x.genre)}"><span>${esc(x.genre)}</span>${TGEN.map(g=>`<button type="button" data-gen="${g}" aria-pressed="${g===LIB.g}">${esc(x.gens[g])}</button>`).join('')}</div>
+${cardHTML()}<p class="plb-note">${esc(x.libNote)}</p>`}
+let lastPh=-1;
+function autoNext(){if(!LIB.auto||!PLY||!menu||menu.t!=='lib'||PLY.tu.id==='my')return;libSet(libNext(),undefined,true)}
+/* mini player: shows when the phone is off screen while a tune plays */
+let MINI=null,phVisible=true;
+function miniInit(){if(MINI)return;MINI=document.createElement('div');MINI.className='pmini';MINI.hidden=true;document.body.appendChild(MINI);
+  MINI.addEventListener('click',e=>{const b=e.target.closest('[data-mp]');if(!b)return;const a=b.dataset.mp;
+    if(a==='stop'){if(playing)stop();else libPlay(true)}else if(a==='next'){menu={t:'lib'};libSet(libNext(),undefined,true)}else if(a==='go'){const f=box.querySelector('.ph');if(f)f.scrollIntoView({behavior:'smooth',block:'center'})}miniR()});
+  const ph=box.querySelector('.ph');if(ph&&'IntersectionObserver' in window){new IntersectionObserver(es=>{phVisible=es[0].isIntersecting;miniR()},{threshold:.15}).observe(ph)}}
+function miniR(){if(!MINI)return;const show=!phVisible&&playing&&PLY&&MODE==='phone';MINI.hidden=!show;if(!show)return;const tu=PLY.tu,x=T12();
+  MINI.innerHTML=`<button type="button" data-mp="go" class="pmini-t"><i>♪</i><span><b>${esc(tu.n[L()]||tu.n.ru)}</b><small>${esc(x.playing)} · ${esc(T9().gens[PLY.g]||'')}</small></span></button><button type="button" data-mp="stop" aria-label="${esc(PH().stop)}">■</button>${tu.id==='my'?'':`<button type="button" data-mp="next" aria-label="${esc(x.next)}">⏭</button>`}`}
+{const h=location.hash.match(/^#t=([a-z0-9]+)~([a-z]+)$/);if(h){const i=TUNES.findIndex(t=>t.id===h[1]);if(i>=0){LIB.i=i;if(TGEN.includes(h[2]))LIB.g=h[2];MODE='phone';draw.tl=1}}}
 
 const PKM={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'sr',Backspace:'0',Delete:'0',' ':'sl'};
 box.addEventListener('keydown',e=>{if(MODE!=='phone'||!e.target.closest||!e.target.closest('.ph')||e.ctrlKey||e.metaKey||e.altKey)return;
